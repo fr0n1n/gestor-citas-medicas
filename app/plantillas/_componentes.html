@@ -1,0 +1,758 @@
+{# Trozos reutilizados por varias pantallas. #}
+
+{# El area (Traumatologia, Neurologia...) con su color, para distinguir de
+   un vistazo a que especialista corresponde cada cosa. #}
+{% macro etiqueta_area(nombre, color, enlace=true) %}
+  {% if enlace %}
+    <a class="pastilla area-color-{{ color }}" href="/areas/{{ nombre|slug_area }}">{{ nombre }}</a>
+  {% else %}
+    <span class="pastilla area-color-{{ color }}">{{ nombre }}</span>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro etiqueta_estado(evento) %}
+  <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+{% endmacro %}
+
+
+{# Ambulancia: solo se muestra si la cita la necesita. #}
+{% macro etiqueta_transporte(evento) %}
+  {% if evento.necesita_ambulancia %}
+    <span class="pastilla transporte-{{ evento.transporte.value }}"
+          title="{{ evento.transporte|etiqueta }}"><span class="icono-ambulancia">🚑</span> {{ evento.transporte|etiqueta }}</span>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro linea_lugar(evento, incluir_centro=true) %}
+  {%- set partes = [] -%}
+  {%- if evento.centro and incluir_centro %}{% set _ = partes.append(evento.centro.nombre) %}{% endif -%}
+  {%- if evento.ubicacion %}{% set _ = partes.append(evento.ubicacion) %}{% endif -%}
+  {%- if evento.profesional %}{% set _ = partes.append('Dr./Dra. ' ~ evento.profesional) %}{% endif -%}
+  {{ partes|join(' · ') }}
+{% endmacro %}
+
+
+{# Una cita en un listado. #}
+{#
+  Tarjeta de una cita.
+
+  A simple vista solo lo imprescindible: de que especialista es, que es,
+  cuando y donde. Lo demas -- los papeles que hay que llevar, las notas, el
+  resultado -- esta dentro, en /eventos/<id>.
+
+  Se pinta en dos pasos y en el orden real de las cosas: primero la
+  solicitud y justo debajo la cita que sale de ella. Asi se ve de un golpe
+  lo que esta pedido pero todavia sin dia, que es lo que se pierde de vista.
+
+  El cuerpo entero es un enlace, asi que aqui dentro no cabe ni otro enlace
+  ni ningun formulario. Las acciones rapidas se pasan con {% call %} y se
+  pintan fuera del enlace.
+#}
+{% macro tarjeta_evento(evento, destino='/', mostrar_fecha=true, mostrar_centro=true) %}
+{% set cerrada = evento.estado in (EstadoEvento.REALIZADA, EstadoEvento.CANCELADA) %}
+{% set pendientes = evento.preparativos_pendientes %}
+{% set gestiones = evento.gestiones_pendientes %}
+
+{# Solo se saca a la tarjeta el preparativo que ya aprieta; el resto, dentro. #}
+{% set ns = namespace(aviso=none) %}
+{% for r in pendientes %}
+  {% if ns.aviso is none
+        and r.urgencia(config.dias_aviso_requisito) in (Urgencia.VENCIDO, Urgencia.HOY) %}
+    {% set ns.aviso = r %}
+  {% endif %}
+{% endfor %}
+
+{# `hoy` viene del contexto de la pagina, ya como fecha. #}
+{% set cuando_falta = (evento.fecha - hoy).days if evento.fecha and not cerrada and hoy else none %}
+<article class="cita area-color-{{ evento.area|color_area }} estado-{{ evento.estado.value }} prioridad-{{ evento.prioridad.value }}{% if cerrada %} cita-cerrada{% endif %}{% if cuando_falta == 0 %} cita-hoy{% elif cuando_falta == 1 %} cita-manana{% endif %}">
+  <div class="cita-cuerpo">
+
+    {# Primera linea: de quien es y donde es, las dos preguntas que se
+       hacen antes de leer nada mas. Debajo, que hay que hacer. #}
+    {# Hoy y manana, en su propia linea: si comparten sitio con el area y el
+       centro, el nombre del hospital se queda en tres letras. #}
+    {% if cuando_falta == 0 %}
+      <p class="cita-cuando-falta"><span class="pastilla es-hoy">HOY</span></p>
+    {% elif cuando_falta == 1 %}
+      <p class="cita-cuando-falta"><span class="pastilla es-manana">MAÑANA</span></p>
+    {% endif %}
+
+    <p class="cita-etiquetas">
+      <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
+      {% if mostrar_centro and evento.centro %}
+        <span class="pastilla centro" title="{{ evento.centro.nombre }}">{{ evento.centro.nombre|centro_corto }}</span>
+      {% elif not mostrar_centro and evento.ubicacion %}
+        {# Estamos dentro de ese centro: lo util aqui es la planta. #}
+        <span class="pastilla centro" title="{{ evento.ubicacion|sin_enlaces }}">{{ evento.ubicacion|sin_enlaces }}</span>
+      {% elif evento.ubicacion %}
+        {# Sin centro dado de alta: el sitio sale del propio enlace del mapa
+           si lo lleva dentro, y si no de la ubicacion escrita. #}
+        {% set sitio = evento.ubicacion|sitio_mapa or evento.ubicacion|sin_enlaces %}
+        {% if sitio %}
+          <span class="pastilla centro" title="{{ sitio }}">{{ sitio|centro_corto(34) }}</span>
+        {% endif %}
+      {% endif %}
+    </p>
+
+    <div class="cita-titulo">
+      <h3>{{ evento.titulo }}</h3>
+    </div>
+
+    {% if cerrada %}
+      <p class="cita-cerrada-linea">
+        {{ evento.estado|etiqueta }}
+        {% if evento.fecha %}· {{ evento.fecha|fecha }}{% endif %}
+      </p>
+    {% else %}
+      <ol class="pasos">
+
+        {# 1. La solicitud. #}
+        {% if evento.estado == EstadoEvento.POR_SOLICITAR %}
+          <li class="paso paso-falta">
+            <span class="paso-nombre">Solicitud</span>
+            <span class="paso-dato">
+              {% if evento.espera_a_otra_cita %}
+                <strong>Se pide en {{ evento.origen.titulo }}</strong>
+                {% if evento.origen.fecha %}
+                  <span class="tenue">· {{ evento.origen.fecha|fecha }}</span>
+                {% endif %}
+              {% else %}
+                <strong>Falta pedirla</strong>
+              {% endif %}
+            </span>
+          </li>
+        {% elif evento.solicitada_en %}
+          <li class="paso paso-hecho">
+            <span class="paso-nombre">Pedida</span>
+            <span class="paso-dato">
+              {{ evento.solicitada_en|fecha }}
+              {% if not evento.fecha and evento.dias_esperando is not none %}
+                <span class="tenue">· esperando {{ evento.dias_esperando }} días</span>
+              {% endif %}
+            </span>
+          </li>
+        {% endif %}
+
+        {# 2. La cita que sale de esa solicitud. #}
+        <li class="paso {% if evento.fecha %}paso-hecho{% else %}paso-espera{% endif %}">
+          <span class="paso-nombre">{{ evento.tipo|etiqueta }}</span>
+          <span class="paso-dato">
+            {% if evento.fecha %}
+              {# La fecha va siempre, aunque la lista venga agrupada por dia:
+                 una tarjeta tiene que poder leerse sola. Lo que se calla
+                 entonces es el "dentro de N dias", que si lo dice el grupo. #}
+              <strong class="cita-cuando">
+                {{ evento.fecha|fecha }}{% if evento.hora %} · {{ evento.hora|hora }}{% endif %}
+              </strong>
+              {% if not evento.hora %}<span class="tenue">sin hora</span>{% endif %}
+              {% if mostrar_fecha %}
+                <span class="tenue">({{ evento.fecha|relativo }})</span>
+              {% endif %}
+            {% elif evento.estado == EstadoEvento.POR_SOLICITAR %}
+              <span class="tenue">cuando se pida</span>
+            {% else %}
+              <strong class="sin-fecha">Pendiente de que llamen</strong>
+            {% endif %}
+            {% set lugar = linea_lugar(evento, incluir_centro=not mostrar_centro)|trim %}
+            {% if lugar %}<span class="cita-lugar">{{ lugar }}</span>{% endif %}
+          </span>
+        </li>
+
+      </ol>
+
+      <p class="cita-situacion">
+        <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+        <span class="pastilla transporte-{{ evento.transporte.value }}">
+          <span class="icono-ambulancia">🚑</span>
+          {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
+            {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
+            {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
+          {%- else %} Sin ambulancia{% endif %}
+        </span>
+      </p>
+    {% endif %}
+
+    {% if ns.aviso %}
+      {% set u = ns.aviso.urgencia(config.dias_aviso_requisito) %}
+      <p class="cita-aviso">
+        ⚠ {{ ns.aviso.descripcion }} —
+        {% if u == Urgencia.HOY %}es hoy{% else %}debería estar hecho el {{ ns.aviso.fecha_limite|fecha }}{% endif %}
+      </p>
+    {% endif %}
+
+  </div>
+
+  {# El pie va FUERA del enlace: dentro no cabrian ni el desplegable de los
+     preparativos ni sus casillas, y marcar uno obliga a entrar en la cita
+     para algo que se hace en un segundo. #}
+  {% if not cerrada %}
+      <div class="cita-pie">
+        {% if pendientes %}
+          <details class="preparar">
+            <summary class="apunte">
+              📋 {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
+            </summary>
+            <ul class="lista-requisitos compacta">
+              {% for r in pendientes %}
+                {{ fila_requisito(r, destino, compacta=true, permitir_borrar=true) }}
+              {% endfor %}
+            </ul>
+          </details>
+        {% elif evento.preparativos %}
+          <span class="apunte listo">✓ Preparativos hechos</span>
+        {% endif %}
+        {% if gestiones %}
+          <details class="preparar">
+            <summary class="apunte">
+              🗣 {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
+            </summary>
+            <ul class="lista-requisitos compacta">
+              {% for r in gestiones %}
+                {{ fila_requisito(r, destino, compacta=true, permitir_borrar=true) }}
+              {% endfor %}
+            </ul>
+          </details>
+        {% endif %}
+        {% if evento.documentos %}
+          <span class="apunte">📎 {{ evento.documentos|length }} documento{{ 's' if evento.documentos|length != 1 }}</span>
+        {% endif %}
+
+        {# Apuntar sin entrar en la cita: lo que te dicen por telefono se
+           apunta mientras hablas, en la tarjeta que tienes delante. #}
+        {{ formulario_pendiente(evento, destino) }}
+      </div>
+  {% endif %}
+
+  {# Todo lo de la cita, aqui mismo y editable: ver un dato y poder
+     corregirlo son la misma accion, y mandar a otra pagina para cambiar
+     una planta o un telefono era perder el sitio en la lista. Plegado,
+     para que la lista siga siendo una lista. #}
+  <details class="mas-datos">
+    <summary class="apunte">Ver la cita</summary>
+
+    {# Primero, lo que hay. Abrir una cita para mirar como esta es lo que se
+       hace diez veces al dia; cambiarla, una. Si al desplegar salen los
+       campos, hay que leer un formulario para enterarse de la hora. #}
+    {# El estado, la fecha y la ambulancia ya estan arriba, en la tarjeta:
+       repetirlos aqui solo alargaba la lista. Aqui va lo que no cabe. #}
+    <dl class="ficha-mini">
+      {% if evento.necesita_ambulancia and evento.transporte_notas %}
+        <dt><span class="icono-ambulancia">🚑</span> Cómo se pide</dt>
+        <dd>
+          {{ evento.transporte_notas }}
+          {%- if telefono_ambulancia %} · <a href="tel:{{ telefono_ambulancia }}">{{ telefono_ambulancia }}</a>{% endif %}
+        </dd>
+      {% endif %}
+      {% if evento.centro %}
+        <dt>Centro</dt>
+        <dd>
+          {{ evento.centro.nombre }}
+          {% if evento.centro.direccion %}
+            <br><span class="tenue">{{ evento.centro.direccion|sin_enlaces }}</span>
+          {% endif %}
+        </dd>
+        {% if evento.centro.telefono %}
+          <dt>Teléfono</dt>
+          <dd><a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a></dd>
+        {% endif %}
+      {% endif %}
+      {% if evento.ubicacion %}<dt>Dónde</dt><dd>{{ evento.ubicacion|sin_enlaces }}</dd>{% endif %}
+      {% if evento.profesional %}<dt>Con</dt><dd>Dr./Dra. {{ evento.profesional }}</dd>{% endif %}
+      {% if evento.motivo %}<dt>Por qué</dt><dd>{{ evento.motivo }}</dd>{% endif %}
+      {% if evento.notas %}<dt>Notas</dt><dd>{{ evento.notas }}</dd>{% endif %}
+      {% if evento.resultado %}<dt>Dijeron</dt><dd>{{ evento.resultado }}</dd>{% endif %}
+      {% if evento.documentos %}
+        <dt>Papeles</dt>
+        <dd>
+          {% for d in evento.documentos %}
+            <a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_archivo }}</a>{% if not loop.last %}<br>{% endif %}
+          {% endfor %}
+        </dd>
+      {% endif %}
+    </dl>
+
+    {% if evento.origen or evento.antes_de or evento.previas %}
+      <p class="panel-hilo">
+        {% if evento.origen %}Sale de «{{ evento.origen.titulo }}».{% endif %}
+        {% if evento.antes_de %}Hace falta para «{{ evento.antes_de.titulo }}».{% endif %}
+        {% if evento.previas %}
+          Antes tiene que estar hecho:
+          {% for pr in evento.previas %}«{{ pr.titulo }}»{% if not loop.last %}, {% endif %}{% endfor %}.
+        {% endif %}
+      </p>
+    {% endif %}
+
+    {# Y si hay que cambiar algo, se pide. #}
+    <details class="editar-cita">
+      <summary class="boton secundario pequeno">
+        <span class="si-cerrado">✎ Editar</span>
+        <span class="si-abierto">Cancelar</span>
+      </summary>
+
+    {# Cuando y en que punto esta: lo que mas cambia. #}
+    <form method="post" action="/eventos/{{ evento.id }}/estado" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label>Estado
+        <select name="estado">
+          <option value="{{ evento.estado.value }}" selected>{{ evento.estado|etiqueta }}</option>
+          {% for d in transiciones(evento.estado) %}
+            <option value="{{ d.value }}">{{ d|etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Día
+        <input type="date" name="fecha" value="{{ evento.fecha|iso }}">
+      </label>
+      <label>Hora
+        <input type="time" name="hora" value="{{ evento.hora|iso }}">
+      </label>
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+      </div>
+    </form>
+
+    {# Donde, con quien y lo que se apunto de la cita. #}
+    <form method="post" action="/eventos/{{ evento.id }}/ficha" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label class="ancho">Qué es
+        <input type="text" name="titulo" value="{{ evento.titulo }}">
+      </label>
+      <label>Área
+        <input type="text" name="especialidad" value="{{ evento.especialidad or '' }}">
+      </label>
+      <label>Centro
+        <select name="centro">
+          <option value="">— Sin centro —</option>
+          {% for c in centros %}
+            <option value="{{ c.id }}" {% if evento.centro_id == c.id %}selected{% endif %}>
+              {{ c.nombre|centro_corto(34) }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Dónde <span class="tenue">(planta, consulta)</span>
+        <input type="text" name="ubicacion" value="{{ evento.ubicacion|sin_enlaces if evento.ubicacion else '' }}">
+      </label>
+      <label>Con
+        <input type="text" name="profesional" value="{{ evento.profesional or '' }}">
+      </label>
+      <label>Pedida el
+        <input type="date" name="solicitada_en" value="{{ evento.solicitada_en|iso }}">
+      </label>
+      <label class="ancho">Por qué
+        <input type="text" name="motivo" value="{{ evento.motivo or '' }}">
+      </label>
+      <label class="ancho">Notas
+        <input type="text" name="notas" value="{{ evento.notas or '' }}">
+      </label>
+      <label class="ancho">Lo que dijeron
+        <input type="text" name="resultado" value="{{ evento.resultado or '' }}">
+      </label>
+      {% if evento.centro and evento.centro.telefono %}
+        <p class="panel-telefono">
+          Teléfono del centro:
+          <a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a>
+        </p>
+      {% endif %}
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+      </div>
+    </form>
+
+    {# La ambulancia, con el numero al que se pide delante. #}
+    <form method="post" action="/eventos/{{ evento.id }}/transporte" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label>
+        <span class="icono-ambulancia">🚑</span> Ambulancia
+        <select name="transporte">
+          {% for tr in EstadoTransporte %}
+            <option value="{{ tr.value }}" {% if evento.transporte == tr %}selected{% endif %}>
+              {% if tr.value == 'no_necesita' %}Sin ambulancia{% else %}{{ tr|etiqueta }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Hora de paso
+        <input type="time" name="hora_paso" value="{{ evento.transporte_hora|iso }}">
+      </label>
+      <label class="ancho">Cómo se pide
+        <input type="text" name="notas" value="{{ evento.transporte_notas or '' }}"
+               placeholder="Con conductor y ayudante{% if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}">
+      </label>
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+        {% if telefono_ambulancia %}
+          <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {# Los papeles de esta cita, y la forma de subir uno mas. #}
+    {% if evento.documentos %}
+      {{ lista_documentos(evento.documentos) }}
+    {% endif %}
+    {{ formulario_subida(destino, evento_id=evento.id, ia_lista=false) }}
+
+      <form method="post" action="/eventos/{{ evento.id }}/borrar" class="borrar-requisito"
+            data-confirmar="¿Eliminar «{{ evento.titulo }}» y todo lo suyo? No se puede deshacer.">
+        <input type="hidden" name="destino" value="{{ destino }}">
+        <button type="submit" class="boton peligro pequeno">Eliminar la cita</button>
+        <span class="tenue">Se lleva por delante lo apuntado para ella.</span>
+      </form>
+    </details>
+  </details>
+
+  {% if caller %}<div class="cita-acciones">{{ caller() }}</div>{% endif %}
+</article>
+{% endmacro %}
+
+
+{# Un requisito previo, con su casilla para marcarlo hecho. #}
+{% macro fila_requisito(requisito, destino, mostrar_cita=false, compacta=false, permitir_borrar=false, citas=none, permitir_momento=false, clase=none) %}
+{% set u = requisito.urgencia(config.dias_aviso_requisito) %}
+<li class="requisito urgencia-{{ u.value }} {% if requisito.hecho %}hecho{% endif %} {% if compacta %}compacta{% endif %}">
+  <form method="post" action="/requisitos/{{ requisito.id }}/alternar" class="en-linea">
+    <input type="hidden" name="destino" value="{{ destino }}">
+    <button type="submit" class="casilla"
+            title="{{ 'Marcar como pendiente' if requisito.hecho
+                       else ('Marcar como pedido' if requisito.en_la_cita else 'Marcar como preparado') }}"
+            aria-label="{{ 'Marcar como pendiente' if requisito.hecho
+                           else ('Marcar como pedido' if requisito.en_la_cita else 'Marcar como preparado') }}">
+      {{ '☑' if requisito.hecho else '☐' }}
+    </button>
+  </form>
+
+  <div class="requisito-cuerpo">
+    <span class="requisito-texto">{{ requisito.descripcion }}</span>
+    {% if not compacta %}<span class="tenue"> · {{ requisito.tipo|etiqueta }}</span>{% endif %}
+
+    {% if mostrar_cita and requisito.evento %}
+      <br><span class="tenue">para
+        <a href="/eventos/{{ requisito.evento.id }}">{{ requisito.evento.titulo }}</a>
+        {% if requisito.evento.fecha %}del {{ requisito.evento.fecha|fecha }}{% endif %}
+      </span>
+    {% endif %}
+
+    <br>
+    {% if requisito.fecha_limite %}
+      <span class="limite">
+        {% if u == Urgencia.VENCIDO %}⚠ Debería estar hecho el
+        {% elif u == Urgencia.HOY %}⚠ Es hoy:
+        {% else %}Antes del{% endif %}
+        {{ requisito.fecha_limite|fecha }}
+        <span class="tenue">({{ requisito.fecha_limite|relativo }})</span>
+      </span>
+    {% elif requisito.offset_dias == 0 %}
+      <span class="tenue">El mismo día de la cita</span>
+    {% elif requisito.offset_dias is not none %}
+      <span class="tenue">{{ requisito.offset_dias }} días antes de la cita —
+        pendiente de que la cita tenga fecha</span>
+    {% else %}
+      <span class="tenue">Sin fecha límite</span>
+    {% endif %}
+  </div>
+
+  {% if permitir_borrar %}
+    {# Cambiar lo que pone y para cuando hace falta, sin borrarlo: lo que se
+       apunta de oido casi siempre hay que matizarlo despues, y reescribirlo
+       entero perdia lo ya marcado.
+
+       El boton dice "Editar" con todas sus letras, y abierto dice
+       "Cancelar": con un lapiz suelto al lado de una X no se sabia cual
+       era cual, y la X borraba. Eliminar vive ahora aqui dentro, con su
+       nombre y lejos de lo que se pulsa a diario. #}
+    <details class="editar-requisito">
+      <summary class="boton secundario pequeno">✎ Editar</summary>
+      <form method="post" action="/requisitos/{{ requisito.id }}/editar" class="form-fecha">
+        <input type="hidden" name="destino" value="{{ destino }}">
+        <label class="ancho">Qué es
+          <input type="text" name="descripcion" required
+                 value="{{ requisito.descripcion }}">
+        </label>
+        {% if not requisito.en_la_cita %}
+          <label>Días antes de la cita
+            <input type="number" name="offset_dias" min="0"
+                   value="{{ requisito.offset_dias if requisito.offset_dias is not none else '' }}">
+          </label>
+          <label>O un día fijo
+            <input type="date" name="fecha_limite_manual"
+                   value="{{ requisito.fecha_limite_manual|iso }}">
+          </label>
+        {% endif %}
+        <div class="editar-acciones">
+          <button type="submit" class="boton pequeno">Guardar cambios</button>
+          <button type="reset" class="boton secundario pequeno" data-cerrar>Cancelar</button>
+        </div>
+      </form>
+      <form method="post" action="/requisitos/{{ requisito.id }}/borrar" class="borrar-requisito"
+            data-confirmar="¿Eliminar «{{ requisito.descripcion }}»? No se puede deshacer.">
+        <input type="hidden" name="destino" value="{{ destino }}">
+        <button type="submit" class="boton peligro pequeno">Eliminar</button>
+        <span class="tenue">Solo si se apuntó por error: no se puede deshacer.</span>
+      </form>
+    </details>
+  {% endif %}
+
+  {% if citas %}
+    {# Para cuando uno se da cuenta despues de que el preparativo era de
+       otra cita: la ambulancia apuntada en la consulta equivocada. #}
+    <details class="mover-requisito">
+      <summary class="boton-quitar" title="Mover a otra cita"
+               aria-label="Mover «{{ requisito.descripcion }}» a otra cita">⇄</summary>
+      <form method="post" action="/requisitos/{{ requisito.id }}/mover" class="form-fecha">
+        <label>Mover a
+          <select name="evento">
+            {% for c in citas %}
+              <option value="{{ c.id }}">{{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit" class="boton pequeno">Mover</button>
+      </form>
+    </details>
+  {% endif %}
+
+  {% if requisito.hecho %}
+    <span class="etiqueta-listo">{{ 'Hecho' if requisito.en_la_cita else 'Preparado' }}</span>
+  {% endif %}
+  {% if clase and not requisito.hecho %}<span class="etiqueta-clase">{{ clase }}</span>{% endif %}
+
+  {% if permitir_momento %}
+    {# Se apunta sobre la marcha y luego uno cae en que era lo otro. #}
+    <form method="post" action="/requisitos/{{ requisito.id }}/momento" class="en-linea">
+      <button type="submit" class="boton-quitar"
+              title="{{ 'Pasar a lo que hay que llevar' if requisito.en_la_cita else 'Pasar a lo que hay que pedir en la consulta' }}"
+              aria-label="{{ 'Pasar a lo que hay que llevar' if requisito.en_la_cita else 'Pasar a lo que hay que pedir en la consulta' }}">⇅</button>
+    </form>
+  {% endif %}
+
+</li>
+{% endmacro %}
+
+
+{# Select de un campo con valores de un enum. #}
+{% macro selector_enum(nombre, opciones, valor_actual, etiqueta_campo) %}
+<label>
+  {{ etiqueta_campo }}
+  <select name="{{ nombre }}">
+    {% for opcion in opciones %}
+      <option value="{{ opcion.value }}" {% if valor_actual and valor_actual.value == opcion.value %}selected{% endif %}>
+        {{ opcion|etiqueta }}
+      </option>
+    {% endfor %}
+  </select>
+</label>
+{% endmacro %}
+
+
+{# Subida de documentos. Si se usa desde una cita o un tramite, lo que se
+   sube queda asociado a ella directamente. #}
+{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos') %}
+<details class="anadir subida" {% if abierto %}open{% endif %}>
+  <summary class="boton">{{ etiqueta }}</summary>
+  <form method="post" action="/documentos/subir" enctype="multipart/form-data" class="formulario">
+    <input type="hidden" name="destino" value="{{ destino }}">
+    {% if evento_id %}<input type="hidden" name="evento" value="{{ evento_id }}">{% endif %}
+    {% if tramite_id %}<input type="hidden" name="tramite" value="{{ tramite_id }}">{% endif %}
+
+    <label class="ancho">
+      Fotos o PDF (hasta 10 a la vez, 20 MB cada uno)
+      {# Sin el atributo "capture": asi el movil deja elegir entre hacer
+         una foto con la camara o coger un fichero ya guardado. #}
+      {# La nota se aplica a todos los ficheros de esta subida. #}
+      <input type="file" name="archivos" multiple required
+             accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif">
+    </label>
+
+    {% if not evento_id and not tramite_id and pacientes|length > 1 %}
+    <label>
+      Paciente
+      <select name="paciente" required>
+        {% for p in pacientes %}
+          <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
+
+    <label class="ancho">
+      Notas <span class="tenue">(para saber a qué corresponde: "analítica del
+      12 de marzo", "papeles de la trabajadora social"...)</span>
+      {# Area de texto, no input: asi Enter hace un salto de linea en vez de
+         enviar el formulario. #}
+      <textarea name="notas" rows="4" maxlength="2000"
+                placeholder="A qué corresponde este documento, qué te dijeron, qué falta..."></textarea>
+    </label>
+
+    {% if ia_lista %}
+    <label class="casilla-inline ancho">
+      <input type="checkbox" name="analizar" value="si" checked>
+      Analizar con Claude al subir (la propuesta queda guardada aunque cierres la página)
+    </label>
+    {% endif %}
+
+    <div class="ancho">
+      <button type="submit" class="boton">Subir</button>
+    </div>
+  </form>
+</details>
+{% endmacro %}
+
+
+{# Estado de un documento en la bandeja. #}
+{#
+  El estado de un documento. Cuando hay propuesta que revisar no es una
+  pastilla mas: es lo unico que espera algo de la persona, asi que se pinta
+  como una llamada a la accion. Iba en verde, que se lee como "hecho", y
+  estaba justo al reves.
+#}
+{% macro estado_documento(d) %}
+  {% if d.revisado %}
+    <span class="pastilla estado-realizada">Archivado</span>
+  {% elif d.estado_ia == 'en_cola' %}
+    <span class="pastilla estado-solicitada">En cola para Claude</span>
+  {% elif d.estado_ia == 'analizando' %}
+    <span class="pastilla estado-solicitada">Claude lo está leyendo…</span>
+  {% elif d.estado_ia == 'propuesta' %}
+    <span class="llamada-revisar">Revisar propuesta</span>
+  {% elif d.estado_ia == 'error' %}
+    <span class="pastilla estado-por_solicitar">Error al analizar</span>
+  {% else %}
+    <span class="pastilla">Pendiente de revisar</span>
+  {% endif %}
+{% endmacro %}
+
+
+{# Documentos de una cita o tramite: miniatura, notas y acceso directo al
+   fichero original sin pasar por la ficha. #}
+{% macro lista_documentos(documentos) %}
+  <ul class="lista-documentos">
+    {% for d in documentos %}
+      <li class="documento-fila">
+        {# La miniatura se dibuja en el servidor, tambien la de un PDF, y
+           lleva a la ficha del documento, donde se ve entero. #}
+        <a class="miniatura-enlace" href="/documentos/{{ d.id }}">
+          <img src="/documentos/{{ d.id }}/vista" alt="" class="miniatura" loading="lazy">
+          <span class="miniatura icono">📄</span>
+        </a>
+        <span class="documento-texto">
+          <strong><a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_original or d.nombre_archivo }}</a></strong>
+          {% if d.notas %}<span class="tenue">{{ d.notas }}</span>{% endif %}
+          <span class="tenue">
+            {% if d.tema %}{{ d.tema }} · {% endif %}
+            {% if d.fecha_documento %}{{ d.fecha_documento|fecha }}{% else %}subido {{ d.creado_en|dia_local|relativo }}{% endif %}
+          </span>
+        </span>
+        <a class="boton secundario pequeno"
+           href="/documentos/{{ d.id }}/fichero{% if not d.es_imagen_visible %}?descargar=1{% endif %}"
+           target="_blank" rel="noopener">Ver original</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{#
+  Cerrar una cita que ya paso: que dijeron y que mandaron, de una vez.
+  Separarlo en dos pantallas hacia que lo segundo no se apuntara nunca.
+#}
+{% macro formulario_cerrar(evento, destino='/') %}
+<details class="cerrar-cita">
+  <summary class="boton pequeno">¿Ya fue? Cerrarla</summary>
+  <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario">
+    <input type="hidden" name="destino" value="{{ destino }}">
+    <label class="ancho">
+      Qué dijo el médico
+      <textarea name="resultado" rows="3"
+                placeholder="Lo que te contaron y lo que hay que hacer">{{ evento.resultado or '' }}</textarea>
+    </label>
+    {# La pregunta cambia segun lo que se acabe de cerrar: de una consulta
+       salen pruebas; de una prueba, la vuelta al especialista que la pidio
+       para que la vea. #}
+    {% set era_prueba = evento.tipo == TipoEvento.PRUEBA %}
+    <label class="ancho">
+      {% if era_prueba %}
+        ¿Hay que volver al especialista con el resultado?
+      {% else %}
+        ¿Te han mandado alguna prueba o revisión?
+      {% endif %}
+      <input type="text" name="derivada_titulo"
+             placeholder="{% if era_prueba %}Revisión con {{ (evento.origen.especialidad if evento.origen else evento.especialidad) or 'el especialista' }}{% else %}RMN de columna{% endif %} — déjalo vacío si no">
+    </label>
+    <label>
+      Qué es
+      <select name="derivada_tipo">
+        {% set sugerido = TipoEvento.REVISION if era_prueba else TipoEvento.PRUEBA %}
+        {% for t in TipoEvento %}
+          <option value="{{ t.value }}" {% if t == sugerido %}selected{% endif %}>{{ t|etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% if era_prueba and evento.origen %}
+      <p class="tenue ancho">
+        Se creará con {{ evento.origen.especialidad or 'la especialidad de origen' }}
+        {%- if evento.origen.centro %} en {{ evento.origen.centro.nombre }}{% endif %},
+        que es quien pidió la prueba.
+      </p>
+    {% endif %}
+    <div class="ancho">
+      <button type="submit" class="boton">Marcar como realizada</button>
+    </div>
+  </form>
+</details>
+{% endmacro %}
+
+
+{# Anadir algo a una cita: lo que hay que llevar, lo que hay que pedir
+   alli o una prueba que tiene que estar hecha antes. El mismo formulario
+   en la ficha y en la tarjeta de la lista: apuntar lo que te acaban de
+   decir por telefono no puede obligar a entrar en la cita. #}
+{% macro formulario_pendiente(evento, destino) %}
+<details class="anadir">
+  <summary class="boton secundario pequeno">+ Añadir algo para esta cita</summary>
+  <form method="post" action="/eventos/{{ evento.id }}/pendiente" class="formulario">
+    <input type="hidden" name="destino" value="{{ destino }}">
+    <label class="ancho">
+      Qué falta
+      <input type="text" name="descripcion" required
+             placeholder="Traer el informe · Pedir un volante · TAC de control">
+    </label>
+    <label class="ancho">
+      De qué tipo
+      <select name="clase">
+        <option value="llevar">Llevarlo o tenerlo hecho antes</option>
+        <option value="pedir">Pedírselo al médico en la consulta</option>
+        <option value="prueba">Es otra prueba o cita que tiene que estar hecha antes</option>
+      </select>
+    </label>
+    <label>
+      Días antes <span class="tenue">(si hay que prepararlo con tiempo)</span>
+      <input type="number" name="offset_dias" min="0" placeholder="15">
+    </label>
+    <label>
+      Si es otra prueba, en qué punto está
+      <select name="estado">
+        <option value="solicitada">Pedida, esperando que llamen</option>
+        <option value="por_solicitar">Falta pedirla</option>
+        <option value="confirmada">Ya tiene día y hora</option>
+        <option value="realizada">Ya está hecha</option>
+      </select>
+    </label>
+    {# Muchas pruebas se apuntan cuando ya tienen dia, o cuando ya se han
+       hecho: sin fecha aqui habia que crearla y entrar a corregirla. #}
+    <label>
+      Qué día <span class="tenue">(si ya tiene cita o ya se hizo)</span>
+      <input type="date" name="fecha">
+    </label>
+    <label>
+      A qué hora
+      <input type="time" name="hora">
+    </label>
+    <div class="ancho acciones">
+      <button type="submit" class="boton">Añadir</button>
+      <button type="reset" class="boton secundario" data-cerrar>Cancelar</button>
+    </div>
+  </form>
+</details>
+{% endmacro %}

@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import estado_documento with context %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>{{ documento.titulo or documento.nombre_original or 'Documento' }}</h1>
+  {{ estado_documento(documento) }}
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+<p class="meta tenue">
+  {% if documento.tema %}<span class="pastilla">{{ documento.tema }}</span> {% endif %}
+  {% if documento.revisado %}
+    Archivado como <code class="nombre-archivo">{{ documento.nombre_archivo }}</code>
+  {% else %}
+    Subido {{ documento.creado_en|dia_local|relativo }}
+    {% if documento.nombre_original %}· «{{ documento.nombre_original }}»{% endif %}
+  {% endif %}
+  {% if documento.tamano_bytes %}· {{ (documento.tamano_bytes / 1024 / 1024)|round(1) }} MB{% endif %}
+</p>
+
+{% if documento.eventos or documento.tramites %}
+  <p class="meta">
+    Asociado a:
+    {% for e in documento.eventos %}<a href="/eventos/{{ e.id }}">{{ e.titulo }}</a>{% if not loop.last or documento.tramites %} · {% endif %}{% endfor %}
+    {% for t in documento.tramites %}<a href="/tramites/{{ t.id }}">{{ t.titulo }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+  </p>
+{% endif %}
+{% if documento.notas %}<p class="meta">{{ documento.notas }}</p>{% endif %}
+
+{# --- El documento --- #}
+<section class="bloque vista-previa">
+  {% if documento.es_imagen_visible %}
+    <a href="/documentos/{{ documento.id }}/fichero" target="_blank" rel="noopener">
+      <img src="/documentos/{{ documento.id }}/fichero" alt="Vista del documento">
+    </a>
+  {% elif documento.mime == 'text/plain' and documento.texto %}
+    {# Lo apuntado de una llamada: no hay papel que enseñar, el papel es
+       esto. Se lee tal cual se escribio. #}
+    <pre class="texto-llamada">{{ documento.texto }}</pre>
+  {% elif paginas %}
+    {# Cada pagina, dibujada en el servidor. No se incrusta el PDF: eso
+       obligaria a abrir la politica de seguridad y en el movil se ve mal. #}
+    <div class="paginas-documento">
+      {% for n in range(1, paginas + 1) %}
+        <figure class="pagina-documento">
+          <img src="/documentos/{{ documento.id }}/vista?pagina={{ n }}&ancho=1400"
+               alt="Página {{ n }} del documento" loading="lazy">
+          {% if paginas > 1 %}<figcaption class="tenue">Página {{ n }} de {{ paginas }}</figcaption>{% endif %}
+        </figure>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="tenue">Este formato no se puede mostrar dentro de la página.</p>
+  {% endif %}
+  <p class="acciones-pie">
+    <a class="boton secundario pequeno" href="/documentos/{{ documento.id }}/fichero?descargar=1">
+      Descargar {{ 'PDF' if documento.mime == 'application/pdf' else 'original' }}
+    </a>
+  </p>
+</section>
+
+{# --- Analisis con Claude --- #}
+{% if not documento.revisado %}
+<section class="bloque">
+  <h2>Análisis con Claude</h2>
+
+  {% if documento.analizando %}
+    <p class="en-curso">
+      <strong>{{ 'Esperando turno…' if documento.estado_ia == 'en_cola' else 'Claude está leyendo el documento…' }}</strong>
+    </p>
+    <p class="tenue">
+      Suele tardar menos de un minuto. <strong>Puedes cerrar esta página</strong>:
+      el análisis sigue en el servidor y la propuesta quedará guardada aquí.
+    </p>
+    <form method="post" action="/documentos/{{ documento.id }}/cancelar" class="acciones-pie">
+      <button type="submit" class="boton secundario">Cancelar análisis</button>
+    </form>
+
+  {% elif documento.estado_ia == 'error' %}
+    <p class="banda-error">{{ documento.error_ia }}</p>
+    {% if ia_lista %}
+      <form method="post" action="/documentos/{{ documento.id }}/analizar" class="acciones-pie">
+        <button type="submit" class="boton">Reintentar</button>
+      </form>
+    {% endif %}
+
+  {% elif documento.estado_ia == 'propuesta' and propuesta %}
+    {# ===================== REVISION DE LA PROPUESTA ===================== #}
+    <p>{{ propuesta.resumen }}</p>
+
+    {% if propuesta.avisos %}
+      <div class="avisos-ia">
+        <strong>Revisa esto:</strong>
+        <ul>{% for a in propuesta.avisos %}<li>{{ a }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+
+    <form method="post" action="/documentos/{{ documento.id }}/aplicar">
+
+      <h3>El documento</h3>
+      <div class="formulario">
+        <label class="ancho">Título
+          <input type="text" name="titulo" value="{{ propuesta.titulo_documento }}">
+        </label>
+        <label>Fecha del documento
+          <input type="date" name="fecha_documento" value="{{ propuesta.fecha_documento_real()|iso }}">
+        </label>
+        <label>Tema (para el nombre del archivo)
+          <input type="text" name="tema" value="{{ propuesta.tema or '' }}">
+        </label>
+      </div>
+      <p class="tenue">Se archivará como <code class="nombre-archivo">{{ nombre_propuesto }}</code></p>
+
+      {% for e in propuesta.eventos %}
+        {% set i = loop.index0 %}
+        {% set existente = citas_por_id.get(e.evento_existente_id) %}
+        <fieldset class="propuesta">
+          <legend>
+            <label class="casilla-inline">
+              <input type="checkbox" name="e{{ i }}_incluir" value="si" checked>
+              {% if existente %}Actualizar cita existente{% else %}Crear cita nueva{% endif %}
+            </label>
+          </legend>
+
+          <div class="formulario">
+            <label class="ancho">Asociar a
+              <select name="e{{ i }}_existente">
+                <option value="">— Crear como cita nueva —</option>
+                {% for c in citas %}
+                  <option value="{{ c.id }}" {% if existente and existente.id == c.id %}selected{% endif %}>
+                    {{ c.titulo }} · {{ c.estado|etiqueta }}{% if c.fecha %} · {{ c.fecha|fecha }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="ancho">Título
+              <input type="text" name="e{{ i }}_titulo" value="{{ e.titulo }}">
+            </label>
+            <label>Estado
+              <select name="e{{ i }}_estado">
+                {% for est in estados_propuesta %}
+                  <option value="{{ est.value }}" {% if est.value == e.estado %}selected{% endif %}>{{ est|etiqueta }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Fecha
+              <input type="date" name="e{{ i }}_fecha" value="{{ e.fecha_real()|iso }}">
+            </label>
+            <label>Hora
+              <input type="time" name="e{{ i }}_hora" value="{{ e.hora_real()|iso }}">
+            </label>
+          </div>
+
+          <dl class="detalles-propuesta">
+            {% for etiqueta_campo, valor in [('Especialidad', e.especialidad), ('Centro', e.centro), ('Dónde', e.ubicacion), ('Médico', e.profesional), ('Motivo', e.motivo), ('Resultado', e.resultado), ('Ambulancia', e.transporte|etiqueta if e.transporte != 'no_necesita' else none)] %}
+              {% if valor %}<dt>{{ etiqueta_campo }}</dt><dd>{{ valor }}</dd>{% endif %}
+            {% endfor %}
+          </dl>
+
+          {% if e.requisitos %}
+            <p class="subtitulo">Antes de la cita:</p>
+            <ul class="lista-casillas">
+              {% for r in e.requisitos %}
+                <li><label class="casilla-inline">
+                  <input type="checkbox" name="e{{ i }}_r{{ loop.index0 }}" value="si" checked>
+                  {{ r.descripcion }}
+                  <span class="tenue">
+                    {% if r.offset_dias is not none %}· {{ r.offset_dias }} días antes{% endif %}
+                    {% if r.fecha_limite %}· antes del {{ r.fecha_limite }}{% endif %}
+                  </span>
+                </label></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </fieldset>
+      {% endfor %}
+
+      {% for t in propuesta.tramites %}
+        {% set i = loop.index0 %}
+        {% set existente = tramites_por_id.get(t.tramite_existente_id) %}
+        <fieldset class="propuesta">
+          <legend>
+            <label class="casilla-inline">
+              <input type="checkbox" name="t{{ i }}_incluir" value="si" checked>
+              {% if existente %}Actualizar trámite existente{% else %}Crear trámite nuevo{% endif %}: {{ t.titulo }}
+            </label>
+          </legend>
+          <div class="formulario">
+            <label class="ancho">Asociar a
+              <select name="t{{ i }}_existente">
+                <option value="">— Crear como trámite nuevo —</option>
+                {% for tr in tramites %}
+                  <option value="{{ tr.id }}" {% if existente and existente.id == tr.id %}selected{% endif %}>{{ tr.titulo }} · {{ tr.estado|etiqueta }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <dl class="detalles-propuesta">
+            {% for etiqueta_campo, valor in [('Organismo', t.organismo), ('Expediente', t.expediente), ('Estado', t.estado|etiqueta), ('Plazo', t.fecha_limite)] %}
+              {% if valor %}<dt>{{ etiqueta_campo }}</dt><dd>{{ valor }}</dd>{% endif %}
+            {% endfor %}
+          </dl>
+          {% if t.pasos %}
+            <p class="subtitulo">Pasos que se añadirán:</p>
+            <ol>{% for p in t.pasos %}<li>{{ p }}</li>{% endfor %}</ol>
+          {% endif %}
+        </fieldset>
+      {% endfor %}
+
+      {% if not propuesta.eventos and not propuesta.tramites %}
+        <p class="tenue">Claude no ha encontrado citas ni trámites en este documento: solo se archivará.</p>
+      {% endif %}
+
+      <p class="acciones-pie">
+        <button type="submit" class="boton">Confirmar y aplicar</button>
+      </p>
+    </form>
+
+    <div class="acciones-pie">
+      <form method="post" action="/documentos/{{ documento.id }}/analizar" class="en-linea">
+        <button type="submit" class="boton secundario pequeno">Volver a analizar</button>
+      </form>
+      <form method="post" action="/documentos/{{ documento.id }}/descartar" class="en-linea">
+        <button type="submit" class="boton secundario pequeno">Descartar propuesta</button>
+      </form>
+    </div>
+
+  {% elif ia_lista %}
+    <p class="tenue">Claude leerá el documento y propondrá a qué cita o trámite
+      pertenece y qué hay que hacer. Nada se guarda hasta que tú lo confirmes.</p>
+    <form method="post" action="/documentos/{{ documento.id }}/analizar" class="acciones-pie">
+      <button type="submit" class="boton">✨ Analizar con Claude</button>
+    </form>
+  {% else %}
+    <p class="tenue">No disponible: {{ ia_motivo }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{# --- Lo que creó este documento --- #}
+{% set creados = documento.creados %}
+{% if creados %}
+<section class="bloque">
+  <h2>Lo que se creó al confirmarlo</h2>
+  <ul class="lista-simple">
+    {% for e in documento.eventos %}<li><a href="/eventos/{{ e.id }}">{{ e.titulo }}</a></li>{% endfor %}
+    {% for t in documento.tramites %}<li><a href="/tramites/{{ t.id }}">{{ t.titulo }}</a></li>{% endfor %}
+  </ul>
+  <p class="tenue">
+    {{ creados.get('eventos', [])|length }} cita(s),
+    {{ creados.get('tramites', [])|length }} trámite(s) y
+    {{ creados.get('requisitos', [])|length }} requisito(s) creados por este documento.
+  </p>
+  <form method="post" action="/documentos/{{ documento.id }}/deshacer"
+        data-confirmar="Se borrarán las citas y trámites que creó este documento, y volverá a los pendientes. Lo que ya existía y solo se actualizó no se puede revertir. ¿Seguir?">
+    <button type="submit" class="boton secundario">Deshacer lo que creó</button>
+  </form>
+  <p class="tenue">
+    No se borra nada a lo que hayas enlazado después otros documentos.
+  </p>
+</section>
+{% endif %}
+
+{# --- A mano --- #}
+<section class="bloque">
+  <details class="anadir" {% if not ia_lista and not documento.revisado %}open{% endif %}>
+    <summary class="boton secundario pequeno">
+      {{ 'Editar datos del documento' if documento.revisado else 'Archivar a mano, sin Claude' }}
+    </summary>
+    <form method="post" action="/documentos/{{ documento.id }}/archivar" class="formulario">
+      <label class="ancho">Título
+        <input type="text" name="titulo" value="{{ documento.titulo or '' }}" placeholder="Citación consulta de Digestivo">
+      </label>
+      <label>Fecha del documento
+        <input type="date" name="fecha_documento" value="{{ documento.fecha_documento|iso }}">
+      </label>
+      <label>Tipo
+        <select name="tipo_documento">
+          {% for t in ['citacion', 'informe', 'volante', 'resultado', 'receta', 'resolucion', 'solicitud', 'justificante', 'otro'] %}
+            <option value="{{ t }}">{{ t|etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Área o tema <span class="tenue">(si no, el de la cita)</span>
+        <input type="text" name="tema" value="{{ documento.tema or '' }}"
+               list="lista-temas" placeholder="Digestivo">
+        <datalist id="lista-temas">
+          {% for t in temas %}<option value="{{ t }}">{% endfor %}
+        </datalist>
+      </label>
+      <label class="ancho">Asociar a
+        <span class="tenue">Se pueden marcar varias: una citación puede valer
+        para dos citas.</span>
+        <select name="asociar" multiple size="6">
+          <optgroup label="Citas">
+            {% for c in citas %}
+              <option value="e:{{ c.id }}" {% if c in documento.eventos %}selected{% endif %}>
+                {{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% endif %}
+              </option>
+            {% endfor %}
+          </optgroup>
+          <optgroup label="Trámites">
+            {% for t in tramites %}
+              <option value="t:{{ t.id }}" {% if t in documento.tramites %}selected{% endif %}>{{ t.titulo }}</option>
+            {% endfor %}
+          </optgroup>
+        </select>
+      </label>
+      <label class="ancho">Notas <span class="tenue">(a qué corresponde; aparecen en el buscador)</span>
+        <textarea name="notas" rows="2">{{ documento.notas or '' }}</textarea>
+      </label>
+      <div class="ancho">
+        <button type="submit" class="boton">{{ 'Guardar' if documento.revisado else 'Archivar' }}</button>
+      </div>
+    </form>
+  </details>
+</section>
+
+<section class="bloque zona-peligro">
+  <form method="post" action="/documentos/{{ documento.id }}/borrar"
+        data-confirmar="¿Eliminar este documento y su fichero? No se puede deshacer.">
+    <input type="hidden" name="destino" value="/documentos">
+    <button type="submit" class="boton peligro pequeno">Eliminar documento</button>
+  </form>
+  <p class="tenue">Si lo has subido por error, esto lo quita del todo, aunque
+    Claude lo esté leyendo.</p>
+</section>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>{{ nombre_mes(mes)|capitalize }} {{ anio }}</h1>
+  <nav class="navegacion-mes">
+    <a class="boton secundario pequeno"
+       href="/calendario?anio={{ anterior[0] }}&mes={{ anterior[1] }}">‹ Anterior</a>
+    <a class="boton secundario pequeno" href="/calendario">Hoy</a>
+    <a class="boton secundario pequeno"
+       href="/calendario?anio={{ siguiente[0] }}&mes={{ siguiente[1] }}">Siguiente ›</a>
+  </nav>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+<table class="calendario">
+  <thead>
+    <tr>
+      {% for dia in DIAS_SEMANA %}<th>{{ dia }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for semana in semanas %}
+    <tr>
+      {% for dia in semana %}
+        {% set eventos_dia = por_dia.get(dia, []) %}
+        <td class="celda-dia
+                   {% if dia.month != mes %}otro-mes{% endif %}
+                   {% if dia == hoy %}es-hoy{% endif %}">
+          <span class="numero-dia">{{ dia.day }}</span>
+          {% for e in eventos_dia %}
+            <a class="chip estado-{{ e.estado.value }}"
+               href="/eventos/{{ e.id }}"
+               title="{{ e.titulo }}{% if e.hora %} a las {{ e.hora|hora }}{% endif %}">
+              {% if e.hora %}<span class="chip-hora">{{ e.hora|hora }}</span> {% endif %}{{ e.titulo }}
+            </a>
+          {% endfor %}
+        </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if sin_fecha %}
+<section class="bloque">
+  <h2>No caben en el calendario ({{ sin_fecha|length }})</h2>
+  <p class="tenue">
+    Citas pedidas que siguen esperando una llamada. No tienen día, así que no
+    pueden aparecer arriba — pero existen.
+  </p>
+  <ul class="lista-simple">
+    {% for e in sin_fecha %}
+      <li>
+        <a href="/eventos/{{ e.id }}">{{ e.titulo }}</a>
+        {% if e.dias_esperando is not none %}
+          <span class="tenue">— esperando {{ e.dias_esperando }} días</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% endblock %}

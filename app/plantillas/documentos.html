@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import formulario_subida, estado_documento with context %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Documentos</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+{% if not pacientes %}
+  <p class="banda-aviso">Da de alta primero a un paciente en <a href="/pacientes">Ajustes</a>.</p>
+{% else %}
+  {# Aqui no se sube nada: un papel se sube donde se va a usar, en Citas,
+     que es donde se esta cuando llega. Esta pantalla es el archivo. #}
+  <p class="tenue">
+    Para subir un papel o apuntar una llamada, ve a
+    <a href="/citas?etapa=fecha">Citas</a>.
+    {% if not ia_lista %}<br>Análisis con Claude no disponible: {{ ia_motivo }}{% endif %}
+  </p>
+{% endif %}
+
+{# --- Bandeja de entrada --- #}
+{% if pendientes %}
+<section class="bloque destacado">
+  <h2>Pendientes de revisar ({{ pendientes|length }})</h2>
+  <p class="tenue">
+    Nada de esto está todavía en la agenda. Ábrelos para confirmar lo que
+    propone Claude o para asociarlos a mano.
+    {% if refrescar %}Esta página se actualiza sola mientras Claude trabaja.{% endif %}
+  </p>
+  <ul class="lista-documentos">
+    {% for d in pendientes %}
+      <li class="pendiente {% if d.estado_ia == 'propuesta' %}con-propuesta{% endif %}">
+        <a href="/documentos/{{ d.id }}" class="documento-fila">
+          {% if d.es_imagen_visible %}
+            <img src="/documentos/{{ d.id }}/fichero" alt="" class="miniatura" loading="lazy">
+          {% else %}
+            <span class="miniatura icono">📄</span>
+          {% endif %}
+          <span class="documento-texto">
+            <strong>{{ d.titulo or d.nombre_original or 'Documento' }}</strong>
+            {% if d.notas %}<span class="tenue">{{ d.notas }}</span>{% endif %}
+            <span class="tenue">subido {{ d.creado_en|dia_local|relativo }}</span>
+            <span class="documento-estado">{{ estado_documento(d) }}</span>
+          </span>
+        </a>
+        <span class="acciones-fila">
+          {% if d.analizando %}
+            <form method="post" action="/documentos/{{ d.id }}/cancelar" class="en-linea">
+              <button type="submit" class="boton secundario pequeno">Cancelar análisis</button>
+            </form>
+          {% endif %}
+          <form method="post" action="/documentos/{{ d.id }}/borrar" class="en-linea"
+                data-confirmar="¿Eliminar «{{ d.titulo or d.nombre_original or 'este documento' }}» y su fichero?">
+            <input type="hidden" name="destino" value="/documentos">
+            <button type="submit" class="enlace-sutil" title="Eliminar documento">✕</button>
+          </form>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{# --- Archivo --- #}
+<section class="bloque">
+  <h2>Archivo</h2>
+  <form class="filtros" method="get" action="/documentos">
+    <label>
+      Área
+      <select name="tema" data-autoenvio>
+        <option value="">Todas</option>
+        {% for t in temas %}
+          <option value="{{ t }}" {% if t == tema_activo %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="ancho">
+      Buscar
+      <input type="search" name="q" value="{{ busqueda }}"
+             placeholder="Buscar en títulos, nombres de archivo y resúmenes">
+    </label>
+    <button type="submit" class="boton secundario pequeno">Buscar</button>
+  </form>
+
+  {% if temas and not tema_activo and not busqueda %}
+    <p class="meta tenue">Por área:
+      {% for t in temas %}<a class="pastilla" href="/documentos?tema={{ t | urlencode }}">{{ t }}</a> {% endfor %}
+    </p>
+  {% endif %}
+
+  {% if documentos %}
+    <table class="tabla">
+      <thead>
+        <tr><th>Documento</th><th>Área</th><th>Fecha</th><th>Asociado a</th></tr>
+      </thead>
+      <tbody>
+        {% for d in documentos %}
+        <tr>
+          <td>
+            <a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_archivo }}</a>
+            {% if d.notas %}<br><span class="tenue">{{ d.notas }}</span>{% endif %}
+            {% if d.titulo %}<br><code class="nombre-archivo">{{ d.nombre_archivo }}</code>{% endif %}
+          </td>
+          <td>{% if d.tema %}<a href="/documentos?tema={{ d.tema | urlencode }}">{{ d.tema }}</a>{% else %}—{% endif %}</td>
+          <td>{{ d.fecha_documento|fecha or '—' }}</td>
+          <td>
+            {% for e in d.eventos %}<a href="/eventos/{{ e.id }}">{{ e.titulo }}</a><br>{% endfor %}
+            {% for t in d.tramites %}<a href="/tramites/{{ t.id }}">{{ t.titulo }}</a><br>{% endfor %}
+            {% if not d.eventos and not d.tramites %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% elif busqueda or tema_activo %}
+    <p class="tenue">Ningún documento coincide con el filtro.</p>
+  {% else %}
+    <p class="tenue">Todavía no hay documentos archivados.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+[project]
+name = "medicos"
+version = "0.1.0"
+description = "Gestor de citas, pruebas y tramites medicos para el cuidado de un familiar"
+requires-python = ">=3.12"
+# Las versiones EXACTAS con las que se construye la imagen estan en el
+# Dockerfile, que es lo que se despliega. Aqui van los minimos para quien
+# quiera instalarlo a mano.
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlmodel>=0.0.43",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.12",
+    "pydantic-settings>=2.6",
+]
+
+[project.optional-dependencies]
+# Proveedores de IA alternativos (v2, ingesta de documentos).
+# El proveedor por defecto, "claude-cli", no necesita ninguna libreria:
+# usa el binario `claude` ya instalado y autenticado en la maquina.
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=1.55"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

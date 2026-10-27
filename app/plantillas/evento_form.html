@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>{{ 'Editar cita' if evento else 'Nueva cita' }}</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+<form method="post"
+      action="{{ '/eventos/' ~ evento.id if evento else '/eventos' }}"
+      class="formulario">
+
+  <label class="ancho">
+    Título
+    <input type="text" name="titulo" required
+           value="{{ evento.titulo if evento else '' }}"
+           placeholder="Revisión con el traumatólogo">
+  </label>
+
+  <label>
+    Paciente
+    <select name="paciente" required>
+      {% for p in pacientes %}
+        <option value="{{ p.id }}"
+          {% if evento and evento.paciente_id == p.id %}selected
+          {% elif not evento and paciente_id == p.id %}selected{% endif %}>
+          {{ p.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    Tipo
+    <select name="tipo">
+      {% for t in TipoEvento %}
+        <option value="{{ t.value }}"
+          {% if evento and evento.tipo.value == t.value %}selected{% endif %}>
+          {{ t|etiqueta }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  {% if not evento %}
+  <label>
+    Estado inicial
+    <select name="estado">
+      {% for e in EstadoEvento %}
+        {% if e.value in ('por_solicitar', 'solicitada', 'confirmada') %}
+          <option value="{{ e.value }}">{{ e|etiqueta }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </label>
+  {% endif %}
+
+  <label class="ancho">
+    Área <span class="tenue">(la especialidad: es lo que agrupa la cita)</span>
+    <input type="text" name="especialidad" list="lista-especialidades"
+           value="{{ evento.especialidad if evento and evento.especialidad else '' }}"
+           placeholder="Traumatología">
+    <span class="ayuda tenue">
+      Elige una de la lista o escribe la que sea. Sin esto, la cita sale
+      como «Sin área» y no aparece agrupada con las de su especialista.
+    </span>
+  </label>
+
+  <label>
+    Centro
+    <select name="centro">
+      <option value="">— Sin especificar —</option>
+      {% for c in centros %}
+        <option value="{{ c.id }}"
+          {% if centro_elegido == c.id %}selected{% endif %}>
+          {{ c.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  {# Cuando llaman por telefono de un sitio que todavia no esta dado de alta,
+     no hay que irse a otra pantalla a crearlo. #}
+  <details class="ancho anadir" {% if centros|length == 0 %}open{% endif %}>
+    <summary class="boton secundario pequeno">¿No está el centro? Añádelo aquí</summary>
+    <div class="formulario">
+      <label class="ancho">
+        Nombre del centro
+        <input type="text" name="centro_nuevo"
+               placeholder="Centro de Diagnóstico Scanner">
+      </label>
+      <label class="ancho">
+        Dirección
+        <input type="text" name="centro_direccion"
+               placeholder="Av. del Puerto, 27, 00000 Vistamar">
+      </label>
+      <label>
+        Teléfono
+        <input type="tel" name="centro_telefono" placeholder="950 00 00 00">
+      </label>
+      <label>
+        Enlace del mapa
+        <input type="url" name="centro_mapa" placeholder="https://maps.app.goo.gl/...">
+      </label>
+      <p class="tenue ancho">
+        Si escribes un nombre aquí, se usa este en vez del de la lista. Si el
+        centro ya existe con otro nombre parecido, se reutiliza el que hay.
+      </p>
+    </div>
+  </details>
+
+  <label>
+    Médico
+    <input type="text" name="profesional"
+           value="{{ evento.profesional if evento and evento.profesional else '' }}">
+  </label>
+
+  <label>
+    Ubicación
+    <input type="text" name="ubicacion"
+           value="{{ evento.ubicacion if evento and evento.ubicacion else '' }}"
+           placeholder="Planta 3, consulta 12">
+  </label>
+
+  <label>
+    Fecha <span class="tenue">(déjala vacía si aún no la sabes)</span>
+    <input type="date" name="fecha" value="{{ evento.fecha|iso if evento else '' }}">
+  </label>
+
+  <label>
+    Hora
+    <input type="time" name="hora" value="{{ evento.hora|iso if evento else '' }}">
+  </label>
+
+  <label>
+    Duración (min)
+    <input type="number" name="duracion_min" min="5" step="5"
+           value="{{ evento.duracion_min if evento else 30 }}">
+  </label>
+
+  <label>
+    Solicitada el
+    <input type="date" name="solicitada_en"
+           value="{{ evento.solicitada_en|iso if evento else '' }}">
+  </label>
+
+  <label>
+    Prioridad
+    <select name="prioridad">
+      {% for p in Prioridad %}
+        <option value="{{ p.value }}"
+          {% if evento and evento.prioridad.value == p.value %}selected
+          {% elif not evento and p.value == 'normal' %}selected{% endif %}>
+          {{ p|etiqueta }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    Ambulancia
+    <select name="transporte">
+      {%- set paciente_actual = (pacientes | selectattr('id', 'equalto', paciente_id) | list | first) if paciente_id else (pacientes[0] if pacientes|length == 1 else none) -%}
+      {% for t in EstadoTransporte %}
+        <option value="{{ t.value }}"
+          {% if evento %}{% if evento.transporte.value == t.value %}selected{% endif %}
+          {% elif paciente_actual and paciente_actual.transporte_siempre and t.value == 'pendiente' %}selected{% endif %}>
+          {{ t|etiqueta }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    Datos del transporte <span class="tenue">(empresa, teléfono, expediente)</span>
+    <input type="text" name="transporte_notas"
+           value="{{ evento.transporte_notas if evento and evento.transporte_notas else '' }}">
+  </label>
+
+  <label class="ancho">
+    Motivo
+    <input type="text" name="motivo"
+           value="{{ evento.motivo if evento and evento.motivo else '' }}"
+           placeholder="Dolor de rodilla desde la caída">
+  </label>
+
+  <label class="ancho">
+    Notas
+    <textarea name="notas" rows="3">{{ evento.notas if evento and evento.notas else '' }}</textarea>
+  </label>
+
+  {% if evento %}
+  <label class="ancho">
+    Resultado <span class="tenue">(qué dijo el médico)</span>
+    <textarea name="resultado" rows="4">{{ evento.resultado if evento.resultado else '' }}</textarea>
+  </label>
+  {% endif %}
+
+  <div class="ancho acciones-pie">
+    <button type="submit" class="boton">Guardar</button>
+    <a class="boton secundario"
+       href="{{ '/eventos/' ~ evento.id if evento else '/agenda' }}">Cancelar</a>
+  </div>
+</form>
+
+<datalist id="lista-especialidades">
+  {# Las que reconoce la aplicacion mas las que ya se usan: ver
+     consultas.areas_para_elegir. #}
+  {% for a in areas %}<option value="{{ a }}">{% endfor %}
+</datalist>
+
+{% endblock %}

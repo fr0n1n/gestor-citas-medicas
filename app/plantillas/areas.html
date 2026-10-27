@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Áreas</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+<p class="intro">
+  Todo lo de cada especialista, junto: sus citas, lo que hay que preparar y
+  sus documentos. Las áreas con cita más próxima salen primero.
+</p>
+
+{% if areas %}
+  <div class="rejilla-areas">
+    {% for a in areas %}
+      <a class="tarjeta-area area-color-{{ a.color }}" href="/areas/{{ a.slug }}">
+        <h2>{{ a.nombre }}</h2>
+
+        {% if a.proxima %}
+          <p class="area-proxima">
+            <strong>{{ a.proxima.fecha|fecha }}</strong>
+            <span class="tenue">({{ a.proxima.fecha|relativo }})</span><br>
+            {{ a.proxima.titulo }}
+          </p>
+        {% elif a.atrasadas %}
+          <p class="area-proxima">
+            <strong>{{ a.atrasadas|length }} cita{{ 's' if a.atrasadas|length != 1 }} pasada{{ 's' if a.atrasadas|length != 1 }}</strong>
+            <span class="tenue">sin cerrar</span>
+          </p>
+        {% elif a.abiertas %}
+          <p class="area-proxima tenue">Sin fecha todavía</p>
+        {% else %}
+          <p class="area-proxima tenue">Nada pendiente</p>
+        {% endif %}
+
+        <ul class="area-cuentas">
+          {% if a.abiertas %}<li>{{ a.abiertas|length }} cita{{ 's' if a.abiertas|length != 1 }} pendiente{{ 's' if a.abiertas|length != 1 }}</li>{% endif %}
+          {% if a.sin_fecha %}<li>{{ a.sin_fecha|length }} sin fecha</li>{% endif %}
+          {% if a.atrasadas and a.proxima %}<li>{{ a.atrasadas|length }} sin cerrar</li>{% endif %}
+          {% if a.requisitos_pendientes %}<li>{{ a.requisitos_pendientes|length }} preparativo{{ 's' if a.requisitos_pendientes|length != 1 }}</li>{% endif %}
+          {% if a.cerradas %}<li class="tenue">{{ a.cerradas|length }} terminada{{ 's' if a.cerradas|length != 1 }}</li>{% endif %}
+          {% if a.documentos %}<li class="tenue">{{ a.documentos|length }} documento{{ 's' if a.documentos|length != 1 }}</li>{% endif %}
+        </ul>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="tenue">Todavía no hay citas ni documentos.</p>
+{% endif %}
+
+{% endblock %}

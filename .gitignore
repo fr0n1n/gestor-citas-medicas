@@ -1,0 +1,33 @@
+# Datos reales: NUNCA se suben al repositorio.
+# Aqui viven la base de datos y los documentos escaneados del paciente.
+data/
+datos/
+*.db
+*.db-wal
+*.db-shm
+
+# Configuracion local
+.env
+# Variantes (.env.local, .env.bak...): tambien llevan secretos. La plantilla si se publica.
+.env.*
+!.env.example
+
+# Nombres coloquiales de los hospitales de tu zona (ver app/centros.py)
+app/alias_locales.py
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Binario de Claude copiado para construir la imagen (220 MB)
+vendor/claude

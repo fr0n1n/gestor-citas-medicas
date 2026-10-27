@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import tarjeta_evento with context %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>{{ vista.centro.nombre }}</h1>
+  <div class="navegacion-mes">
+    <a class="boton" href="/eventos/nuevo?centro={{ vista.centro.id }}">+ Nueva cita aquí</a>
+    <a class="boton secundario pequeno" href="/centros">Todos los centros</a>
+    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+  </div>
+</div>
+
+<section class="bloque ficha">
+  <dl>
+    {% if vista.centro.direccion %}
+      <dt>Dirección</dt>
+      <dd>
+        {{ vista.centro.direccion|sin_enlaces }}
+        {% set propios = vista.centro.direccion|urls %}
+        {% set enlace_mapa = propios[0] if propios else vista.centro.direccion|mapa %}
+        {% if enlace_mapa %}
+          <a class="boton secundario pequeno mapa" href="{{ enlace_mapa }}"
+             target="_blank" rel="noopener noreferrer">Ver en el mapa</a>
+        {% endif %}
+      </dd>
+    {% endif %}
+    {% if vista.centro.telefono %}
+      <dt>Teléfono</dt>
+      <dd><a href="tel:{{ vista.centro.telefono }}">{{ vista.centro.telefono }}</a></dd>
+    {% endif %}
+    {% if telefonos %}
+      <dt>Otros teléfonos</dt>
+      <dd>
+        <ul class="telefonos-centro">
+          {% for c in telefonos %}
+            <li>
+              <a href="tel:{{ c.telefono }}">{{ c.telefono }}</a>
+              <span class="tenue">{{ c.nombre }}</span>
+              {% if c.notas %}<span class="tenue">· {{ c.notas }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </dd>
+    {% endif %}
+
+    {% if vista.centro.notas %}
+      <dt>Notas</dt><dd class="multilinea">{{ vista.centro.notas|enlazado }}</dd>
+    {% endif %}
+  </dl>
+</section>
+
+<section class="bloque">
+  <h2>Con fecha ({{ vista.proximas|length }})</h2>
+  {% if vista.proximas %}
+    {% for e in vista.proximas %}
+      {{ tarjeta_evento(e, destino='/centros/' ~ vista.centro.id, mostrar_centro=false) }}
+    {% endfor %}
+  {% else %}
+    <p class="tenue">Ninguna cita con día aquí.</p>
+  {% endif %}
+</section>
+
+<section class="bloque">
+  <h2>Esperando llamada ({{ vista.esperando|length }})</h2>
+  {% if vista.esperando %}
+    {% for e in vista.esperando %}
+      {{ tarjeta_evento(e, destino='/centros/' ~ vista.centro.id, mostrar_centro=false) }}
+    {% endfor %}
+  {% else %}
+    <p class="tenue">Nada pendiente de que llamen.</p>
+  {% endif %}
+</section>
+
+{% if vista.hechas %}
+<section class="bloque">
+  <h2>Pasadas ({{ vista.hechas|length }})</h2>
+  {% for e in vista.hechas %}
+    {{ tarjeta_evento(e, destino='/centros/' ~ vista.centro.id, mostrar_centro=false) }}
+  {% endfor %}
+</section>
+{% endif %}
+
+{% endblock %}

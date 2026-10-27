@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Centros</h1>
+  <div class="navegacion-mes">
+    <a class="boton" href="/centros/nuevo">+ Nuevo centro</a>
+    <a class="boton secundario pequeno" href="/eventos/nuevo">+ Nueva cita</a>
+    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+  </div>
+</div>
+<p class="intro">
+  Dónde toca ir y a qué teléfono llamar. Cada hospital y cada ambulatorio
+  por separado: uno manda la cita y la prueba se hace en otro, y conviene
+  no confundirlos.
+</p>
+
+{% if centros %}
+  <div class="rejilla-areas">
+    {% for v in centros %}
+      <a class="tarjeta-centro" href="/centros/{{ v.centro.id }}">
+        <h2>{{ v.centro.nombre }}</h2>
+        {% if v.centro.direccion %}
+          <p class="meta tenue">{{ v.centro.direccion }}</p>
+        {% endif %}
+
+        {% if v.proxima %}
+          <p class="area-proxima">
+            <strong>{{ v.proxima.fecha|fecha }}{% if v.proxima.hora %} · {{ v.proxima.hora|hora }}{% endif %}</strong><br>
+            {{ v.proxima.titulo }}
+          </p>
+        {% elif v.esperando %}
+          <p class="area-proxima tenue">Sin ninguna cita con fecha</p>
+        {% else %}
+          <p class="area-proxima tenue">Nada pendiente aquí</p>
+        {% endif %}
+
+        <ul class="area-cuentas">
+          {% if v.proximas %}<li>{{ v.proximas|length }} con fecha</li>{% endif %}
+          {% if v.esperando %}<li>{{ v.esperando|length }} esperando llamada</li>{% endif %}
+          {% if v.hechas %}<li class="tenue">{{ v.hechas|length }} pasada{{ 's' if v.hechas|length != 1 }}</li>{% endif %}
+        </ul>
+
+        {% if v.centro.telefono %}
+          <p class="meta telefono-centro">☎ {{ v.centro.telefono }}</p>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="tenue">Todavía no hay ninguna cita asignada a un centro.</p>
+{% endif %}
+
+{% endblock %}

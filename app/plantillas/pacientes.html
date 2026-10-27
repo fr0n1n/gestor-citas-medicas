@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Pacientes y centros</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+<section class="bloque">
+  <h2>Pacientes</h2>
+
+  {% for p in todos %}
+    <details class="anadir">
+      <summary class="resumen-fila">
+        {{ p.nombre }}
+        {% if not p.activo %}<span class="tenue">(inactivo)</span>{% endif %}
+      </summary>
+      <form method="post" action="/pacientes/{{ p.id }}" class="formulario">
+        <label class="ancho">
+          Nombre
+          <input type="text" name="nombre" required value="{{ p.nombre }}">
+        </label>
+        <label>
+          Fecha de nacimiento
+          <input type="date" name="fecha_nacimiento" value="{{ p.fecha_nacimiento|iso }}">
+        </label>
+        <label>
+          Tarjeta sanitaria
+          <input type="text" name="tarjeta_sanitaria" value="{{ p.tarjeta_sanitaria or '' }}">
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" name="telefono" value="{{ p.telefono or '' }}">
+        </label>
+        <label class="casilla-inline">
+          <input type="checkbox" name="transporte_siempre" value="si" {% if p.transporte_siempre %}checked{% endif %}>
+          Necesita ambulancia para todas sus citas
+        </label>
+        <label class="ancho">
+          Cómo pedir la ambulancia
+          <input type="text" name="transporte_detalle" value="{{ p.transporte_detalle or '' }}"
+                 placeholder="Con conductor y ayudante">
+        </label>
+        <label class="ancho">
+          Teléfono para pedir la ambulancia
+          <input type="tel" name="telefono_ambulancia"
+                 value="{{ p.telefono_ambulancia or '' }}" placeholder="900 00 00 00">
+          <span class="ayuda tenue">
+            Sale en todas las citas que lleven ambulancia, para llamar sin
+            buscarlo.
+          </span>
+        </label>
+        <label class="casilla-inline">
+          <input type="checkbox" name="activo" value="si" {% if p.activo %}checked{% endif %}>
+          Activo
+        </label>
+        <label class="ancho">
+          Notas
+          <textarea name="notas" rows="3">{{ p.notas or '' }}</textarea>
+        </label>
+        <div class="ancho">
+          <button type="submit" class="boton">Guardar</button>
+        </div>
+      </form>
+    </details>
+  {% else %}
+    <p class="tenue">Todavía no hay ningún paciente. Crea el primero aquí abajo.</p>
+  {% endfor %}
+
+  <details class="anadir" {% if not todos %}open{% endif %}>
+    <summary class="boton">+ Nuevo paciente</summary>
+    <form method="post" action="/pacientes" class="formulario">
+      <label class="ancho">
+        Nombre
+        <input type="text" name="nombre" required>
+      </label>
+      <label>
+        Fecha de nacimiento
+        <input type="date" name="fecha_nacimiento">
+      </label>
+      <label>
+        Tarjeta sanitaria
+        <input type="text" name="tarjeta_sanitaria">
+      </label>
+      <label>
+        Teléfono
+        <input type="tel" name="telefono">
+      </label>
+      <label class="casilla-inline">
+        <input type="checkbox" name="transporte_siempre" value="si">
+        Necesita ambulancia para todas sus citas
+      </label>
+      <label class="ancho">
+        Cómo pedir la ambulancia
+        <input type="text" name="transporte_detalle" placeholder="Con conductor y ayudante">
+      </label>
+      <label class="ancho">
+        Teléfono para pedir la ambulancia
+        <input type="tel" name="telefono_ambulancia" placeholder="900 00 00 00">
+      </label>
+      <label class="ancho">
+        Notas
+        <textarea name="notas" rows="3"></textarea>
+      </label>
+      <div class="ancho">
+        <button type="submit" class="boton">Crear paciente</button>
+      </div>
+    </form>
+  </details>
+</section>
+
+<section class="bloque">
+  <h2>Centros sanitarios</h2>
+  <p class="tenue">
+    Guarda aquí el teléfono de cada centro: es el que hace falta cuando toca
+    reclamar una cita que no llega.
+  </p>
+
+  {% for c in centros %}
+    <details class="anadir">
+      <summary class="resumen-fila">
+        {{ c.nombre }}
+        {% if c.telefono %}<span class="tenue">· {{ c.telefono }}</span>{% endif %}
+      </summary>
+      <form method="post" action="/centros/{{ c.id }}" class="formulario">
+        <label class="ancho">
+          Nombre
+          <input type="text" name="nombre" required value="{{ c.nombre }}">
+        </label>
+        <label class="ancho">
+          Dirección
+          <input type="text" name="direccion" value="{{ c.direccion or '' }}">
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" name="telefono" value="{{ c.telefono or '' }}">
+        </label>
+        <label class="ancho">
+          Notas
+          <textarea name="notas" rows="2">{{ c.notas or '' }}</textarea>
+        </label>
+        <div class="ancho">
+          <button type="submit" class="boton">Guardar</button>
+        </div>
+      </form>
+    </details>
+  {% else %}
+    <p class="tenue">Ningún centro registrado.</p>
+  {% endfor %}
+
+  <details class="anadir">
+    <summary class="boton">+ Nuevo centro</summary>
+    <form method="post" action="/centros" class="formulario">
+      <label class="ancho">
+        Nombre
+        <input type="text" name="nombre" required placeholder="Hospital Universitario">
+      </label>
+      <label class="ancho">
+        Dirección
+        <input type="text" name="direccion">
+      </label>
+      <label>
+        Teléfono
+        <input type="tel" name="telefono">
+      </label>
+      <label class="ancho">
+        Notas
+        <textarea name="notas" rows="2"></textarea>
+      </label>
+      <div class="ancho">
+        <button type="submit" class="boton">Crear centro</button>
+      </div>
+    </form>
+  </details>
+</section>
+
+<section class="bloque">
+  <h2>Datos y copias de seguridad</h2>
+  <p>
+    Todo vive en <code>{{ config.data_dir }}</code>: la base de datos
+    <code>medicos.db</code> y la carpeta de documentos. Copiar esa carpeta es
+    hacer una copia de seguridad completa.
+  </p>
+  <p><a href="/calendario.ics">Descargar el calendario en formato .ics</a></p>
+</section>
+
+{% endblock %}

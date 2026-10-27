@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Historia</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+<p class="intro">
+  El recorrido de cada asunto: una consulta y todo lo que salió de ella,
+  en el orden en que pasó. Primero lo que sigue abierto.
+</p>
+
+{% if hilos %}
+  {% for h in hilos %}
+    <section class="hilo area-color-{{ h.area|color_area }}">
+      <header class="hilo-cabecera">
+        <span class="pastilla area-color-{{ h.area|color_area }}">{{ h.area }}</span>
+        <span class="tenue">
+          {% if h.total > 1 %}{{ h.total }} citas{% else %}1 cita{% endif %}
+          {% if h.abiertos %}· {{ h.abiertos }} sin cerrar{% else %}· todo terminado{% endif %}
+          {% if h.desde %}
+            · {{ h.desde|fecha }}{% if h.hasta and h.hasta != h.desde %} a {{ h.hasta|fecha }}{% endif %}
+          {% endif %}
+        </span>
+      </header>
+
+      <ol class="eslabones">
+        {% for e in h.eslabones %}
+          <li class="eslabon hondura-{{ e.hondura if e.hondura < 4 else 3 }}
+                     {% if not e.evento.esta_abierto %}eslabon-cerrado{% endif %}">
+            <span class="eslabon-punto"></span>
+            <div class="eslabon-cuerpo">
+              <a class="eslabon-titulo" href="/eventos/{{ e.evento.id }}">{{ e.evento.titulo }}</a>
+              <span class="eslabon-meta tenue">
+                {{ e.evento.tipo|etiqueta }}
+                {% if e.evento.fecha %}· {{ e.evento.fecha|fecha }}
+                {% else %}· {{ e.evento.estado|etiqueta|lower }}{% endif %}
+                {% if e.evento.centro %}· {{ e.evento.centro.nombre }}{% endif %}
+              </span>
+              {% if e.evento.resultado %}
+                <p class="eslabon-resultado multilinea">{{ e.evento.resultado }}</p>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="tenue">Todavía no hay ninguna cita de la que contar la historia.</p>
+{% endif %}
+
+{% endblock %}

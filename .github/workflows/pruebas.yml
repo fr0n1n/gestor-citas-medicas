@@ -1,0 +1,24 @@
+# Las pruebas de la logica no necesitan instalar nada: son de biblioteca
+# estandar, y las que dependen de la aplicacion se saltan solas. Por eso
+# aqui no hay ni un `pip install`.
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # 3.12 es la de la imagen de Docker; las otras, por si acaso.
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Pruebas
+        run: python -m unittest discover -s tests -t . -v

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import tarjeta_evento, formulario_cerrar, formulario_subida with context %}
+
+{% block contenido %}
+
+{# Las tres formas de que entre una cita, juntas: a mano, dictada por
+   telefono o en un papel. Apuntar una llamada es dar de alta una cita
+   tanto como el boton de al lado, asi que viven en la misma fila. #}
+<div class="titulo-con-accion entrada-citas">
+  <h1>Citas</h1>
+  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
+
+  <details class="anadir">
+    <summary class="boton">☎ Apuntar llamada</summary>
+    <form method="post" action="/documentos/llamada" class="formulario">
+      <input type="hidden" name="destino" value="/citas?etapa={{ etapa }}&amp;orden={{ orden }}">
+      <label class="ancho">
+        Lo que te han dicho
+        <textarea name="texto" rows="6" required maxlength="4000"
+                  placeholder="Del hospital, Dra. Ortega, digestivo, el 12 de noviembre a las 9:30, planta 2 consulta 7. Hay que ir en ayunas y llevar la analítica."></textarea>
+      </label>
+      {% if pacientes|length > 1 %}
+        <label>
+          De quién es
+          <select name="paciente">
+            {% for p in pacientes %}
+              <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      {% endif %}
+      <div class="ancho acciones">
+        <button type="submit" class="boton">Que lo lea Claude</button>
+        <button type="reset" class="boton secundario" data-cerrar>Cancelar</button>
+      </div>
+    </form>
+  </details>
+
+  {{ formulario_subida('/citas?etapa=' ~ etapa ~ '&orden=' ~ orden, ia_lista=ia_lista,
+                       etiqueta='📎 Subir papeles') }}
+
+  {% if not ia_lista %}
+    <p class="tenue">Claude no está disponible ahora mismo: {{ ia_motivo }}</p>
+  {% endif %}
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+{# Las tres etapas de la vida de una cita. Separadas a proposito: mezclarlas
+   era lo que hacia imposible leer la pantalla. #}
+<nav class="pestanas">
+  {% for clave, nombre in etapas %}
+    <a href="/citas?etapa={{ clave }}"
+       class="pestana {% if clave == etapa %}activa{% endif %}">
+      {{ nombre }}
+      {% if cuentas[clave] %}<span class="cuenta">{{ cuentas[clave] }}</span>{% endif %}
+    </a>
+  {% endfor %}
+
+  {# Agrupar va en la misma fila que las etapas y a la derecha: no es una
+     pantalla distinta, es la misma lista vista de otra manera. #}
+  <form class="agrupar" method="get" action="/citas">
+    <input type="hidden" name="etapa" value="{{ etapa }}">
+    <label class="oculto" for="sel-orden">Agrupar por</label>
+    <select id="sel-orden" name="orden" data-autoenvio>
+      {% for clave, nombre in ordenes %}
+        <option value="{{ clave }}" {% if clave == orden %}selected{% endif %}>Por {{ nombre|lower }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit" class="boton pequeno">Agrupar</button></noscript>
+  </form>
+</nav>
+
+{% if etapa != 'fecha' %}
+<p class="intro">
+  {% if etapa == 'solicitudes' %}
+    Citas o pruebas solicitadas, pendientes de confirmación y fecha.
+  {% else %}
+    Lo que ya pasó, con lo que dijeron y lo que salió de cada una.
+  {% endif %}
+</p>
+{% endif %}
+
+{% if grupos %}
+  {% for g in grupos %}
+    <section class="grupo {% if g.aviso %}grupo-aviso{% endif %}">
+      <h2 class="grupo-titulo">
+        {% if g.fecha and g.mes %}
+          {{ nombre_mes(g.fecha.month)|capitalize }} {{ g.fecha.year }}
+        {% elif g.fecha %}
+          {{ g.fecha|dia }}
+          <span class="tenue">{{ g.fecha|relativo }}</span>
+        {% elif g.enlace %}
+          <a href="{{ g.enlace }}">{{ g.titulo }}</a>
+        {% else %}
+          {{ g.titulo }}
+        {% endif %}
+      </h2>
+
+      {% for e in g.eventos %}
+        {% if etapa == 'solicitudes' %}
+          {% call tarjeta_evento(e, destino='/citas?etapa=' ~ etapa ~ '&orden=' ~ orden) %}
+            {% if e.estado == EstadoEvento.POR_SOLICITAR %}
+              <form method="post" action="/eventos/{{ e.id }}/estado">
+                <input type="hidden" name="estado" value="solicitada">
+                <button type="submit" class="boton pequeno">Ya la he pedido</button>
+              </form>
+            {% else %}
+              {% if e.toca_reclamar(config.dias_alerta_espera) %}
+                <span class="apunte aviso-reclamar">⚠ Toca reclamar</span>
+              {% endif %}
+              {% if e.centro and e.centro.telefono %}
+                <a class="boton secundario pequeno" href="tel:{{ e.centro.telefono }}">☎ {{ e.centro.telefono }}</a>
+              {% endif %}
+              <details>
+                <summary class="boton pequeno">Ya tiene fecha</summary>
+                <form method="post" action="/eventos/{{ e.id }}/estado" class="form-fecha">
+                  <input type="hidden" name="estado" value="confirmada">
+                  <label>Fecha <input type="date" name="fecha" required></label>
+                  <label>Hora <input type="time" name="hora"></label>
+                  <button type="submit" class="boton pequeno">Confirmar</button>
+                </form>
+              </details>
+            {% endif %}
+          {% endcall %}
+        {% else %}
+          {% if e.ya_paso %}
+            {% call tarjeta_evento(e, destino='/citas?etapa=' ~ etapa ~ '&orden=' ~ orden,
+                                   mostrar_fecha=(etapa != 'fecha' or g.aviso)) %}
+              {{ formulario_cerrar(e, '/citas?etapa=' ~ etapa ~ '&orden=' ~ orden) }}
+            {% endcall %}
+          {% else %}
+            {{ tarjeta_evento(e, destino='/citas?etapa=' ~ etapa ~ '&orden=' ~ orden,
+                               mostrar_fecha=(etapa != 'fecha')) }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="tenue">
+    {% if etapa == 'solicitudes' %}
+      No hay nada pendiente de pedir ni esperando llamada.
+    {% elif etapa == 'fecha' %}
+      Ninguna cita tiene día todavía. Las que están pedidas se ven en
+      <a href="/citas?etapa=solicitudes">Solicitudes</a>.
+    {% else %}
+      Todavía no hay nada terminado.
+    {% endif %}
+  </p>
+{% endif %}
+
+{% endblock %}

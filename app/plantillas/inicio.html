@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import tarjeta_evento, fila_requisito, etiqueta_estado, estado_documento, formulario_cerrar, formulario_subida with context %}
+
+{% block contenido %}
+
+<h1>Hoy, {{ panel.hoy|fecha_larga }}</h1>
+
+{% if panel.todo_en_orden %}
+  <div class="panel-ok">
+    <p><strong>No hay nada pendiente de hacer.</strong></p>
+    <p class="tenue">Ni requisitos que preparar, ni citas que pedir o reclamar,
+      ni consultas pasadas sin anotar.</p>
+  </div>
+{% else %}
+
+{# Una sola lista con todo lo que hay que hacer y su accion al lado. Antes
+   esto era un resumen y debajo iban los mismos elementos otra vez, cada uno
+   en su apartado: habia que leerlo dos veces. #}
+<section class="bloque destacado">
+  <h2>{{ panel.total_acciones }} pendiente{{ 's' if panel.total_acciones != 1 }} de hacer</h2>
+
+  <ul class="tareas">
+    {% for a in panel.pendientes %}
+      <li class="tarea {% if a.urgente %}urgente{% endif %}">
+        <div class="tarea-texto">
+          <a href="{{ a.enlace }}">{{ a.texto }}</a>
+          {% if a.detalle %}<span class="tenue">{{ a.detalle }}</span>{% endif %}
+        </div>
+
+        <div class="tarea-accion">
+          {% if a.clase == 'requisito' %}
+            {# "Hecho" sonaba a entregado, y lo que se marca es que ya lo
+               tienes preparado para llevar: entregarlo pasa en la cita. #}
+            <form method="post" action="/requisitos/{{ a.objeto.id }}/alternar" class="en-linea">
+              <input type="hidden" name="destino" value="/">
+              <button type="submit" class="boton pequeno">
+                {% if a.objeto.en_la_cita %}Ya lo he pedido{% else %}Ya lo tengo preparado{% endif %}
+              </button>
+            </form>
+
+          {% elif a.clase == 'transporte' %}
+            <form method="post" action="/eventos/{{ a.objeto.id }}/transporte" class="en-linea">
+              <input type="hidden" name="destino" value="/">
+              <input type="hidden" name="transporte" value="solicitado">
+              <button type="submit" class="boton pequeno">Ya la he pedido</button>
+            </form>
+            {% if telefono_ambulancia %}
+              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+            {% endif %}
+
+          {% elif a.clase == 'confirmar_transporte' %}
+            <form method="post" action="/eventos/{{ a.objeto.id }}/transporte" class="en-linea">
+              <input type="hidden" name="destino" value="/">
+              <input type="hidden" name="transporte" value="confirmado">
+              <button type="submit" class="boton pequeno">Confirmada</button>
+            </form>
+            {% if telefono_ambulancia %}
+              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+            {% endif %}
+
+          {% elif a.clase == 'por_solicitar' %}
+            <form method="post" action="/eventos/{{ a.objeto.id }}/estado" class="en-linea">
+              <input type="hidden" name="estado" value="solicitada">
+              <button type="submit" class="boton pequeno">Ya la he pedido</button>
+            </form>
+            {% if a.objeto.centro and a.objeto.centro.telefono %}
+              <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">☎ {{ a.objeto.centro.telefono }}</a>
+            {% endif %}
+
+          {% elif a.clase == 'reclamar' %}
+            {% if a.objeto.centro and a.objeto.centro.telefono %}
+              <a class="boton pequeno" href="tel:{{ a.objeto.centro.telefono }}">☎ {{ a.objeto.centro.telefono }}</a>
+            {% endif %}
+            <details>
+              <summary class="boton secundario pequeno">Ya tiene fecha</summary>
+              <form method="post" action="/eventos/{{ a.objeto.id }}/estado" class="form-fecha">
+                <input type="hidden" name="estado" value="confirmada">
+                <label>Fecha <input type="date" name="fecha" required></label>
+                <label>Hora <input type="time" name="hora"></label>
+                <button type="submit" class="boton pequeno">Confirmar</button>
+              </form>
+            </details>
+
+          {% elif a.clase == 'sin_cerrar' %}
+            {{ formulario_cerrar(a.objeto, '/') }}
+
+          {% elif a.clase == 'documento' %}
+            <a class="llamada-revisar" href="/documentos/{{ a.objeto.id }}">Revisar propuesta</a>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{# --- Tramites con plazo cerca --- #}
+{% if panel.tramites %}
+<section class="bloque">
+  <h2>Trámites con plazo</h2>
+  {% for t in panel.tramites %}
+    <article class="tarjeta">
+      <div class="tarjeta-cabecera">
+        <h3><a href="/tramites/{{ t.id }}">{{ t.titulo }}</a></h3>
+        <span class="pastilla">{{ t.estado|etiqueta }}</span>
+      </div>
+      <p class="meta">
+        Plazo: <strong>{{ t.fecha_limite|fecha }}</strong>
+        <span class="tenue">({{ t.fecha_limite|relativo }})</span>
+        {% if t.organismo %} · {{ t.organismo }}{% endif %}
+      </p>
+    </article>
+  {% endfor %}
+</section>
+{% endif %}
+
+{# --- Agenda inmediata --- #}
+<section class="bloque">
+  <h2>Lo que viene</h2>
+  {% if panel.tramos %}
+    {% for nombre, citas in panel.tramos %}
+      {# Todos los tramos con el mismo peso: lo que cambia es el color, y
+         solo en los dos que ya no dan margen. #}
+      <h3 class="grupo-titulo tramo-cercano
+                 {%- if nombre == 'Hoy' %} tramo-hoy
+                 {%- elif nombre == 'Mañana' %} tramo-manana{% endif %}">{{ nombre }}</h3>
+      {% if not citas %}
+        <p class="tramo-vacio tenue">Nada.</p>
+      {% endif %}
+      {% for e in citas %}
+        {% if e.ya_paso %}
+          {% call tarjeta_evento(e, destino='/') %}
+            {{ formulario_cerrar(e, '/') }}
+          {% endcall %}
+        {% else %}
+          {{ tarjeta_evento(e, destino='/') }}
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  {% else %}
+    <p class="tenue">No hay ninguna cita con fecha en los próximos quince días.</p>
+  {% endif %}
+</section>
+
+{# Para cuando llega un papel y todavia no sabes a que cita va: se sube y
+   Claude dice que es y a cual pertenece. #}
+<section class="bloque">
+  <h2>Subir un papel</h2>
+  {{ formulario_subida('/', ia_lista=ia_lista) }}
+</section>
+
+<p class="acciones-pie">
+  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
+  <a class="boton secundario" href="/espera">Ver lo que está en espera</a>
+  <a class="boton secundario" href="/documentos">📎 Subir documentos</a>
+</p>
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Nuevo centro</h1>
+  <a class="boton secundario pequeno" href="/centros">← Todos los centros</a>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+{% if puede_buscar %}
+<section class="bloque">
+  <h2>Buscar los datos</h2>
+  <p class="tenue">
+    Escribe el nombre y Claude busca la dirección y el teléfono en internet.
+    <strong>No se guarda nada</strong>: verás lo que ha encontrado y decides tú.
+  </p>
+  <form method="post" action="/centros/buscar" class="formulario">
+    <label class="ancho">
+      Nombre del centro
+      <input type="text" name="nombre" value="{{ nombre }}" required
+             placeholder="Hospital Comarcal de Villamar, Villamar">
+    </label>
+    <div class="ancho">
+      <button type="submit" class="boton">Buscar datos</button>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+{% if error_busqueda %}
+  <p class="banda-error">{{ error_busqueda }}</p>
+{% endif %}
+
+{% if propuesta %}
+<section class="bloque">
+  <h2>Esto es lo que ha encontrado</h2>
+  <p class="tenue">
+    Compruébalo antes de guardar, sobre todo el teléfono. Puedes corregir
+    cualquier campo aquí mismo.
+  </p>
+
+  {% if propuesta.avisos %}
+    <ul class="avisos">
+      {% for a in propuesta.avisos %}<li>{{ a }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if propuesta.fuente %}
+    <p class="meta">
+      Fuente: <a href="{{ propuesta.fuente }}" target="_blank" rel="noopener noreferrer">{{ propuesta.fuente }}</a>
+    </p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="bloque">
+  <h2>{{ "Revisa y guarda" if propuesta else "O escríbelo a mano" }}</h2>
+  <form method="post" action="/centros" class="formulario">
+    <input type="hidden" name="destino" value="/centros">
+    <label class="ancho">
+      Nombre
+      <input type="text" name="nombre" required
+             value="{{ propuesta.nombre if propuesta else nombre }}">
+    </label>
+    <label class="ancho">
+      Dirección
+      <input type="text" name="direccion"
+             value="{{ propuesta.direccion if propuesta and propuesta.direccion else '' }}">
+    </label>
+    <label>
+      Teléfono
+      <input type="tel" name="telefono"
+             value="{{ propuesta.telefono if propuesta and propuesta.telefono else '' }}">
+    </label>
+    <label class="ancho">
+      Notas
+      <input type="text" name="notas"
+             value="{{ propuesta.notas if propuesta and propuesta.notas else '' }}">
+    </label>
+    <div class="ancho">
+      <button type="submit" class="boton">Guardar centro</button>
+    </div>
+  </form>
+</section>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import tarjeta_evento, lista_documentos, formulario_subida with context %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1 class="titulo-area area-color-{{ area.color }}">{{ area.nombre }}</h1>
+  <a class="boton secundario pequeno" href="/areas">Todas las áreas</a>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+
+<p class="intro">
+  Todo lo de {{ area.nombre|lower }}: citas, preparativos y papeles, sin
+  mezclarse con el resto de especialistas.
+</p>
+
+{# --- Lo que está pendiente --- #}
+<section class="bloque">
+  <h2>Pendiente ({{ area.abiertas|length }})</h2>
+  {% if area.abiertas %}
+    {% for e in area.abiertas %}
+      {{ tarjeta_evento(e, destino='/areas/' ~ area.slug) }}
+    {% endfor %}
+  {% else %}
+    <p class="tenue">Nada pendiente en esta área.</p>
+  {% endif %}
+</section>
+
+{# --- Documentos --- #}
+<section class="bloque">
+  <h2>Documentos ({{ area.documentos|length }})</h2>
+  {% if area.documentos %}
+    {{ lista_documentos(area.documentos) }}
+  {% else %}
+    <p class="tenue">Ningún documento de esta área todavía.</p>
+  {% endif %}
+</section>
+
+{# --- Historial --- #}
+{% if area.cerradas %}
+<section class="bloque">
+  <h2>Pasadas ({{ area.cerradas|length }})</h2>
+  {% for e in area.cerradas %}
+    {{ tarjeta_evento(e, destino='/areas/' ~ area.slug) }}
+  {% endfor %}
+</section>
+{% endif %}
+
+{% endblock %}

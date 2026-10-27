@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{%- set tema = request.cookies.get('medicos_tema', 'auto') -%}
+<html lang="es"{% if tema in ('claro', 'oscuro') %} data-tema="{{ tema }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · Médicos</title>
+  <link rel="stylesheet" href="/estatico/estilo.css?v={{ version_estatica }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🩺</text></svg>">
+</head>
+<body>
+
+<main class="acceso">
+  <h1>🩺 Médicos</h1>
+
+  {% if sin_usuarios %}
+    <div class="bloque">
+      <h2>Falta crear un usuario</h2>
+      <p>Todavía no hay nadie dado de alta. Créalo desde la consola del servidor:</p>
+      <pre><code>docker compose exec medicos python scripts/usuario.py crear TU_NOMBRE</code></pre>
+      <p class="tenue">Te pedirá la contraseña. Después recarga esta página.</p>
+    </div>
+  {% else %}
+    <form method="post" action="/login" class="bloque formulario-acceso">
+      {% if error %}
+        <p class="banda-error" role="alert">{{ error }}</p>
+      {% endif %}
+
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+
+      <label>
+        Usuario
+        <input type="text" name="nombre" value="{{ nombre }}" required
+               autocomplete="username" autocapitalize="none" autocorrect="off"
+               spellcheck="false" {% if not nombre %}autofocus{% endif %}>
+      </label>
+
+      <label>
+        Contraseña
+        <input type="password" name="password" required
+               autocomplete="current-password" {% if nombre %}autofocus{% endif %}>
+      </label>
+
+      <button type="submit" class="boton">Entrar</button>
+    </form>
+  {% endif %}
+</main>
+
+</body>
+</html>

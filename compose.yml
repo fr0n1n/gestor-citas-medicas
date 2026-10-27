@@ -1,0 +1,59 @@
+services:
+  medicos:
+    build:
+      context: .
+      args:
+        # Mismo UID/GID que tu usuario del host, para que los ficheros de
+        # ./data no queden en manos de root. Compruebalo con: id -u; id -g
+        UID: "${UID:-1000}"
+        GID: "${GID:-1000}"
+        # Incluye el CLI de Claude para analizar documentos. Ponlo a "false"
+        # si no vas a usar MEDICOS_IA_PROVEEDOR=claude-cli (imagen mas ligera).
+        CON_CLAUDE_CLI: "true"
+
+    container_name: medicos
+
+    ports:
+      # Por defecto solo escucha en el propio equipo. En el servidor, para
+      # entrar desde la red de casa, pon MEDICOS_IP_ESCUCHA en el .env
+      # (ver README, seccion "Instalar en un servidor").
+      - "${MEDICOS_IP_ESCUCHA:-127.0.0.1}:${MEDICOS_PUERTO:-8080}:8000"
+
+    volumes:
+      # La base de datos y los documentos. Copiar esta carpeta es hacer una
+      # copia de seguridad completa. Se puede cambiar con MEDICOS_DIR_DATOS
+      # en el .env (util si tu sistema de copias excluye carpetas "data").
+      - ${MEDICOS_DIR_DATOS:-./data}:/data
+
+    env_file:
+      - path: .env
+        required: false
+
+    environment:
+      MEDICOS_DATA_DIR: /data
+      # Hora local en fechas como el "ultimo acceso" (el contenedor usa UTC).
+      TZ: "${MEDICOS_ZONA_HORARIA:-Europe/Madrid}"
+      # El CLI de Claude guarda su configuracion en memoria (/tmp): se
+      # autentica con CLAUDE_CODE_OAUTH_TOKEN del .env y no necesita nada mas.
+      CLAUDE_CONFIG_DIR: /tmp/claude
+      DISABLE_AUTOUPDATER: "1"
+
+    # --- Endurecimiento ----------------------------------------------------
+    # Sistema de ficheros de solo lectura: aunque alguien lograra ejecutar
+    # codigo dentro, no podria modificar la aplicacion. Solo /data (el
+    # volumen) y /tmp (en memoria) admiten escritura.
+    read_only: true
+    tmpfs:
+      # Temporales de las subidas (varias fotos a la vez) y del CLI de Claude.
+      - /tmp:size=256m
+    # Ninguna capacidad especial del kernel: la app no las necesita.
+    cap_drop:
+      - ALL
+    security_opt:
+      # Impide escalar privilegios (setuid, sudo...) dentro del contenedor.
+      - no-new-privileges:true
+    # Limites para que un fallo no pueda tumbar el servidor entero.
+    mem_limit: 512m
+    pids_limit: 200
+
+    restart: unless-stopped

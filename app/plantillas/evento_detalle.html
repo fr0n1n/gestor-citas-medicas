@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos with context %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>{{ evento.titulo }}</h1>
+  <div class="navegacion-mes">
+    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+    <a class="boton secundario pequeno" href="/eventos/{{ evento.id }}/editar">Editar</a>
+  </div>
+</div>
+
+<p class="meta">
+  {{ evento.tipo|etiqueta }}
+  {% if evento.especialidad %} · {{ evento.especialidad }}{% endif %}
+  {% if evento.paciente %} · {{ evento.paciente.nombre }}{% endif %}
+</p>
+
+{# --- Estado --- #}
+<section class="bloque estado-cita">
+  <form method="post" action="/eventos/{{ evento.id }}/estado" class="formulario-estado">
+    <label>
+      Estado
+      <select name="estado" {% if not destinos %}disabled{% endif %}>
+        <option value="{{ evento.estado.value }}" selected>{{ evento.estado|etiqueta }}</option>
+        {% for destino in destinos %}
+          <option value="{{ destino.value }}">{{ destino|etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Fecha
+      <input type="date" name="fecha" value="{{ evento.fecha|iso }}">
+    </label>
+    <label>
+      Hora
+      <input type="time" name="hora" value="{{ evento.hora|iso }}">
+    </label>
+    {% if destinos %}
+      <button type="submit" class="boton">Guardar</button>
+    {% endif %}
+  </form>
+  {% if not destinos %}
+    <p class="tenue">Este estado no admite más cambios.</p>
+  {% endif %}
+</section>
+
+<section class="bloque ficha">
+  <dl>
+    <dt>Área</dt>
+    <dd>
+      {% if evento.especialidad %}
+        <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
+        {% if evento.especialidad != evento.area %}
+          <span class="tenue">· escrito como «{{ evento.especialidad }}»</span>
+        {% endif %}
+      {% else %}
+        <span class="tenue">Sin área.</span>
+        <a href="/eventos/{{ evento.id }}/editar">Ponerle una</a>
+        <span class="tenue">para que se agrupe con las de su especialista.</span>
+      {% endif %}
+    </dd>
+
+    {% if evento.solicitada_en %}
+      <dt>Pedida el</dt>
+      <dd>
+        {{ evento.solicitada_en|fecha }}
+        {% if evento.dias_esperando is not none and not evento.fecha %}
+          <span class="tenue">— esperando {{ evento.dias_esperando }} días</span>
+        {% endif %}
+      </dd>
+    {% endif %}
+
+    <dt>Cita</dt>
+    <dd>
+      {% if evento.fecha %}
+        {{ evento.fecha|fecha_larga }}{% if evento.hora %}, a las {{ evento.hora|hora }}{% endif %}
+        <span class="tenue">({{ evento.fecha|relativo }})</span>
+      {% else %}
+        <span class="sin-fecha">Todavía sin fecha</span>
+      {% endif %}
+    </dd>
+
+    {% set lugar = linea_lugar(evento)|trim %}
+    {% if lugar %}
+      <dt>Dónde</dt>
+      <dd>
+        {{ lugar|sin_enlaces }}
+        {# El enlace que trajera el documento manda; si no hay, se construye
+           uno de busqueda con la direccion. En los dos casos lo abre el
+           navegador: la aplicacion no habla con ningun mapa. #}
+        {% set propios = (evento.ubicacion|urls) + (evento.notas|urls) %}
+        {% set enlace_mapa = propios[0] if propios
+                             else (evento.centro.direccion if evento.centro else evento.ubicacion)|mapa %}
+        {% if enlace_mapa %}
+          <a class="boton secundario pequeno mapa" href="{{ enlace_mapa }}"
+             target="_blank" rel="noopener noreferrer">Ver en el mapa</a>
+        {% endif %}
+      </dd>
+    {% endif %}
+
+    {% if evento.centro and evento.centro.telefono %}
+      <dt>Teléfono</dt>
+      <dd><a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a></dd>
+    {% endif %}
+
+    {% if evento.necesita_ambulancia or evento.transporte_notas %}
+      <dt>Ambulancia</dt>
+      <dd>
+        {{ evento.transporte|etiqueta }}
+        {% if evento.transporte_hora %}
+          · <strong>pasa a las {{ evento.transporte_hora|hora }}</strong>
+        {% endif %}
+        {% if evento.transporte_notas %}<span class="tenue">· {{ evento.transporte_notas|enlazado }}</span>{% endif %}
+      </dd>
+    {% endif %}
+
+    {% if evento.motivo %}<dt>Motivo</dt><dd>{{ evento.motivo|enlazado }}</dd>{% endif %}
+    {% if evento.notas %}<dt>Notas</dt><dd class="multilinea">{{ evento.notas|enlazado }}</dd>{% endif %}
+    {% if evento.resultado %}
+      <dt>Resultado</dt><dd class="multilinea">{{ evento.resultado|enlazado }}</dd>
+    {% endif %}
+  </dl>
+</section>
+
+{# --- Ambulancia --- #}
+<section class="bloque">
+  <h2><span class="icono-ambulancia">🚑</span> Ambulancia</h2>
+  {% if evento.falta_pedir_ambulancia(config.dias_aviso_transporte) %}
+    <p class="banda-error">Esta cita es el {{ evento.fecha|fecha }} y la ambulancia
+      todavía está sin solicitar.</p>
+  {% endif %}
+  <form method="post" action="/eventos/{{ evento.id }}/transporte" class="filtros">
+    <input type="hidden" name="destino" value="/eventos/{{ evento.id }}">
+    <label>
+      Estado
+      <select name="transporte">
+        {% for t in estados_transporte %}
+          <option value="{{ t.value }}"
+            {% if evento.transporte.value == t.value %}selected{% endif %}>{{ t|etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Hora de paso
+      <input type="time" name="hora_paso" value="{{ evento.transporte_hora|iso }}">
+    </label>
+    <label class="ancho">
+      Notas
+      <input type="text" name="notas" value="{{ evento.transporte_notas or '' }}"
+             placeholder="Con conductor y ayudante. Pedir a 900 00 00 00">
+    </label>
+    <button type="submit" class="boton secundario pequeno">Guardar</button>
+  </form>
+</section>
+
+{# --- Requisitos previos --- #}
+{# --- Todo lo que falta para esta cita, en una sola lista --- #}
+<section class="bloque">
+  <h2>Para esta cita</h2>
+
+  {% if evento.previas or evento.preparativos or evento.gestiones %}
+    <ul class="pendientes-cita">
+
+      {% for pr in evento.previas %}
+        <li class="pendiente-cita previa {% if not pr.fecha %}sin-cita{% endif %}">
+          <span class="marca">{{ '✓' if pr.estado.value == 'realizada' else '○' }}</span>
+          <div class="pendiente-cuerpo">
+            <div class="pendiente-titulo">
+              {# Sin enlace a proposito: estando dentro de la cita, todo lo
+                 que hace falta de esta prueba se rellena aqui mismo. Salir
+                 a otra pagina para leer el titulo era perder el sitio. #}
+              <strong>{{ pr.titulo }}</strong>
+              {% if not pr.fecha %}
+                <span class="aviso-sin-fecha">Todavía sin fecha</span>
+              {% endif %}
+              <span class="etiqueta-clase">tener hecho</span>
+            </div>
+
+            {# Editable aqui mismo: si te llaman con la fecha del escaner, se
+               pone sin salir de la cita para la que hace falta. #}
+            <form method="post" action="/eventos/{{ pr.id }}/al-dia" class="previa-form">
+              <input type="hidden" name="destino" value="/eventos/{{ evento.id }}">
+
+              <select name="estado" aria-label="Estado de {{ pr.titulo }}">
+                <option value="{{ pr.estado.value }}" selected>{{ pr.estado|etiqueta }}</option>
+                {% for d in transiciones(pr.estado) %}
+                  <option value="{{ d.value }}">{{ d|etiqueta }}</option>
+                {% endfor %}
+              </select>
+
+              <input type="date" name="fecha" value="{{ pr.fecha|iso }}"
+                     aria-label="Fecha de {{ pr.titulo }}">
+              <input type="time" name="hora" value="{{ pr.hora|iso }}"
+                     aria-label="Hora de {{ pr.titulo }}">
+
+              <select name="centro" aria-label="Dónde se hace {{ pr.titulo }}">
+                <option value="">— Sin centro —</option>
+                {% for c in centros %}
+                  <option value="{{ c.id }}" {% if pr.centro_id == c.id %}selected{% endif %}>
+                    {{ c.nombre|centro_corto(30) }}
+                  </option>
+                {% endfor %}
+              </select>
+
+              <select name="transporte" aria-label="Ambulancia para {{ pr.titulo }}">
+                {% for t in EstadoTransporte %}
+                  <option value="{{ t.value }}" {% if pr.transporte == t %}selected{% endif %}>
+                    {% if t.value == 'no_necesita' %}Sin ambulancia{% else %}🚑 {{ t|etiqueta }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+              <input type="time" name="transporte_hora" value="{{ pr.transporte_hora|iso }}"
+                     aria-label="Hora de paso de la ambulancia">
+
+              <button type="submit" class="boton pequeno">Guardar</button>
+            </form>
+
+          </div>
+        </li>
+      {% endfor %}
+
+      {% for r in evento.preparativos %}
+        {{ fila_requisito(r, '/eventos/' ~ evento.id, permitir_borrar=true,
+                          citas=citas_hilo, permitir_momento=true, clase="llevar") }}
+      {% endfor %}
+
+      {% for r in evento.gestiones %}
+        {{ fila_requisito(r, '/eventos/' ~ evento.id, permitir_borrar=true,
+                          citas=citas_hilo, permitir_momento=true, clase="en la cita") }}
+      {% endfor %}
+
+    </ul>
+    <p class="tenue pista">
+      Para cambiar lo que pone o el plazo de algo, el lápiz ✎ de su línea.
+    </p>
+  {% else %}
+    <p class="tenue">
+      Nada apuntado todavía: lo que haya que llevar, lo que haya que pedir
+      allí y las pruebas que tienen que estar hechas antes van aquí.
+    </p>
+  {% endif %}
+
+  {{ formulario_pendiente(evento, '/eventos/' ~ evento.id) }}
+</section>
+
+{# --- Documentos --- #}
+<section class="bloque">
+  <h2>Documentos de esta cita</h2>
+  {% if evento.documentos %}
+    {{ lista_documentos(evento.documentos) }}
+  {% else %}
+    <p class="tenue">Ningún papel escaneado todavía para esta cita.</p>
+  {% endif %}
+  {{ formulario_subida('/eventos/' ~ evento.id, evento_id=evento.id, ia_lista=ia_lista) }}
+</section>
+
+{# --- El hilo, al final: es contexto, no algo que hacer --- #}
+<section class="bloque">
+  <h2>El hilo de esta cita</h2>
+
+  {% if evento.origen %}
+    <p class="hilo-linea">
+      <span class="hilo-flecha">↖</span> Viene de
+      <a href="/eventos/{{ evento.origen.id }}">{{ evento.origen.titulo }}</a>
+      {% if evento.origen.fecha %}<span class="tenue">· {{ evento.origen.fecha|fecha }}</span>{% endif %}
+    </p>
+  {% endif %}
+
+  {% if evento.antes_de %}
+    <p class="hilo-linea">
+      <span class="hilo-flecha">⏱</span> Hace falta para
+      <a href="/eventos/{{ evento.antes_de.id }}">{{ evento.antes_de.titulo }}</a>
+      {% if evento.antes_de.fecha %}<span class="tenue">· {{ evento.antes_de.fecha|fecha }}</span>{% endif %}
+    </p>
+  {% endif %}
+
+  {% for d in evento.derivadas %}
+    <p class="hilo-linea">
+      <span class="hilo-flecha">↘</span> De aquí salió
+      <a href="/eventos/{{ d.id }}">{{ d.titulo }}</a>
+      <span class="tenue">· {% if d.fecha %}{{ d.fecha|fecha }}{% else %}{{ d.estado|etiqueta|lower }}{% endif %}</span>
+    </p>
+  {% endfor %}
+
+  {% for h in evento.hermanas %}
+    <p class="hilo-linea">
+      <span class="hilo-flecha">↔</span> Del mismo asunto:
+      <a href="/eventos/{{ h.id }}">{{ h.titulo }}</a>
+      <span class="tenue">· {% if h.fecha %}{{ h.fecha|fecha }}{% else %}{{ h.estado|etiqueta|lower }}{% endif %}</span>
+    </p>
+  {% endfor %}
+
+  {% if not evento.origen and not evento.derivadas and not evento.hermanas
+        and not evento.antes_de and not evento.previas %}
+    <p class="tenue">Esta cita no viene de ninguna otra ni ha derivado todavía en nada.</p>
+  {% endif %}
+
+  <details class="anadir">
+    <summary class="boton secundario pequeno">Enlazar con otra cita</summary>
+    <div class="enlaces-hilo">
+      <form method="post" action="/eventos/{{ evento.id }}/origen" class="formulario">
+        <label class="ancho">
+          Esta cita sale de
+          <select name="origen">
+            <option value="">— De ninguna —</option>
+            {% for c in citas_hilo %}
+              <option value="{{ c.id }}" {% if evento.evento_padre_id == c.id %}selected{% endif %}>
+                {{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="ancho"><button type="submit" class="boton secundario pequeno">Guardar</button></div>
+      </form>
+
+      <form method="post" action="/eventos/{{ evento.id }}/antes-de" class="formulario">
+        <label class="ancho">
+          Tiene que estar hecho antes de
+          <select name="evento">
+            <option value="">— De ninguna —</option>
+            {% for c in citas_hilo %}
+              <option value="{{ c.id }}" {% if evento.antes_de_id == c.id %}selected{% endif %}>
+                {{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="ancho"><button type="submit" class="boton secundario pequeno">Guardar</button></div>
+      </form>
+
+      <form method="post" action="/eventos/{{ evento.id }}/derivada" class="formulario">
+        <label class="ancho">
+          De esta cita sale
+          <select name="evento">
+            {% for c in citas_hilo %}
+              <option value="{{ c.id }}">
+                {{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% else %} · sin fecha{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="ancho"><button type="submit" class="boton secundario pequeno">Enlazar</button></div>
+      </form>
+    </div>
+  </details>
+
+  <details class="anadir">
+    <summary class="boton secundario pequeno">+ De aquí sale una prueba o cita nueva</summary>
+    <form method="post" action="/eventos/{{ evento.id }}/derivar" class="formulario">
+      <p class="tenue ancho">
+        Lo que ha mandado hacer el médico. Hereda la especialidad y el centro
+        de esta cita si no dices otra cosa.
+      </p>
+      <label class="ancho">
+        Qué hay que hacer
+        <input type="text" name="titulo" required placeholder="RMN de columna">
+      </label>
+      <label>
+        Qué es
+        <select name="tipo">
+          {% for t in TipoEvento %}
+            <option value="{{ t.value }}" {% if t == TipoEvento.PRUEBA %}selected{% endif %}>{{ t|etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        En qué punto está
+        <select name="estado">
+          <option value="por_solicitar">Falta pedirla</option>
+          <option value="solicitada">Ya está pedida</option>
+        </select>
+      </label>
+      <label class="ancho">
+        O un centro nuevo <span class="tenue">(si no está en la lista)</span>
+        <input type="text" name="centro_nuevo">
+      </label>
+      <div class="ancho"><button type="submit" class="boton">Crear y enlazar</button></div>
+    </form>
+  </details>
+</section>
+
+<section class="bloque zona-peligro">
+  <form method="post" action="/eventos/{{ evento.id }}/borrar"
+        data-confirmar="¿Eliminar esta cita y sus requisitos? No se puede deshacer.">
+    <button type="submit" class="boton peligro pequeno">Eliminar cita</button>
+  </form>
+</section>
+
+{% endblock %}

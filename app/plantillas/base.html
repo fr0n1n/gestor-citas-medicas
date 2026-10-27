@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+{%- set tema = request.cookies.get('medicos_tema', 'auto') -%}
+<html lang="es"{% if tema in ('claro', 'oscuro') %} data-tema="{{ tema }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ titulo }} · Médicos</title>
+  <link rel="stylesheet" href="/estatico/estilo.css?v={{ version_estatica }}">
+  <script src="/estatico/app.js?v={{ version_estatica }}" defer></script>
+  {% if refrescar %}
+  {# Mientras Claude analiza, la pagina se recarga sola para mostrar el
+     resultado en cuanto este. Sin JavaScript: una etiqueta meta basta. #}
+  <meta http-equiv="refresh" content="5">
+  {% endif %}
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🩺</text></svg>">
+</head>
+<body>
+
+<header class="cabecera">
+  <a class="marca" href="/">🩺 Médicos</a>
+
+  {% if pacientes %}
+  <form class="selector" method="get" action="/seleccionar-paciente">
+    <input type="hidden" name="destino" value="{{ request.url.path }}">
+    <label class="oculto" for="sel-paciente">Paciente</label>
+    <select id="sel-paciente" name="id" data-autoenvio>
+      <option value="todos" {% if not paciente_id %}selected{% endif %}>Todos los pacientes</option>
+      {% for p in pacientes %}
+        <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit">Ir</button></noscript>
+  </form>
+  {% endif %}
+
+  {# Lo del dia a dia arriba; lo que se consulta de vez en cuando, debajo
+     y mas discreto. Antes eran diez entradas al mismo nivel. #}
+  <nav class="navegacion">
+    {% set actual = request.url.path %}
+    <a href="/" {% if actual == '/' %}class="activo"{% endif %}>Hoy</a>
+    <a href="/citas" {% if actual == '/citas' %}class="activo"{% endif %}>Citas</a>
+    <a href="/areas" {% if actual.startswith('/areas') %}class="activo"{% endif %}>Áreas</a>
+    <a href="/centros" {% if actual.startswith('/centros') %}class="activo"{% endif %}>Centros</a>
+    <a href="/tramites" {% if actual.startswith('/tramites') %}class="activo"{% endif %}>Trámites</a>
+  </nav>
+  <nav class="navegacion secundaria">
+    <a href="/historia" {% if actual == '/historia' %}class="activo"{% endif %}>Historia</a>
+    <a href="/calendario" {% if actual == '/calendario' %}class="activo"{% endif %}>Calendario</a>
+    <a href="/documentos" {% if actual.startswith('/documentos') %}class="activo"{% endif %}>Documentos</a>
+    <a href="/pacientes" {% if actual == '/pacientes' %}class="activo"{% endif %}>Ajustes</a>
+  </nav>
+
+  {#- Ojo con el nombre: una variable puesta aqui tapa la que envie la
+     pagina. Se llamo "temas" y escondia la lista de areas de Documentos. -#}
+  {%- set ciclo_tema = {
+        'auto':   ('claro',  '🖥️', 'Tema: automático (sigue al sistema). Pulsa para cambiar a claro'),
+        'claro':  ('oscuro', '☀️', 'Tema: claro. Pulsa para cambiar a oscuro'),
+        'oscuro': ('auto',   '🌙', 'Tema: oscuro. Pulsa para volver a automático'),
+     } -%}
+  {%- set siguiente_tema, icono_tema, ayuda_tema = ciclo_tema.get(tema, ciclo_tema['auto']) -%}
+  <form class="selector-tema" method="get" action="/tema">
+    <input type="hidden" name="valor" value="{{ siguiente_tema }}">
+    <input type="hidden" name="destino" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+    <button type="submit" title="{{ ayuda_tema }}" aria-label="{{ ayuda_tema }}">{{ icono_tema }}</button>
+  </form>
+
+  {% if usuario %}
+  <form class="sesion-usuario" method="post" action="/salir">
+    <span class="tenue">{{ usuario.nombre }}</span>
+    <button type="submit" class="enlace-sutil">Salir</button>
+  </form>
+  {% endif %}
+</header>
+
+<main class="contenido">
+  {% if aviso %}
+    <p class="banda-aviso" role="status">{{ aviso }}</p>
+  {% endif %}
+
+  {% block contenido %}{% endblock %}
+</main>
+
+<footer class="pie">
+  <span>Todos los datos se guardan solo en este ordenador.</span>
+  <a href="/calendario.ics">Exportar calendario (.ics)</a>
+</footer>
+
+</body>
+</html>

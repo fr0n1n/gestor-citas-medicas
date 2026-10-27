@@ -1,0 +1,1973 @@
+/* Hoja de estilos unica, sin frameworks ni CDN: la aplicacion tiene que
+   funcionar con el ordenador desconectado de internet. */
+
+:root {
+  color-scheme: light;
+  /* Grises con un punto de azul, para que el blanco no parezca sucio. */
+  --fondo: #f1f4f7;
+  --superficie: #ffffff;
+  --borde: #dde3ea;
+  /* El borde de las tarjetas se ve; el de las separaciones, apenas. */
+  --borde-tarjeta: #c3ccd6;
+  --borde-fuerte: #8695a5;
+  --texto: #10161c;
+  --texto-tenue: #5b6874;
+  --acento: #0b5cc4;
+  --acento-suave: #e6eefb;
+
+  --rojo: #b3261e;
+  --rojo-suave: #fdecea;
+  --ambar: #8a5a00;
+  --ambar-suave: #fdf3e0;
+  --verde: #1e6f3d;
+  --verde-suave: #e8f5ec;
+  --violeta: #5b3fa8;
+  --violeta-suave: #efe9fb;
+
+  /* Escala de espacios. Todo lo que separa usa uno de estos, no un numero
+     a ojo: es lo que hace que una pantalla se vea ordenada sin saber por
+     que. */
+  --e1: .25rem;
+  --e2: .5rem;
+  --e3: .75rem;
+  --e4: 1rem;
+  --e5: 1.5rem;
+  --e6: 2rem;
+
+  --radio: 10px;
+  --sombra: 0 1px 2px rgba(16, 22, 28, .06);
+  --sombra-alta: 0 4px 14px rgba(16, 22, 28, .10);
+}
+
+/* Modo oscuro. Se aplica en dos casos:
+   - el usuario lo ha elegido (data-tema="oscuro" en <html>), o
+   - esta en automatico y el sistema esta en oscuro.
+   Elegir "claro" gana siempre al sistema. Las variables se repiten en los
+   dos bloques porque CSS no permite compartirlas entre selectores. */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+  /* Mas contraste que antes: el fondo baja y el texto sube, que es lo que
+     hace que se lea de un vistazo y no haya que acercarse. */
+  --fondo: #0e1216;
+  --superficie: #171c21;
+  --borde: #262e36;
+  --borde-tarjeta: #38434e;
+  --borde-fuerte: #5d6b79;
+  --texto: #eef3f8;
+  --texto-tenue: #9dabb8;
+  --acento: #6fb0f5;
+  --acento-suave: #14243a;
+
+  --rojo: #f58a80;
+  --rojo-suave: #3a201d;
+  --ambar: #e8bb68;
+  --ambar-suave: #372c18;
+  --verde: #78d197;
+  --verde-suave: #162d1f;
+  --violeta: #b5a1f0;
+  --violeta-suave: #26203a;
+
+  --sombra: 0 1px 2px rgba(0, 0, 0, .45);
+  --sombra-alta: 0 6px 18px rgba(0, 0, 0, .5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    color-scheme: dark;
+    --fondo: #14171a;
+    --superficie: #1c2024;
+    --borde: #2e343a;
+    --texto: #e7eaed;
+    --texto-tenue: #9aa4ad;
+    --acento: #6aa9f0;
+    --acento-suave: #17273a;
+
+    --rojo: #f07a72;
+    --rojo-suave: #37211f;
+    --ambar: #e0b25f;
+    --ambar-suave: #332a1a;
+    --verde: #72c78f;
+    --verde-suave: #1a2c21;
+    --violeta: #b09bec;
+    --violeta-suave: #26203a;
+
+    --sombra: 0 1px 2px rgba(0, 0, 0, .4);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+a { color: var(--acento); }
+code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: .9em;
+  background: var(--acento-suave);
+  padding: .1em .35em;
+  border-radius: 4px;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* --- Cabecera ---------------------------------------------------------- */
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: .75rem 1.25rem;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+}
+
+.marca {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.selector select { max-width: 14rem; }
+
+.navegacion {
+  display: flex;
+  gap: .25rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.navegacion a {
+  padding: .35rem .7rem;
+  border-radius: var(--radio);
+  text-decoration: none;
+  color: var(--texto-tenue);
+  font-size: .93rem;
+}
+
+.navegacion a:hover { background: var(--acento-suave); color: var(--acento); }
+.navegacion a.activo { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
+
+.contenido {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.pie {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: .85rem;
+  color: var(--texto-tenue);
+  border-top: 1px solid var(--borde);
+}
+
+/* --- Tipografia y bloques --------------------------------------------- */
+
+h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
+h2 { font-size: 1.15rem; margin: 0 0 .5rem; }
+h3 { font-size: 1rem; margin: 0; }
+
+.intro { color: var(--texto-tenue); max-width: 46rem; margin-top: 0; }
+.tenue { color: var(--texto-tenue); font-weight: normal; }
+.meta { margin: .25rem 0; font-size: .92rem; }
+.multilinea { white-space: pre-wrap; }
+
+.titulo-con-accion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+
+.bloque {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 1rem 1.15rem;
+  margin: 1.25rem 0;
+  box-shadow: var(--sombra);
+}
+
+.bloque.destacado { border-left: 4px solid var(--ambar); }
+
+.panel-ok {
+  background: var(--verde-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 1rem 1.15rem;
+  margin: 1rem 0;
+}
+
+.resumen-acciones {
+  font-size: 1.05rem;
+  padding: .6rem .9rem;
+  background: var(--ambar-suave);
+  border-radius: var(--radio);
+}
+
+.separador-mes {
+  margin: 1.75rem 0 .5rem;
+  padding-bottom: .3rem;
+  border-bottom: 1px solid var(--borde);
+  color: var(--texto-tenue);
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.banda-aviso {
+  padding: .7rem 1rem;
+  background: var(--acento-suave);
+  border-left: 4px solid var(--acento);
+  border-radius: var(--radio);
+  margin: 0 0 1.25rem;
+}
+
+/* --- Tarjetas ---------------------------------------------------------- */
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: .8rem 1rem;
+  margin: .6rem 0;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.tarjeta h3 a { text-decoration: none; }
+.tarjeta h3 a:hover { text-decoration: underline; }
+
+.tarjeta.prioridad-alta { border-left: 4px solid var(--rojo); }
+
+.sin-fecha { color: var(--violeta); }
+
+/* Area de pulsacion comoda en el movil: la casilla ocupa mas de lo que
+   se ve, para no fallar el dedo. */
+.casilla {
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Pastillas de estado ----------------------------------------------- */
+
+.pastilla {
+  display: inline-block;
+  padding: .12rem .55rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.pastilla.estado-por_solicitar { background: var(--ambar-suave); color: var(--ambar); }
+.pastilla.estado-solicitada    { background: var(--violeta-suave); color: var(--violeta); }
+.pastilla.estado-confirmada    { background: var(--verde-suave); color: var(--verde); }
+.pastilla.estado-realizada     { background: var(--fondo); color: var(--texto-tenue); }
+.pastilla.estado-aplazada      { background: var(--ambar-suave); color: var(--ambar); }
+.pastilla.estado-cancelada     { background: var(--fondo); color: var(--texto-tenue); text-decoration: line-through; }
+
+.pastillas { display: inline-flex; gap: .35rem; flex-wrap: wrap; }
+
+.pastilla.transporte-pendiente  { background: var(--rojo-suave); color: var(--rojo); }
+.pastilla.transporte-solicitado { background: var(--ambar-suave); color: var(--ambar); }
+.pastilla.transporte-confirmado { background: var(--verde-suave); color: var(--verde); }
+/* Que no haga falta tambien es una respuesta, pero no es una alerta. */
+.pastilla.transporte-no_necesita { background: var(--fondo); color: var(--texto-tenue); }
+
+/* --- Requisitos -------------------------------------------------------- */
+
+.lista-requisitos { list-style: none; padding: 0; margin: .5rem 0; }
+
+.requisito {
+  display: flex;
+  align-items: flex-start;
+  /* Para que el desplegable de mover pueda bajar a su propia linea en vez
+     de aplastarse en la columna de los botones. */
+  flex-wrap: wrap;
+  gap: .6rem;
+  padding: .6rem .75rem;
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--borde);
+  border-radius: var(--radio);
+  margin-bottom: .5rem;
+  background: var(--superficie);
+}
+
+.requisito.urgencia-vencido { border-left-color: var(--rojo); background: var(--rojo-suave); }
+.requisito.urgencia-hoy     { border-left-color: var(--ambar); background: var(--ambar-suave); }
+.requisito.urgencia-proximo { border-left-color: var(--ambar); }
+/* Lo hecho no se tacha. Tachar dice "esto ya no vale"; lo que paso es lo
+   contrario: esta listo. Se marca en verde y con su etiqueta. */
+.requisito.hecho {
+  border-left-color: var(--verde);
+  background: var(--verde-suave);
+}
+
+.requisito.hecho .requisito-texto { color: var(--texto); }
+
+.etiqueta-listo {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: .1rem .55rem;
+  border-radius: 999px;
+  background: var(--verde);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* El texto manda: con cuatro botoncitos al lado (editar, mover, cambiar de
+   sitio, quitar) y una pantalla de movil, repartir a partes iguales dejaba
+   el texto en una columna de dos palabras. Los botones bajan de linea. */
+.requisito-cuerpo {
+  flex: 1 1 60%;
+  min-width: min(15rem, 100%);
+}
+
+/* Dentro de una tarjeta hay menos ancho: el texto se queda con lo que
+   sobra de su linea (la casilla va delante) y los botones bajan juntos,
+   no de uno en uno. */
+.requisito.compacta .requisito-cuerpo { flex: 1 1 calc(100% - 3rem); }
+.requisito-texto { font-weight: 600; }
+.limite { font-size: .88rem; }
+
+.casilla {
+  background: none;
+  border: none;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  color: var(--texto);
+  border-radius: 6px;
+}
+
+.casilla:hover { background: var(--acento-suave); }
+.casilla:focus-visible { outline: 2px solid var(--acento); }
+
+/* --- Tablas ------------------------------------------------------------ */
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .75rem 0;
+  font-size: .94rem;
+}
+
+.tabla th, .tabla td {
+  text-align: left;
+  padding: .55rem .6rem;
+  border-bottom: 1px solid var(--borde);
+  vertical-align: top;
+}
+
+.tabla th { color: var(--texto-tenue); font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; }
+.tabla tr:last-child td { border-bottom: none; }
+.tabla tr.fila-alerta { background: var(--rojo-suave); }
+.acciones-celda { white-space: nowrap; }
+
+/* --- Calendario -------------------------------------------------------- */
+
+.calendario {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+
+.calendario th {
+  padding: .4rem;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--texto-tenue);
+  border-bottom: 1px solid var(--borde);
+}
+
+.celda-dia {
+  height: 6.5rem;
+  vertical-align: top;
+  padding: .3rem;
+  border: 1px solid var(--borde);
+  overflow: hidden;
+}
+
+.celda-dia.otro-mes { background: var(--fondo); }
+.celda-dia.otro-mes .numero-dia { color: var(--texto-tenue); opacity: .5; }
+.celda-dia.es-hoy { outline: 2px solid var(--acento); outline-offset: -2px; }
+
+.numero-dia { font-size: .8rem; color: var(--texto-tenue); display: block; margin-bottom: .2rem; }
+
+.chip {
+  display: block;
+  font-size: .75rem;
+  padding: .15rem .35rem;
+  margin-bottom: .15rem;
+  border-radius: 4px;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.chip.estado-confirmada { background: var(--verde-suave); color: var(--verde); }
+.chip.estado-realizada  { background: var(--fondo); color: var(--texto-tenue); }
+.chip.estado-aplazada   { background: var(--ambar-suave); color: var(--ambar); }
+.chip-hora { font-weight: 700; }
+
+/* --- Formularios ------------------------------------------------------- */
+
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: .75rem 1rem;
+  margin-top: .75rem;
+}
+
+.formulario .ancho { grid-column: 1 / -1; }
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  font-size: .88rem;
+  color: var(--texto-tenue);
+}
+
+label.casilla-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: .4rem;
+}
+
+input, select, textarea {
+  font: inherit;
+  font-size: .95rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: .4rem .55rem;
+  width: 100%;
+}
+
+input[type="checkbox"] { width: auto; }
+textarea { resize: vertical; }
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--acento);
+  outline-offset: -1px;
+}
+
+.filtros {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.form-fecha {
+  display: flex;
+  gap: .5rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+  padding: .6rem;
+  background: var(--fondo);
+  border-radius: var(--radio);
+}
+
+/* Una linea de ayuda debajo de una lista: se lee si hace falta y no
+   compite con lo que hay que hacer. */
+.pista {
+  margin: var(--e2) 0 0;
+  font-size: .85rem;
+}
+
+/* Lo apuntado de una llamada se lee tal cual: los saltos de linea los puso
+   quien lo escribio mientras le hablaban. */
+.texto-llamada {
+  margin: 0;
+  padding: var(--e3);
+  background: var(--fondo);
+  border-radius: var(--radio);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: .95rem;
+  line-height: 1.5;
+}
+
+/* Los dos sitios por los que entra algo -- una llamada y un papel -- en la
+   misma linea, sin titulo encima: los botones ya dicen lo que hacen. El que
+   se abre se queda con el ancho entero, que un formulario en media columna
+   no se rellena. */
+/* Los botones viven en la fila del titulo. El "Atras" se va al final de
+   la linea, que es donde estaba, y lo que se abre baja a su propia fila. */
+.entrada-citas {
+  align-items: center;
+  /* Sin "space-between": al bajar de linea en el movil, repartir el hueco
+     dejaba los dos botones en las esquinas, como si no fueran lo mismo. */
+  justify-content: flex-start;
+}
+.entrada-citas > .atras { margin-left: auto; }
+
+/* Centrar en flex centra la caja CON sus margenes: el margen de arriba del
+   desplegable y el de abajo del titulo descolocaban los botones 8 y 4
+   pixeles. En esta fila los margenes verticales sobran. */
+.entrada-citas > h1,
+.entrada-citas > .boton,
+.entrada-citas > details { margin-top: 0; margin-bottom: 0; }
+
+.entrada-citas > details { flex: 0 0 auto; }
+
+/* Exactamente el mismo boton que el de al lado: en la misma fila, dos
+   botones de distinto alto se leen como dos cosas distintas. */
+.entrada-citas > details > summary.boton {
+  padding: .45rem .9rem;
+  font-size: .93rem;
+}
+.entrada-citas > details[open] { flex: 1 1 100%; order: 9; }
+.entrada-citas > p { flex: 1 1 100%; order: 10; margin: 0; }
+
+/* --- Botones ----------------------------------------------------------- */
+
+.boton {
+  display: inline-block;
+  padding: .45rem .9rem;
+  border: 1px solid transparent;
+  border-radius: var(--radio);
+  background: var(--acento);
+  color: #fff;
+  font-size: .93rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.boton:hover { filter: brightness(1.08); }
+
+.boton.secundario {
+  background: var(--superficie);
+  color: var(--texto);
+  border-color: var(--borde);
+}
+
+.boton.peligro { background: var(--rojo); }
+.boton.pequeno { padding: .28rem .6rem; font-size: .85rem; }
+
+.enlace-sutil {
+  background: none;
+  border: none;
+  color: var(--texto-tenue);
+  cursor: pointer;
+  font-size: .9rem;
+}
+
+.en-linea { display: inline; margin: 0; }
+
+.acciones-pie, .acciones-estado, .navegacion-mes {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.acciones-estado { align-items: flex-start; }
+.accion-estado { display: inline-block; }
+
+/* --- Desplegables ------------------------------------------------------ */
+
+.anadir { margin-top: 1rem; }
+.anadir > summary { cursor: pointer; display: inline-block; list-style: none; }
+.anadir > summary::-webkit-details-marker { display: none; }
+
+.resumen-fila {
+  padding: .55rem .2rem;
+  border-bottom: 1px solid var(--borde);
+  font-weight: 600;
+  width: 100%;
+}
+
+details > summary.boton { user-select: none; }
+
+/* --- Fichas ------------------------------------------------------------ */
+
+.ficha dl {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: .4rem 1rem;
+  margin: 0;
+}
+
+.ficha dt { color: var(--texto-tenue); font-size: .88rem; }
+.ficha dd { margin: 0; }
+
+.lista-simple { margin: .5rem 0; padding-left: 1.2rem; }
+
+.nombre-archivo { font-size: .8rem; background: none; padding: 0; color: var(--texto-tenue); }
+
+.resultado {
+  background: var(--fondo);
+  padding: .6rem .75rem;
+  border-radius: 6px;
+  margin: .5rem 0 0;
+}
+
+.zona-peligro { border-color: var(--rojo); }
+
+
+/* --- Areas medicas ------------------------------------------------------ */
+/* Doce colores fijos: cada area se queda siempre con el suyo (ver
+   app/areas.py). Van en la hoja de estilos y no en el HTML porque la
+   politica de seguridad no permite estilos incrustados.
+
+   Los tonos van de 30 a 330 y evitan a proposito la franja rojiza: en esta
+   aplicacion el rojo significa "urgente", y el canto de color de una cita
+   no debe confundirse con una alarma. */
+
+.area-color-0 { --tono-area: 30; }
+.area-color-1 { --tono-area: 50; }
+.area-color-2 { --tono-area: 70; }
+.area-color-3 { --tono-area: 90; }
+.area-color-4 { --tono-area: 110; }
+.area-color-5 { --tono-area: 130; }
+.area-color-6 { --tono-area: 150; }
+.area-color-7 { --tono-area: 170; }
+.area-color-8 { --tono-area: 190; }
+.area-color-9 { --tono-area: 210; }
+.area-color-10 { --tono-area: 230; }
+.area-color-11 { --tono-area: 250; }
+.area-color-12 { --tono-area: 270; }
+.area-color-13 { --tono-area: 290; }
+.area-color-14 { --tono-area: 310; }
+.area-color-15 { --tono-area: 330; }
+
+.pastilla[class*="area-color-"] {
+  background: hsl(var(--tono-area) 62% 92%);
+  color: hsl(var(--tono-area) 65% 27%);
+  text-decoration: none;
+}
+
+.tarjeta-area {
+  display: block;
+  padding: .9rem 1rem;
+  border: 1px solid var(--borde);
+  border-left: 5px solid hsl(var(--tono-area) 60% 55%);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-area:hover { border-color: hsl(var(--tono-area) 60% 55%); }
+.tarjeta-area h2 { color: hsl(var(--tono-area) 65% 32%); margin-bottom: .3rem; }
+.area-proxima { margin: .2rem 0 .5rem; }
+
+.area-cuentas { list-style: none; padding: 0; margin: 0; font-size: .88rem; }
+.area-cuentas li { display: inline-block; margin: 0 .6rem .2rem 0; }
+.area-cuentas li::before { content: "• "; color: var(--texto-tenue); }
+
+.rejilla-areas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: .8rem;
+  margin: 1rem 0;
+}
+
+.titulo-area {
+  border-left: 6px solid hsl(var(--tono-area) 60% 55%);
+  padding-left: .6rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .pastilla[class*="area-color-"] {
+    background: hsl(var(--tono-area) 38% 17%);
+    color: hsl(var(--tono-area) 80% 76%);
+    border: 1px solid hsl(var(--tono-area) 35% 30%);
+  }
+  :root:not([data-tema="claro"]) .tarjeta-area h2 { color: hsl(var(--tono-area) 65% 72%); }
+}
+
+:root[data-tema="oscuro"] .pastilla[class*="area-color-"] {
+  background: hsl(var(--tono-area) 38% 17%);
+  color: hsl(var(--tono-area) 80% 76%);
+  border: 1px solid hsl(var(--tono-area) 35% 30%);
+}
+:root[data-tema="oscuro"] .tarjeta-area h2 { color: hsl(var(--tono-area) 65% 72%); }
+:root[data-tema="oscuro"] .cita {
+  border-left-color: hsl(var(--tono-area, 220) 60% 62%);
+}
+
+/* --- Tarjeta de cita ---------------------------------------------------- *
+ * Plana, como las de GitHub Skills: lo que la hace legible es el borde
+ * visible en los cuatro lados y el aire de dentro, no el relleno.
+ * --------------------------------------------------------------------- */
+
+.cita {
+  /* Plana y con el borde marcado. Se probo con el fondo tenido y el efecto
+     era el contrario del buscado: si todas las tarjetas estan resaltadas,
+     ninguna lo esta. El color se reserva a lo que de verdad avisa. */
+  background: var(--superficie);
+  border: 1px solid var(--borde-tarjeta);
+  /* El canto de color se queda fino: dice de que especialista es sin
+     robarle protagonismo al borde. */
+  border-left: 4px solid hsl(var(--tono-area, 220) 55% 48%);
+  border-radius: 10px;
+  margin-bottom: var(--e3);
+  overflow: hidden;
+}
+
+.cita.prioridad-alta { border-left-color: var(--rojo); border-left-width: 4px; }
+
+/* Una cita confirmada se ve antes de leerla: marco verde. El canto de la
+   izquierda no se toca, que es el color del area. */
+.cita.estado-confirmada {
+  border-top-color: var(--verde);
+  border-right-color: var(--verde);
+  border-bottom-color: var(--verde);
+}
+
+/* En que punto esta y si lleva ambulancia, debajo de la fecha: son las dos
+   preguntas que se hacen sin abrir nada. */
+.cita-situacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  align-items: center;
+  margin: var(--e3) 0 0;
+}
+.cita.cita-cerrada {
+  background: var(--superficie);
+  border-color: var(--borde-tarjeta);
+  border-left-color: var(--borde-tarjeta);
+  opacity: .8;
+}
+
+.cita-cuerpo {
+  display: block;
+  /* Aire generoso: es lo que separa una tarjeta de una fila de tabla. */
+  padding: var(--e4) var(--e4) var(--e3);
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Como el estado normal ya es el marcado, al pasar por encima hace falta
+   otra cosa: el borde se tine del acento y la tarjeta levanta un poco. */
+.cita:hover { border-color: var(--acento); box-shadow: var(--sombra-alta); }
+.cita-cuerpo:focus-visible { outline: 2px solid var(--acento); outline-offset: -2px; }
+
+/* La accion, abajo y con flecha, como en las tarjetas de GitHub. */
+.cita-ir {
+  display: block;
+  margin-top: var(--e3);
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+/* El resto de la cita, plegado. Lo que se mira cada vez -- cuando, donde y
+   que falta -- esta arriba y a la vista; la direccion, el telefono, las
+   notas y los papeles se abren aqui sin cambiar de pagina. */
+.mas-datos {
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+
+.mas-datos > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--e1) 0;
+  color: var(--acento);
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.mas-datos > summary::-webkit-details-marker { display: none; }
+.mas-datos > summary::after { content: " \25BE"; }
+.mas-datos[open] > summary::after { content: " \25B4"; }
+
+/* Los datos de la cita, dentro de la tarjeta y editables. Cada bloque es
+   un formulario corto: se cambia una cosa y se guarda, sin abrir otra
+   pantalla. En el movil cada campo ocupa su linea. */
+.panel-cita {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2) var(--e3);
+  margin: var(--e2) 0 0;
+  padding: var(--e3);
+  background: var(--fondo);
+  border-radius: var(--radio);
+  font-size: .9rem;
+}
+
+.panel-cita label {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  flex: 1 1 10rem;
+  color: var(--texto-tenue);
+  font-size: .8rem;
+}
+
+.panel-cita label.ancho { flex: 1 1 100%; }
+.panel-cita input,
+.panel-cita select {
+  width: 100%;
+  color: var(--texto);
+  font-size: .9rem;
+}
+
+.panel-acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  flex: 1 1 100%;
+}
+
+.panel-telefono { flex: 1 1 100%; margin: 0; font-size: .85rem; }
+.panel-hilo {
+  margin: var(--e3) 0 0;
+  font-size: .85rem;
+  color: var(--texto-tenue);
+}
+
+.ficha-mini {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  /* Aire entre filas: pegadas, nueve datos seguidos se leen como un
+     parrafo y hay que buscar con el dedo cual es cual. */
+  gap: var(--e3) var(--e4);
+  margin: var(--e3) 0 0;
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+.ficha-mini dt {
+  color: var(--texto-tenue);
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.ficha-mini dd { margin: 0; }
+
+.cita-ir::after { content: " \203A"; }
+
+.cita-titulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.cita-titulo h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Los dos pasos, unidos por una linea vertical. */
+.pasos {
+  list-style: none;
+  margin: .7rem 0 0;
+  padding: 0;
+}
+
+.paso {
+  display: grid;
+  grid-template-columns: 1.1rem 5.2rem 1fr;
+  align-items: baseline;
+  column-gap: .5rem;
+  padding: .2rem 0;
+  position: relative;
+}
+
+/* El punto del paso, y la linea que baja hasta el siguiente. */
+.paso::before {
+  content: "";
+  grid-column: 1;
+  width: .6rem;
+  height: .6rem;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--superficie);
+  transform: translateY(-.1rem);
+}
+
+/* La linea que baja del punto de un paso hasta el punto del siguiente. */
+.paso:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: .26rem;
+  top: 1rem;
+  bottom: -.15rem;
+  border-left: 2px dotted var(--borde);
+}
+
+.paso-hecho::before { border-color: var(--verde); background: var(--verde); }
+.paso-espera::before { border-color: var(--violeta); }
+.paso-falta::before { border-color: var(--ambar); }
+
+.paso-nombre {
+  grid-column: 2;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  opacity: .85;
+}
+
+.paso-dato {
+  grid-column: 3;
+  font-size: .95rem;
+}
+
+.cita-cuando {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.cita-lugar {
+  display: block;
+  color: var(--texto-tenue);
+  font-size: .9rem;
+  /* Un enlace largo pegado en la ubicacion no puede romper la tarjeta. */
+  overflow-wrap: anywhere;
+}
+
+.cita-aviso {
+  margin: .6rem 0 0;
+  padding: .35rem .5rem;
+  border-radius: 6px;
+  background: var(--rojo-suave);
+  color: var(--rojo);
+  font-size: .88rem;
+}
+
+.cita-pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .9rem;
+  margin: .6rem 0 0;
+  padding-top: .5rem;
+  border-top: 1px solid var(--borde);
+  font-size: .85rem;
+  color: var(--texto-tenue);
+}
+
+.apunte.listo { color: var(--verde); }
+.apunte.transporte-pendiente { color: var(--rojo); }
+.apunte.transporte-confirmado { color: var(--verde); }
+
+.cita-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .5rem 1rem;
+  border-top: 1px solid var(--borde);
+  background: var(--fondo);
+}
+
+.cita-cerrada .cita-titulo h3 { color: var(--texto-tenue); font-weight: 500; }
+.cita-cerrada-linea { margin: .3rem 0 0; font-size: .9rem; color: var(--texto-tenue); }
+
+@media (max-width: 420px) {
+  .paso { grid-template-columns: 1.1rem 1fr; }
+  .paso-nombre { grid-column: 2; }
+  .paso-dato { grid-column: 2; }
+}
+
+.apunte.aviso-reclamar {
+  align-self: center;
+  color: var(--rojo);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+/* El desplegable de "Ya tiene fecha" no debe empujar a los botones vecinos. */
+.cita-acciones details { position: relative; }
+.cita-acciones .form-fecha { margin-top: .5rem; }
+
+/* --- Etapas de una cita (pestanas) -------------------------------------- */
+
+.pestanas {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: .25rem;
+  margin: 0 0 1rem;
+  border-bottom: 2px solid var(--borde);
+}
+
+.pestana {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .55rem .85rem;
+  border-radius: var(--radio) var(--radio) 0 0;
+  color: var(--texto-tenue);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+}
+
+.pestana:hover { background: var(--acento-suave); }
+
+.pestana.activa {
+  color: var(--acento);
+  border-bottom-color: var(--acento);
+  background: var(--superficie);
+}
+
+.pestana .cuenta {
+  background: var(--borde);
+  color: var(--texto);
+  border-radius: 999px;
+  padding: 0 .4rem;
+  font-size: .78rem;
+}
+
+.pestana.activa .cuenta { background: var(--acento); color: var(--superficie); }
+
+/* --- Grupos dentro de una etapa (un centro, un dia, un mes) ------------- */
+
+.grupo { margin-bottom: 1.4rem; }
+
+.grupo-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--e2);
+  margin: var(--e5) 0 var(--e3);
+  padding-bottom: var(--e1);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  border-bottom: 2px solid var(--borde);
+}
+
+.grupo:first-of-type .grupo-titulo,
+.bloque > .grupo-titulo:first-child { margin-top: 0; }
+
+.grupo-titulo a { color: inherit; text-decoration: none; }
+.grupo-titulo a:hover { text-decoration: underline; }
+.grupo-titulo .tenue { text-transform: none; font-weight: 400; }
+
+.grupo-aviso .grupo-titulo { color: var(--rojo); border-bottom-color: var(--rojo); }
+
+/* --- Centros ------------------------------------------------------------ */
+
+.tarjeta-centro {
+  display: block;
+  padding: .9rem 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--acento);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  color: inherit;
+  text-decoration: none;
+}
+
+.tarjeta-centro:hover { border-color: var(--acento); background: var(--acento-suave); }
+.tarjeta-centro h2 { margin: 0 0 .2rem; font-size: 1.05rem; }
+.telefono-centro { margin: .5rem 0 0; color: var(--acento); font-weight: 600; }
+
+/* La barra secundaria del menu pesa menos que la principal. */
+.navegacion.secundaria a { font-size: .88rem; opacity: .8; }
+
+/* --- El hilo de una cita (de donde viene, que ha salido) ---------------- */
+
+.hilo-origen { margin: .2rem 0 .8rem; }
+.hilo-derivadas { list-style: none; padding: 0; margin: .2rem 0 .8rem; }
+.hilo-derivadas li { padding: .25rem 0; }
+.hilo-flecha { color: var(--texto-tenue); margin-right: .2rem; }
+
+/* --- Miniaturas y vista previa de documentos ---------------------------- *
+ * Las paginas se dibujan en el servidor y se sirven como imagenes propias:
+ * asi se ve el papel dentro de la aplicacion sin incrustar el PDF, que
+ * obligaria a abrir la politica de seguridad.
+ * --------------------------------------------------------------------- */
+
+.miniatura-enlace {
+  position: relative;
+  flex: 0 0 auto;
+  display: block;
+  width: 64px;
+  height: 84px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--fondo);
+}
+
+.miniatura-enlace .miniatura {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  /* Sin fondo: si la imagen no carga, se ve el icono de papel que hay
+     detras en vez de un hueco. */
+  background: transparent;
+}
+
+/* Si la miniatura no se puede dibujar, la imagen no carga y debajo queda
+   el icono de papel. */
+.miniatura-enlace .icono {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  z-index: 0;
+}
+
+.miniatura-enlace:hover { border-color: var(--acento); }
+
+.paginas-documento {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: .5rem 0;
+}
+
+.pagina-documento { margin: 0; }
+
+.pagina-documento img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: #fff;
+  box-shadow: var(--sombra);
+}
+
+.pagina-documento figcaption {
+  margin-top: .3rem;
+  font-size: .85rem;
+  text-align: center;
+}
+
+/* Quitar un preparativo apuntado por error. Discreto hasta que se busca:
+   no debe competir con la casilla de marcarlo como hecho. */
+.boton-quitar {
+  flex: 0 0 auto;
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-tenue);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.boton-quitar:hover,
+.boton-quitar:focus-visible {
+  border-color: var(--rojo);
+  background: var(--rojo-suave);
+  color: var(--rojo);
+}
+
+/* Area y centro, juntos y marcados bajo el titulo de la cita: son las dos
+   preguntas que uno se hace antes de leer nada mas. */
+.cita-etiquetas {
+  /* Las dos en la misma linea, siempre. Si no cabe, el nombre del centro se
+     corta con puntos suspensivos en vez de bajar a la linea de abajo: lo
+     que distingue a un hospital de otro esta al principio del nombre. */
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: .4rem;
+  margin: 0 0 .5rem;
+  min-width: 0;
+}
+
+.cita-etiquetas .pastilla.centro {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cita-etiquetas .pastilla.area-color-0,
+.cita-etiquetas .pastilla[class*="area-color-"] { flex: 0 0 auto; }
+
+.cita-etiquetas .pastilla {
+  /* De quien es y donde es se leen antes que el resto: van mas grandes y
+     mas gruesas que las demas pastillas de la aplicacion. */
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: .28rem .6rem;
+}
+
+/* El centro no lleva color propio: el color esta reservado al area. Se
+   distingue por el icono y por el borde. */
+.pastilla.centro {
+  background: transparent;
+  border: 1px solid var(--borde-fuerte);
+  color: var(--texto);
+}
+
+
+/* --- Historia: el recorrido de cada asunto ------------------------------ *
+ * Una consulta y todo lo que salio de ella, colgando en cadena. La sangria
+ * dice de que sale cada cosa.
+ * --------------------------------------------------------------------- */
+
+.hilo {
+  background: var(--superficie);
+  border: 1px solid var(--borde-tarjeta);
+  border-left: 4px solid hsl(var(--tono-area, 220) 55% 48%);
+  border-radius: 8px;
+  padding: 1rem 1.2rem 1.1rem;
+  margin-bottom: 1.1rem;
+}
+
+.hilo-cabecera {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: .6rem;
+}
+
+.eslabones { list-style: none; margin: 0; padding: 0; }
+
+.eslabon {
+  position: relative;
+  display: flex;
+  gap: .7rem;
+  padding: .45rem 0;
+}
+
+/* La linea que baja de un eslabon al siguiente. */
+.eslabon:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: .29rem;
+  top: 1.2rem;
+  bottom: -.3rem;
+  border-left: 2px solid var(--borde);
+}
+
+.eslabon-punto {
+  flex: 0 0 auto;
+  width: .7rem;
+  height: .7rem;
+  margin-top: .35rem;
+  border-radius: 50%;
+  border: 2px solid hsl(var(--tono-area, 220) 55% 48%);
+  background: var(--superficie);
+}
+
+.eslabon-cerrado .eslabon-punto {
+  background: hsl(var(--tono-area, 220) 55% 48%);
+}
+
+.eslabon-cuerpo { min-width: 0; }
+.eslabon-titulo { font-weight: 600; }
+.eslabon-meta { display: block; font-size: .87rem; }
+
+.eslabon-resultado {
+  margin: .35rem 0 0;
+  font-size: .88rem;
+  color: var(--texto-tenue);
+  border-left: 2px solid var(--borde);
+  padding-left: .6rem;
+}
+
+/* Cada nivel cuelga un poco mas a la derecha: se ve de que sale. */
+.eslabon.hondura-1 { margin-left: 1.1rem; }
+.eslabon.hondura-2 { margin-left: 2.2rem; }
+.eslabon.hondura-3 { margin-left: 3.3rem; }
+
+@media (max-width: 420px) {
+  .eslabon.hondura-1 { margin-left: .8rem; }
+  .eslabon.hondura-2 { margin-left: 1.6rem; }
+  .eslabon.hondura-3 { margin-left: 2.4rem; }
+}
+
+/* Agrupar por fecha, area o centro. Discreto: es una preferencia, no una
+   accion principal. */
+/* Agrupar, a la derecha de las pestanas y en su misma linea. */
+.pestanas .agrupar {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin-left: auto;
+  padding-bottom: .35rem;
+}
+
+.pestanas .agrupar select {
+  padding: .3rem .5rem;
+  font-size: .85rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto-tenue);
+}
+
+.pestanas .agrupar select:hover { border-color: var(--acento); color: var(--acento); }
+
+/* "Ver en el mapa": un paso mas, no la accion principal de la ficha. */
+.boton.mapa { margin-left: .5rem; }
+.boton.mapa::after { content: " ↗"; }
+
+/* El boton de editar dice una cosa cerrado y otra abierto, para que se vea
+   que lo que se pulsa otra vez es "cancelar" y no algo que borra. */
+details > summary .si-abierto { display: none; }
+details[open] > summary .si-cerrado { display: none; }
+details[open] > summary .si-abierto { display: inline; }
+
+/* Lo que se abre al pedir editar queda separado de lo que se estaba
+   leyendo: asi se ve que son los mismos datos, ahora en campos. */
+.editar-cita {
+  margin-top: var(--e3);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+}
+
+.editar-cita > summary { list-style: none; cursor: pointer; }
+.editar-cita > summary::-webkit-details-marker { display: none; }
+
+.editar-acciones,
+.formulario .acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Eliminar vive dentro del editor, con su nombre y separado de lo demas:
+   fuera, en la fila, se pulsaba sin querer. */
+.borrar-requisito {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  margin-top: var(--e3);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+  font-size: .85rem;
+}
+
+/* Mover un preparativo a otra cita. Como el de quitar: discreto. */
+.mover-requisito,
+.editar-requisito { flex: 0 0 auto; }
+.mover-requisito > summary,
+.editar-requisito > summary { list-style: none; cursor: pointer; }
+.mover-requisito > summary::-webkit-details-marker,
+.editar-requisito > summary::-webkit-details-marker { display: none; }
+
+/* Abierto ocupa la fila entera: dentro de la columna estrecha de los
+   botones, el selector de citas se quedaba en dos centimetros. */
+.mover-requisito[open],
+.editar-requisito[open] { flex: 1 1 100%; order: 9; }
+
+.mover-requisito[open] .form-fecha,
+.editar-requisito[open] .form-fecha {
+  margin-top: var(--e2);
+  width: 100%;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.mover-requisito[open] .form-fecha select,
+.mover-requisito[open] .form-fecha label,
+.editar-requisito[open] .form-fecha input,
+.editar-requisito[open] .form-fecha label { width: 100%; }
+.mover-requisito[open] .form-fecha button,
+.editar-requisito[open] .form-fecha button { align-self: flex-start; }
+
+/* La ambulancia se mira antes que nada el dia de la cita: el icono va mas
+   grande que el texto que lo acompana. */
+.icono-ambulancia {
+  font-size: 1.45em;
+  line-height: 1;
+  vertical-align: -.22em;
+}
+
+h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
+
+/* El boton de volver vive en la fila del titulo, asi que no lleva margenes
+   propios: los pone la fila. */
+.boton.atras { white-space: nowrap; }
+
+/* --- Lo de hoy y lo de manana ------------------------------------------- *
+ * Una etiqueta en la propia tarjeta, no solo un titulo de grupo: asi se ve
+ * igual en Citas, en Areas o en la ficha de un centro, no solo en la
+ * portada. El rojo se reserva a lo de hoy, que es lo unico que ya no se
+ * puede preparar.
+ * --------------------------------------------------------------------- */
+
+.pastilla.es-hoy {
+  background: var(--rojo);
+  color: #fff;
+  letter-spacing: .06em;
+}
+
+.pastilla.es-manana {
+  background: var(--ambar);
+  color: #fff;
+  letter-spacing: .06em;
+}
+
+.cita-hoy {
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 2px var(--rojo-suave);
+}
+
+.cita-manana { border-color: var(--ambar); }
+
+/* Los rotulos de los tramos de la portada: "Hoy" y "Manana" pesan mas. */
+.tramo-cercano {
+  font-size: 1.05rem;
+  color: var(--texto);
+  border-bottom-width: 2px;
+}
+
+.tramo-cercano.tramo-hoy { color: var(--rojo); border-bottom-color: var(--rojo); }
+.tramo-cercano.tramo-manana { color: var(--ambar); border-bottom-color: var(--ambar); }
+
+.cita-cuando-falta { margin: 0 0 .5rem; }
+
+.cita-cuando-falta .pastilla {
+  font-size: .9rem;
+  font-weight: 800;
+  padding: .25rem .8rem;
+}
+
+/* Una linea de ayuda debajo de un campo, para explicar lo que no se ve. */
+.ayuda {
+  display: block;
+  margin-top: .25rem;
+  font-size: .85rem;
+  line-height: 1.35;
+}
+
+/* El telefono de la ambulancia en la tarjeta. No es un enlace porque la
+   tarjeta entera ya lo es; para llamar, se entra en la cita. */
+.telefono-ambulancia { font-weight: 600; white-space: nowrap; }
+
+
+/* --- Ritmo y lineas de la pagina ---------------------------------------- *
+ * Una regla clara bajo cada titulo de seccion y separaciones del mismo
+ * grosor en todas partes: es lo que hace que una pantalla se vea ordenada.
+ * --------------------------------------------------------------------- */
+
+.bloque > h2:first-child,
+section.bloque > h2 {
+  margin: 0 0 var(--e3);
+  padding-bottom: var(--e2);
+  border-bottom: 1px solid var(--borde);
+  font-size: 1.05rem;
+  letter-spacing: -.01em;
+}
+
+.bloque {
+  margin-bottom: var(--e5);
+  padding: var(--e4);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+h1 {
+  letter-spacing: -.02em;
+  font-size: 1.6rem;
+}
+
+.intro {
+  margin: 0 0 var(--e4);
+  color: var(--texto-tenue);
+  max-width: 62ch;
+}
+
+/* Las pastillas, todas con la misma forma. */
+.pastilla {
+  border-radius: 999px;
+  line-height: 1.45;
+}
+
+/* --- "Propuesta lista": lo unico que espera algo de la persona ---------- *
+ * No es una etiqueta de estado mas: es la accion pendiente. Va en su
+ * propia linea, empezando por la izquierda bajo el nombre del documento,
+ * y la fila entera se marca para que no se pase por alto.
+ * --------------------------------------------------------------------- */
+
+.documento-estado {
+  display: block;
+  margin-top: var(--e2);
+}
+
+.llamada-revisar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  padding: .4rem .85rem;
+  border-radius: 999px;
+  background: var(--acento);
+  color: #fff;
+  font-size: .92rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  box-shadow: var(--sombra);
+}
+
+.llamada-revisar::after { content: "›"; font-size: 1.1em; line-height: 1; }
+
+.lista-documentos li.con-propuesta {
+  border-left: 4px solid var(--acento);
+  border-radius: var(--radio);
+  background: var(--acento-suave);
+  padding-left: var(--e3);
+}
+
+.lista-documentos li.con-propuesta:hover { box-shadow: var(--sombra-alta); }
+
+/* --- Lista de documentos ------------------------------------------------ *
+ * Estas clases se usaban en las plantillas desde el principio pero no
+ * tenian ni una regla: la fila salia con vinneta y el texto en linea.
+ * --------------------------------------------------------------------- */
+
+.lista-documentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista-documentos > li {
+  border-bottom: 1px solid var(--borde);
+}
+
+.lista-documentos > li:last-child { border-bottom: none; }
+
+.documento-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  padding: var(--e3) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.documento-fila:hover .documento-texto strong { color: var(--acento); }
+
+.documento-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  /* Sin esto, un nombre de fichero largo empuja la fila fuera de la caja. */
+  min-width: 0;
+}
+
+.documento-texto strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* La miniatura suelta, fuera de un enlace propio. */
+.documento-fila > .miniatura,
+.documento-fila > .miniatura.icono {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 62px;
+  object-fit: cover;
+  object-position: top center;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--fondo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.acciones-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  padding-bottom: var(--e2);
+}
+
+.enlace-sutil {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-tenue);
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+  cursor: pointer;
+}
+
+.enlace-sutil:hover {
+  border-color: var(--rojo);
+  background: var(--rojo-suave);
+  color: var(--rojo);
+}
+
+.lista-documentos li.con-propuesta {
+  margin: var(--e2) 0;
+  padding: 0 var(--e3);
+  border-bottom: none;
+}
+
+/* La fila de un documento pendiente: el enlace ocupa lo que queda y las
+   acciones (cancelar, eliminar) se quedan a la derecha, no debajo. */
+.lista-documentos > li.pendiente {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e2);
+  flex-wrap: wrap;
+}
+
+.lista-documentos > li.pendiente > .documento-fila { flex: 1 1 14rem; }
+.lista-documentos > li.pendiente > .acciones-fila { padding-top: var(--e3); }
+
+/* --- El aviso de la portada -------------------------------------------- *
+ * Cada cosa pendiente lleva a su apartado. Antes era un numero suelto que
+ * obligaba a bajar buscando a que se referia.
+ * --------------------------------------------------------------------- */
+
+.resumen-acciones {
+  margin: 0 0 var(--e5);
+  padding: var(--e4);
+  border: 1px solid var(--ambar);
+  border-left: 4px solid var(--ambar);
+  border-radius: var(--radio);
+  background: var(--ambar-suave);
+}
+
+.resumen-cuenta { margin: 0 0 var(--e2); color: var(--texto); }
+.resumen-cuenta strong { font-size: 1.15rem; }
+
+.resumen-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+}
+
+.resumen-lista a {
+  display: block;
+  padding: var(--e2) var(--e3);
+  border-radius: 8px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 3px solid var(--ambar);
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.resumen-lista li.urgente a { border-left-color: var(--rojo); }
+
+.resumen-lista a:hover,
+.resumen-lista a:focus-visible {
+  border-color: var(--acento);
+  border-left-color: var(--acento);
+}
+
+.aviso-texto { display: block; font-weight: 600; }
+
+.aviso-detalle {
+  display: block;
+  font-size: .85rem;
+  color: var(--texto-tenue);
+}
+
+.resumen-resto { margin: var(--e2) 0 0; font-size: .9rem; }
+
+/* Al saltar a un apartado, que no se quede pegado al borde de arriba. */
+.bloque[id] { scroll-margin-top: var(--e4); }
+
+/* --- Los preparativos, sin entrar en la cita ---------------------------- *
+ * El pie de la tarjeta esta fuera del enlace, asi que aqui si valen un
+ * desplegable y las casillas de marcar.
+ * --------------------------------------------------------------------- */
+
+.cita > .cita-pie {
+  padding: var(--e2) var(--e4) var(--e3);
+  border-top: 1px solid var(--borde);
+  margin: 0;
+}
+
+.preparar { width: 100%; }
+
+/* Anadir desde la tarjeta: el formulario ocupa el ancho del pie y sus
+   campos van uno debajo de otro, que en un movil es lo unico que cabe. */
+.cita-pie .anadir { width: 100%; margin-top: var(--e2); }
+.cita-pie .anadir .formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  margin-top: var(--e2);
+}
+.cita-pie .anadir .formulario label,
+.cita-pie .anadir .formulario input,
+.cita-pie .anadir .formulario select { width: 100%; }
+
+.preparar > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--e1) 0;
+}
+
+.preparar > summary::-webkit-details-marker { display: none; }
+.preparar > summary::after { content: " ▾"; color: var(--texto-tenue); }
+.preparar[open] > summary::after { content: " ▴"; }
+.preparar > summary:hover { color: var(--acento); }
+
+.preparar .lista-requisitos.compacta {
+  margin: var(--e2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-requisitos.compacta .requisito {
+  padding: var(--e2);
+  margin-bottom: var(--e1);
+  font-size: .92rem;
+}
+
+/* --- La lista de lo que hay que hacer, en la portada -------------------- *
+ * Cada cosa con su accion al lado: no hay que ir a otra pantalla para
+ * marcar una casilla o dar una cita por pedida.
+ * --------------------------------------------------------------------- */
+
+.tareas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tarea {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--e2) var(--e3);
+  padding: var(--e3) 0 var(--e3) var(--e3);
+  border-left: 3px solid var(--ambar);
+  border-bottom: 1px solid var(--borde);
+}
+
+.tarea:last-child { border-bottom: none; }
+.tarea.urgente { border-left-color: var(--rojo); }
+
+.tarea-texto { flex: 1 1 13rem; min-width: 0; }
+
+.tarea-texto a {
+  display: block;
+  font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.tarea-texto a:hover { color: var(--acento); }
+.tarea-texto .tenue { display: block; font-size: .87rem; }
+
+.tarea-accion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e2);
+}
+
+.tarea-accion .llamada-revisar { text-decoration: none; }
+
+/* --- Estado de la cita, arriba del todo -------------------------------- */
+
+.estado-cita { padding: var(--e3) var(--e4); }
+
+.formulario-estado {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  margin: 0;
+}
+
+.formulario-estado label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  font-size: .85rem;
+  color: var(--texto-tenue);
+}
+
+/* --- Lo que tiene que estar hecho y es otra cita ------------------------ */
+
+.lista-previas { list-style: none; margin: 0 0 var(--e3); padding: 0; }
+
+.previa {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e2);
+  padding: var(--e2) var(--e3);
+  margin-bottom: var(--e2);
+  border: 1px solid var(--borde);
+  border-left: 3px solid var(--verde);
+  border-radius: 8px;
+}
+
+.previa.sin-cita { border-left-color: var(--ambar); }
+.previa-icono { color: var(--texto-tenue); }
+.previa a { font-weight: 600; }
+.previa .tenue { display: block; font-size: .87rem; }
+
+/* Los tres desplegables de enlazar, uno debajo de otro. */
+.enlaces-hilo { display: flex; flex-direction: column; gap: var(--e4); }
+.hilo-linea { margin: var(--e1) 0; }
+
+/* --- Todo lo que falta para una cita, en una lista --------------------- *
+ * Llevar algo, pedirselo al medico o tener hecha otra prueba son lo mismo
+ * para quien lo apunta: cosas que faltan. La etiqueta de la derecha dice
+ * cual es cual sin partir la lista en tres.
+ * --------------------------------------------------------------------- */
+
+.pendientes-cita { list-style: none; margin: 0 0 var(--e3); padding: 0; }
+
+.pendiente-cita {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e2);
+  padding: var(--e2) var(--e3);
+  margin-bottom: var(--e2);
+  border: 1px solid var(--borde);
+  border-left: 3px solid var(--verde);
+  border-radius: 8px;
+}
+
+.pendiente-cita.sin-cita { border-left-color: var(--ambar); }
+.pendiente-cuerpo { flex: 1; min-width: 0; }
+.pendiente-cuerpo a,
+.pendiente-cuerpo > .pendiente-titulo > strong { font-weight: 600; }
+.pendiente-cuerpo .tenue { display: block; font-size: .87rem; }
+.pendiente-cita .marca { color: var(--texto-tenue); }
+
+.etiqueta-clase {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: .1rem .5rem;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: .75rem;
+  color: var(--texto-tenue);
+  white-space: nowrap;
+}
+
+/* Editar una prueba pendiente desde la cita para la que hace falta. */
+.pendiente-titulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e2);
+  flex-wrap: wrap;
+}
+
+/* Estado, fecha y hora en una rejilla: en el movil caben estado entero
+   arriba y fecha y hora debajo, sin que nada se quede a medias. */
+.previa-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--e2);
+  margin: var(--e2) 0 0;
+}
+
+/* El estado y el centro ocupan la fila entera; fecha y hora, y ambulancia
+   y su hora de paso, van de dos en dos. */
+.previa-form > select[name="estado"],
+.previa-form > select[name="centro"] { grid-column: 1 / -1; }
+.previa-form select,
+.previa-form input {
+  width: 100%;
+  font-size: .9rem;
+  padding: .3rem .4rem;
+}
+
+.previa-form button { grid-column: 1 / -1; justify-self: start; }
+
+/* "Todavia sin fecha" va junto al titulo de la prueba, que es donde se
+   mira: es el dato que falta, no una nota al pie. */
+.aviso-sin-fecha {
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  background: var(--ambar-suave);
+  color: var(--ambar);
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Un tramo cercano sin nada: se dice, no se esconde. */
+.tramo-vacio { margin: 0 0 var(--e4); font-size: .92rem; }
+
+/* Los telefonos de un centro, dentro de su ficha. */
+.telefonos-centro { list-style: none; margin: 0; padding: 0; }
+.telefonos-centro li { padding: var(--e1) 0; }
+.telefonos-centro a { font-weight: 600; }
+.telefonos-centro .tenue { font-size: .87rem; }

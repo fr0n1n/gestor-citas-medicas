@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+
+<div class="titulo-con-accion">
+  <h1>Trámites</h1>
+  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
+</div>
+<p class="intro">
+  Gestiones administrativas: dependencia, incapacidad, ayudas, recursos.
+  No son citas y no caben en el calendario, pero se olvidan igual de fácil.
+</p>
+
+{% if tramites %}
+<table class="tabla">
+  <thead>
+    <tr><th>Trámite</th><th>Organismo</th><th>Estado</th><th>Plazo</th><th>Pasos</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tramites %}
+    <tr>
+      <td>
+        <a href="/tramites/{{ t.id }}">{{ t.titulo }}</a>
+        {% if t.expediente %}<br><span class="tenue">Exp. {{ t.expediente }}</span>{% endif %}
+      </td>
+      <td>{{ t.organismo or '—' }}</td>
+      <td><span class="pastilla">{{ t.estado|etiqueta }}</span></td>
+      <td>
+        {% if t.fecha_limite %}
+          {{ t.fecha_limite|fecha }}
+          <span class="tenue">({{ t.fecha_limite|relativo }})</span>
+        {% else %}—{% endif %}
+      </td>
+      <td>
+        {% set hechos, total = t.progreso %}
+        {% if total %}{{ hechos }}/{{ total }}{% else %}—{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <p class="tenue">No hay ningún trámite registrado.</p>
+{% endif %}
+
+<details class="anadir" {% if not tramites %}open{% endif %}>
+  <summary class="boton">+ Nuevo trámite</summary>
+  <form method="post" action="/tramites" class="formulario">
+    <label class="ancho">
+      Título
+      <input type="text" name="titulo" required
+             placeholder="Solicitud de ayuda por dependencia">
+    </label>
+    <label>
+      Paciente
+      <select name="paciente" required>
+        {% for p in pacientes %}
+          <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>
+            {{ p.nombre }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Organismo
+      <input type="text" name="organismo" placeholder="Servicios Sociales">
+    </label>
+    <label>
+      Estado
+      <select name="estado">
+        {% for e in EstadoTramite %}
+          <option value="{{ e.value }}">{{ e|etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Prioridad
+      <select name="prioridad">
+        {% for p in Prioridad %}
+          <option value="{{ p.value }}" {% if p.value == 'normal' %}selected{% endif %}>
+            {{ p|etiqueta }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Nº de expediente
+      <input type="text" name="expediente">
+    </label>
+    <label>
+      Iniciado el
+      <input type="date" name="iniciado_en">
+    </label>
+    <label>
+      Plazo
+      <input type="date" name="fecha_limite">
+    </label>
+    <label class="ancho">
+      Notas
+      <textarea name="notas" rows="3"></textarea>
+    </label>
+    <div class="ancho">
+      <button type="submit" class="boton">Crear trámite</button>
+    </div>
+  </form>
+</details>
+
+{% endblock %}
