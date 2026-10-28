@@ -142,15 +142,25 @@
 <section class="bloque">
   <h2>Lo que viene</h2>
   {% if panel.tramos %}
-    {% for nombre, citas in panel.tramos %}
+    {# Los tramos vacios no se pintan uno a uno: "Hoy / Nada.", "Manana /
+       Nada."... ocupaban media pantalla antes de llegar a la primera cita.
+       Se juntan en una sola linea, que sigue diciendo que hoy no hay nada
+       (eso tambien es informacion). #}
+    {% set ns = namespace(vacios=[]) %}
+    {% for nombre, citas in panel.tramos if not citas %}
+      {% set ns.vacios = ns.vacios + [nombre|lower] %}
+    {% endfor %}
+    {% if ns.vacios %}
+      <p class="tramo-vacio tenue">Nada para
+        {% if ns.vacios|length > 1 %}{{ ns.vacios[:-1]|join(', ') }} ni {% endif %}{{ ns.vacios[-1] }}.</p>
+    {% endif %}
+
+    {% for nombre, citas in panel.tramos if citas %}
       {# Todos los tramos con el mismo peso: lo que cambia es el color, y
          solo en los dos que ya no dan margen. #}
       <h3 class="grupo-titulo tramo-cercano
                  {%- if nombre == 'Hoy' %} tramo-hoy
                  {%- elif nombre == 'Mañana' %} tramo-manana{% endif %}">{{ nombre }}</h3>
-      {% if not citas %}
-        <p class="tramo-vacio tenue">Nada.</p>
-      {% endif %}
       {% for e in citas %}
         {% if e.ya_paso %}
           {% call tarjeta_evento(e, destino='/') %}
