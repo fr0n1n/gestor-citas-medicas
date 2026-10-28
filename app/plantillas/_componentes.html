@@ -227,7 +227,7 @@
       <label>Pedida el
         <input type="date" name="solicitada_en" value="{{ evento.solicitada_en|iso }}">
       </label>
-      <label class="ancho">Por qué
+      <label class="ancho">Motivo de la cita
         <input type="text" name="motivo" value="{{ evento.motivo or '' }}">
       </label>
       <label class="ancho">Notas
@@ -366,6 +366,12 @@
       </p>
     {% endif %}
 
+    {# El motivo, a la vista y justo encima de lo que hay que preparar: es
+       lo que explica la cita (antes "Por que", dentro de la informacion). #}
+    {% if evento.motivo %}
+      <p class="cita-motivo"><span class="tenue">Motivo de la cita:</span> {{ evento.motivo }}</p>
+    {% endif %}
+
   </div>
 
   {# El pie va FUERA del enlace: dentro no cabrian ni el desplegable de los
@@ -416,7 +422,7 @@
      Los documentos van aparte, al final de la tarjeta. #}
   {% set hay_info = (evento.necesita_ambulancia and evento.transporte_notas)
         or evento.profesional
-        or evento.motivo or evento.notas or evento.resultado
+        or evento.notas or evento.resultado
         or evento.origen or evento.antes_de or evento.previas %}
   {% if hay_info %}
   <div class="info-cita">
@@ -429,7 +435,6 @@
         </dd>
       {% endif %}
       {% if evento.profesional %}<dt>Con</dt><dd>Dr./Dra. {{ evento.profesional }}</dd>{% endif %}
-      {% if evento.motivo %}<dt>Por qué</dt><dd>{{ evento.motivo }}</dd>{% endif %}
       {% if evento.notas %}<dt>Notas</dt><dd>{{ evento.notas }}</dd>{% endif %}
       {% if evento.resultado %}<dt>Dijeron</dt><dd>{{ evento.resultado }}</dd>{% endif %}
     </dl>

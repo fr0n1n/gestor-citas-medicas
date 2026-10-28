@@ -2243,3 +2243,7 @@ a.pastilla.centro:hover { text-decoration: underline; }
     margin-top: var(--e2);
   }
 }
+
+/* Motivo de la cita: al final del cuerpo de la tarjeta, encima de "N cosas
+   que preparar". */
+.cita-motivo { margin: var(--e2) 0 0; }

@@ -116,7 +116,7 @@
       </dd>
     {% endif %}
 
-    {% if evento.motivo %}<dt>Motivo</dt><dd>{{ evento.motivo|enlazado }}</dd>{% endif %}
+    {% if evento.motivo %}<dt>Motivo de la cita</dt><dd>{{ evento.motivo|enlazado }}</dd>{% endif %}
     {% if evento.notas %}<dt>Notas</dt><dd class="multilinea">{{ evento.notas|enlazado }}</dd>{% endif %}
     {% if evento.resultado %}
       <dt>Resultado</dt><dd class="multilinea">{{ evento.resultado|enlazado }}</dd>
