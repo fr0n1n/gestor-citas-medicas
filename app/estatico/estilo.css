@@ -161,6 +161,38 @@ code {
 .navegacion a:hover { background: var(--acento-suave); color: var(--acento); }
 .navegacion a.activo { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
 
+/* En pantallas anchas el envoltorio de los menus no existe a efectos de
+   maquetacion: sus dos <nav> se colocan como si estuvieran sueltos. */
+.menus { display: contents; }
+
+/* Movil: antes la cabecera ocupaba tres o cuatro filas (logo, dos menus y
+   el usuario) y el contenido empezaba a media pantalla. Ahora son dos:
+   arriba logo, paciente, tema y salir; debajo todas las secciones en una
+   fila que se desliza con el dedo. No se esconde ninguna seccion. */
+@media (max-width: 720px) {
+  .cabecera { gap: .5rem; padding: .5rem .75rem; }
+  .selector { flex: 1 1 auto; min-width: 0; }
+  .selector select { width: 100%; max-width: 100%; }
+  /* El nombre ya se sabe; "Salir" basta. */
+  .sesion-usuario .tenue { display: none; }
+
+  .menus {
+    display: flex;
+    order: 9;              /* despues del tema y la sesion: segunda fila */
+    flex: 1 1 100%;
+    gap: .25rem;
+    overflow-x: auto;      /* se desliza en horizontal en vez de partirse */
+    scrollbar-width: none; /* sin barra: el gesto es el de cualquier app */
+    margin: 0 -.75rem;     /* llega hasta los bordes de la pantalla... */
+    padding: 0 .75rem;     /* ...sin pegar el primer enlace al borde */
+  }
+  .menus::-webkit-scrollbar { display: none; }
+  .menus .navegacion { flex-wrap: nowrap; margin-left: 0; }
+  .navegacion a { white-space: nowrap; }
+  /* Una raya fina separa lo diario de lo ocasional. */
+  .navegacion.secundaria { border-left: 1px solid var(--borde); padding-left: .25rem; }
+}
+
 .contenido {
   max-width: 62rem;
   margin: 0 auto;

@@ -34,7 +34,10 @@
   {% endif %}
 
   {# Lo del dia a dia arriba; lo que se consulta de vez en cuando, debajo
-     y mas discreto. Antes eran diez entradas al mismo nivel. #}
+     y mas discreto. Antes eran diez entradas al mismo nivel.
+     El envoltorio .menus no cambia nada en pantallas anchas; en el movil
+     junta los dos menus en una sola fila que se desliza con el dedo. #}
+  <div class="menus">
   <nav class="navegacion">
     {% set actual = request.url.path %}
     <a href="/" {% if actual == '/' %}class="activo"{% endif %}>Hoy</a>
@@ -49,6 +52,7 @@
     <a href="/documentos" {% if actual.startswith('/documentos') %}class="activo"{% endif %}>Documentos</a>
     <a href="/pacientes" {% if actual == '/pacientes' %}class="activo"{% endif %}>Ajustes</a>
   </nav>
+  </div>
 
   {#- Ojo con el nombre: una variable puesta aqui tapa la que envie la
      pagina. Se llamo "temas" y escondia la lista de areas de Documentos. -#}

@@ -4,6 +4,15 @@
 //
 // Todo funciona tambien sin JavaScript (hay botones <noscript> de respaldo).
 
+document.addEventListener("DOMContentLoaded", () => {
+  // En el movil los menus son una fila que se desliza: si la seccion
+  // actual queda fuera de la pantalla (Ajustes, Documentos...), se desliza
+  // hasta ella para que se vea donde estas. Sin JavaScript, simplemente
+  // no se desliza.
+  const activo = document.querySelector(".menus a.activo");
+  if (activo) activo.scrollIntoView({ block: "nearest", inline: "nearest" });
+});
+
 document.addEventListener("change", (evento) => {
   // Selectores y casillas que envian su formulario al cambiar.
   const campo = evento.target.closest("[data-autoenvio]");
