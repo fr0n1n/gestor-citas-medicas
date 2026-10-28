@@ -3,17 +3,25 @@
 
 :root {
   color-scheme: light;
-  /* Grises con un punto de azul, para que el blanco no parezca sucio. */
-  --fondo: #f1f4f7;
+  /* Paleta inspirada en DJI (awesome-design-md): fondo gris muy palido,
+     tarjetas blancas, grises neutros y un solo azul para las acciones. */
+  --fondo: #f7f9fa;
   --superficie: #ffffff;
-  --borde: #dde3ea;
+  --borde: #e8e8e8;
   /* El borde de las tarjetas se ve; el de las separaciones, apenas. */
-  --borde-tarjeta: #c3ccd6;
-  --borde-fuerte: #8695a5;
-  --texto: #10161c;
-  --texto-tenue: #5b6874;
-  --acento: #0b5cc4;
-  --acento-suave: #e6eefb;
+  --borde-tarjeta: #d9d9d9;
+  --borde-fuerte: #8c8c8c;
+  /* Nunca negro puro: gris muy oscuro, mas suave de leer. */
+  --texto: #262626;
+  --texto-tenue: #595959;
+  /* El azul de DJI: 5:1 sobre blanco, legible como texto (WCAG AA). */
+  --acento: #0070d5;
+  /* Fondo suave de lo activo o al pasar el raton: gris, no azul. */
+  --acento-suave: #f0f0f0;
+  /* Boton principal: el mismo azul, con texto blanco. */
+  --primario: #0070d5;
+  --primario-activo: #005bb0;
+  --sobre-primario: #ffffff;
 
   --rojo: #b3261e;
   --rojo-suave: #fdecea;
@@ -48,15 +56,23 @@
   color-scheme: dark;
   /* Mas contraste que antes: el fondo baja y el texto sube, que es lo que
      hace que se lea de un vistazo y no haya que acercarse. */
-  --fondo: #0e1216;
-  --superficie: #171c21;
-  --borde: #262e36;
-  --borde-tarjeta: #38434e;
-  --borde-fuerte: #5d6b79;
-  --texto: #eef3f8;
-  --texto-tenue: #9dabb8;
-  --acento: #6fb0f5;
-  --acento-suave: #14243a;
+  /* DJI no tiene modo oscuro: se construye con los grises de su pie de
+     pagina (#272727, #383838) y el mismo azul en los botones. */
+  --fondo: #1c1c1c;
+  --superficie: #272727;
+  --borde: #383838;
+  --borde-tarjeta: #414141;
+  --borde-fuerte: #6c7073;
+  --texto: #f5f5f5;
+  --texto-tenue: #b3b3b3;
+  /* Enlaces algo mas claros: el azul de los botones no se lee como texto
+     sobre fondo oscuro. */
+  --acento: #4da3ff;
+  --acento-suave: #333333;
+  /* Boton: el azul de siempre; con texto blanco da 5:1. */
+  --primario: #0070d5;
+  --primario-activo: #1a80e0;
+  --sobre-primario: #ffffff;
 
   --rojo: #f58a80;
   --rojo-suave: #3a201d;
@@ -74,24 +90,32 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
     color-scheme: dark;
-    --fondo: #14171a;
-    --superficie: #1c2024;
-    --borde: #2e343a;
-    --texto: #e7eaed;
-    --texto-tenue: #9aa4ad;
-    --acento: #6aa9f0;
-    --acento-suave: #17273a;
+    /* Los mismos valores que el bloque de oscuro elegido a mano: antes
+       eran parecidos pero no iguales, y faltaban los bordes de tarjeta. */
+    --fondo: #1c1c1c;
+    --superficie: #272727;
+    --borde: #383838;
+    --borde-tarjeta: #414141;
+    --borde-fuerte: #6c7073;
+    --texto: #f5f5f5;
+    --texto-tenue: #b3b3b3;
+    --acento: #4da3ff;
+    --acento-suave: #333333;
+    --primario: #0070d5;
+    --primario-activo: #1a80e0;
+    --sobre-primario: #ffffff;
 
-    --rojo: #f07a72;
-    --rojo-suave: #37211f;
-    --ambar: #e0b25f;
-    --ambar-suave: #332a1a;
-    --verde: #72c78f;
-    --verde-suave: #1a2c21;
-    --violeta: #b09bec;
+    --rojo: #f58a80;
+    --rojo-suave: #3a201d;
+    --ambar: #e8bb68;
+    --ambar-suave: #372c18;
+    --verde: #78d197;
+    --verde-suave: #162d1f;
+    --violeta: #b5a1f0;
     --violeta-suave: #26203a;
 
-    --sombra: 0 1px 2px rgba(0, 0, 0, .4);
+    --sombra: 0 1px 2px rgba(0, 0, 0, .45);
+    --sombra-alta: 0 6px 18px rgba(0, 0, 0, .5);
   }
 }
 
@@ -158,7 +182,9 @@ code {
   font-size: .93rem;
 }
 
-.navegacion a:hover { background: var(--acento-suave); color: var(--acento); }
+/* Al pasar el raton, gris; la seccion activa, en el azul de las acciones
+   (en DJI el selector activo va en azul). */
+.navegacion a:hover { background: var(--acento-suave); color: var(--texto); }
 .navegacion a.activo { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
 
 /* En pantallas anchas el envoltorio de los menus no existe a efectos de
@@ -610,8 +636,9 @@ input:focus, select:focus, textarea:focus {
   padding: .45rem .9rem;
   border: 1px solid transparent;
   border-radius: var(--radio);
-  background: var(--acento);
-  color: #fff;
+  /* Principal en el azul de las acciones: el unico color de los botones. */
+  background: var(--primario);
+  color: var(--sobre-primario);
   font-size: .93rem;
   font-weight: 600;
   text-decoration: none;
@@ -619,13 +646,16 @@ input:focus, select:focus, textarea:focus {
   white-space: nowrap;
 }
 
-.boton:hover { filter: brightness(1.08); }
+.boton:hover { background: var(--primario-activo); }
 
 .boton.secundario {
   background: var(--superficie);
   color: var(--texto);
   border-color: var(--borde);
 }
+
+/* El principal se oscurece al pasar el raton; el secundario, gris suave. */
+.boton.secundario:hover { background: var(--acento-suave); }
 
 .boton.peligro { background: var(--rojo); }
 .boton.pequeno { padding: .28rem .6rem; font-size: .85rem; }
@@ -1598,8 +1628,9 @@ h1 {
   gap: var(--e2);
   padding: .4rem .85rem;
   border-radius: 999px;
-  background: var(--acento);
-  color: #fff;
+  /* Es una accion: mismo color que el boton principal. */
+  background: var(--primario);
+  color: var(--sobre-primario);
   font-size: .92rem;
   font-weight: 700;
   letter-spacing: .01em;
