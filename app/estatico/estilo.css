@@ -297,9 +297,10 @@ h3 { font-size: 1rem; margin: 0; }
   padding-bottom: .3rem;
   border-bottom: 1px solid var(--borde);
   color: var(--texto-tenue);
-  font-size: .95rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  /* Sin mayusculas (antes uppercase): se leen peor y "gritan"; la
+     jerarquia la da el grosor. */
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .banda-aviso {
@@ -465,7 +466,8 @@ h3 { font-size: 1rem; margin: 0; }
   vertical-align: top;
 }
 
-.tabla th { color: var(--texto-tenue); font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; }
+/* Cabeceras de tabla sin mayusculas: el grosor ya las distingue. */
+.tabla th { color: var(--texto-tenue); font-size: .88rem; font-weight: 600; }
 .tabla tr:last-child td { border-bottom: none; }
 .tabla tr.fila-alerta { background: var(--rojo-suave); }
 .acciones-celda { white-space: nowrap; }
@@ -484,9 +486,9 @@ h3 { font-size: 1rem; margin: 0; }
 
 .calendario th {
   padding: .4rem;
-  font-size: .78rem;
-  text-transform: uppercase;
-  letter-spacing: .05em;
+  /* Lun, Mar... en vez de LUN, MAR: sin mayusculas forzadas. */
+  font-size: .85rem;
+  font-weight: 600;
   color: var(--texto-tenue);
   border-bottom: 1px solid var(--borde);
 }
@@ -1011,9 +1013,9 @@ details > summary.boton { user-select: none; }
 
 .ficha-mini dt {
   color: var(--texto-tenue);
-  font-size: .8rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  /* "Centro", "Teléfono"... sin mayusculas forzadas. */
+  font-size: .85rem;
+  font-weight: 600;
 }
 
 .ficha-mini dd { margin: 0; }
@@ -1079,10 +1081,10 @@ details > summary.boton { user-select: none; }
 
 .paso-nombre {
   grid-column: 2;
-  font-size: .68rem;
+  /* "Pedida", "Cita"... sin mayusculas: algo mas grande para que se lea
+     igual de bien que antes. */
+  font-size: .8rem;
   font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
   color: var(--texto-tenue);
   opacity: .85;
 }
@@ -1211,10 +1213,10 @@ details > summary.boton { user-select: none; }
   gap: var(--e2);
   margin: var(--e5) 0 var(--e3);
   padding-bottom: var(--e1);
-  font-size: .82rem;
+  /* "Hoy", "Mañana"... en vez de HOY, MAÑANA: la jerarquia la dan el
+     grosor y el tamano, no las mayusculas. */
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
   color: var(--texto-tenue);
   border-bottom: 2px solid var(--borde);
 }
@@ -1585,13 +1587,13 @@ h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
 .pastilla.es-hoy {
   background: var(--rojo);
   color: #fff;
-  letter-spacing: .06em;
+  /* "Hoy" sin mayusculas ni espaciado: el rojo ya es la alerta. */
 }
 
 .pastilla.es-manana {
   background: var(--ambar);
   color: #fff;
-  letter-spacing: .06em;
+  /* Igual que "Hoy": sin espaciado de mayusculas. */
 }
 
 .cita-hoy {
