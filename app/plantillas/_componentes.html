@@ -105,7 +105,14 @@
   {% endif %}
   <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
   {% if not cerrada %}
-    <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+    {# Si ya paso y nadie la ha cerrado, eso es lo que importa: "Sin cerrar"
+       (ambar) en vez de "Confirmada" (verde), que se contradecia con el
+       aviso del grupo. #}
+    {% if evento.ya_paso %}
+      <span class="pastilla estado-sin-cerrar">Sin cerrar</span>
+    {% else %}
+      <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+    {% endif %}
     <span class="pastilla transporte-{{ evento.transporte.value }}">
       <span class="icono-ambulancia">{{ icono("ambulancia") }}</span>
       {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
@@ -152,9 +159,16 @@
       <p class="cita-cuando-falta"><span class="pastilla es-manana">Mañana</span></p>
     {% endif %}
 
-    {# Primera linea: etiquetas y, a la derecha, Editar. #}
+    {# Primera linea: etiquetas y, a la derecha, las acciones de su
+       situacion (Cerrar la cita, Apuntar fecha, Marcar como pedida...: lo
+       que llega en el {% call %}) y Editar. Antes iban al fondo de la
+       tarjeta, en una franja aparte. #}
     <div class="cita-primera-linea">
     {{ etiquetas_cita(evento, mostrar_centro) }}
+    {# Acciones y Editar, juntos en un bloque a la derecha: si no caben al
+       lado de las etiquetas, baja el bloque entero, alineado a la derecha. #}
+    <div class="cita-derecha">
+    {% if caller %}<div class="cita-acciones-arriba">{{ caller() }}</div>{% endif %}
     {# Editar, a la derecha de la primera linea, donde se busca para cambiar
        algo. Abierto, el formulario baja a ocupar todo el ancho. #}
     <details class="editar-cita">
@@ -288,6 +302,7 @@
         <span class="tenue">Se lleva por delante lo apuntado para ella.</span>
       </form>
     </details>
+    </div>
     </div>
 
     <div class="cita-titulo">
@@ -461,7 +476,6 @@
   </div>
   {% endif %}
 
-  {% if caller %}<div class="cita-acciones">{{ caller() }}</div>{% endif %}
 </article>
 {% endmacro %}
 

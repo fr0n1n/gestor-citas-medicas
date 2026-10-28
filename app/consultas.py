@@ -730,7 +730,7 @@ def _por_dia(eventos: list[Evento]) -> list[Grupo]:
     grupos: list[Grupo] = []
     if atrasadas:
         grupos.append(
-            Grupo(eventos=atrasadas, titulo="Ya pasaron y siguen abiertas", aviso=True)
+            Grupo(eventos=atrasadas, titulo="Ya pasaron: falta anotar qué dijeron", aviso=True)
         )
 
     por_dia: dict[date, list[Evento]] = defaultdict(list)

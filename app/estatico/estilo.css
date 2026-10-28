@@ -1231,7 +1231,9 @@ details > summary.boton { user-select: none; }
 .grupo-titulo a:hover { text-decoration: underline; }
 .grupo-titulo .tenue { text-transform: none; font-weight: 400; }
 
-.grupo-aviso .grupo-titulo { color: var(--rojo); border-bottom-color: var(--rojo); }
+/* Citas que ya pasaron sin cerrar: pendiente (ambar), no urgente (rojo), y
+   con la misma raya fina que los demas grupos (bordes limpios). */
+.grupo-aviso .grupo-titulo { color: var(--ambar); }
 
 /* --- Centros ------------------------------------------------------------ */
 
@@ -2291,3 +2293,44 @@ a.pastilla.centro:hover { text-decoration: underline; }
 /* Motivo de la cita: al final del cuerpo de la tarjeta, encima de "N cosas
    que preparar". */
 .cita-motivo { margin: var(--e2) 0 0; }
+
+/* "Sin cerrar": la cita ya paso y falta anotar que dijeron. */
+.pastilla.estado-sin-cerrar { background: var(--ambar-suave); color: var(--ambar); }
+
+/* Acciones de la situacion de una cita (Cerrar, Apuntar fecha...) y
+   Editar: un bloque a la derecha de la primera linea. Si no cabe al lado de
+   las etiquetas, baja entero y sigue alineado a la derecha. Si se abre un
+   formulario (apuntar fecha, cerrar, editar), el bloque ocupa todo el
+   ancho y el formulario va debajo. */
+.cita-primera-linea > .cita-derecha {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--e2);
+  margin-left: auto;
+}
+.cita-derecha > .cita-acciones-arriba {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2);
+}
+.cita-derecha > .editar-cita { margin: 0; padding: 0; border: 0; }
+.cita-acciones-arriba > form { margin: 0; }
+.cita-acciones-arriba .apunte { align-self: center; }
+.cita-primera-linea > .cita-derecha:has(details[open]) {
+  flex: 1 1 100%;
+  order: 9;
+  margin-left: 0;
+}
+.cita-derecha > .cita-acciones-arriba:has(details[open]),
+.cita-acciones-arriba > details[open],
+.cita-derecha > .editar-cita[open] {
+  flex: 1 1 100%;
+}
+.cita-derecha > .editar-cita[open] {
+  margin-top: var(--e2);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+}
