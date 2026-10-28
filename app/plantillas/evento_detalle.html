@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos, cabecera_pagina with context %}
+{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos, cabecera_pagina, etiquetas_cita with context %}
 
 {% block contenido %}
 
@@ -9,9 +9,11 @@
   <a class="boton secundario" href="/eventos/{{ evento.id }}/editar">✎ Editar</a>
 {% endcall %}
 
+{# La misma primera linea que su tarjeta (hospital, especialidad, estado,
+   ambulancia) y, debajo, que tipo de cita es y de quien. #}
+{{ etiquetas_cita(evento) }}
 <p class="meta">
   {{ evento.tipo|etiqueta }}
-  {% if evento.especialidad %} · {{ evento.especialidad }}{% endif %}
   {% if evento.paciente %} · {{ evento.paciente.nombre }}{% endif %}
 </p>
 
