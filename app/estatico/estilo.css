@@ -897,69 +897,9 @@ details > summary.boton { user-select: none; }
   padding: var(--e2) var(--e4) var(--e3);
 }
 
-/* "Ver la cita" a la izquierda y "Editar" a la derecha, en la misma fila.
-   La raya y el margen pasan del desplegable a la fila entera. Al abrir
-   Editar, su formulario baja a ocupar todo el ancho. */
-.ver-editar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  column-gap: var(--e3);
-  border-top: 1px solid var(--borde);
-  padding: var(--e2) var(--e4) var(--e3);
-}
-.ver-editar > .mas-datos { border-top: 0; padding: 0; min-width: 0; }
-
-/* --- Cabecera de pagina (macro cabecera_pagina) ------------------------ *
- * La misma en todas las paginas: el titulo con "Atras" a su derecha y,
- * justo debajo, la barra de acciones. Asi los botones estan siempre en el
- * mismo sitio, tambien en el movil (si no caben, bajan de linea).
- * --------------------------------------------------------------------- */
-.cabecera-pagina { margin: 0 0 var(--e5); }
-/* Titulo a la izquierda y "Atras" a la derecha, en la misma linea. */
-.titulo-fila {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e3);
-  margin: 0 0 var(--e3);
-}
-.titulo-fila h1 { margin: 0; }
-/* Etiqueta de estado junto al titulo (ficha de documento): mas pequena
-   que el titulo y centrada con el. */
-.titulo-estado { font-size: var(--t-sm); font-weight: 400; vertical-align: middle; }
-
-/* "Tramites · 3": el numero, mas discreto que el titulo. */
-.contador { color: var(--texto-tenue); font-weight: 400; }
-
-.acciones-pagina {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--e2);
-}
-.acciones-pagina > details { margin: 0; }
-.acciones-pagina > details > summary { list-style: none; }
-.acciones-pagina > details > summary::-webkit-details-marker { display: none; }
-/* Un desplegable abierto (apuntar llamada, subir...) baja a su propia
-   fila, a todo el ancho, despues de los botones. */
-.acciones-pagina > details[open] { flex: 1 1 100%; order: 9; }
-.acciones-pagina > details[open] > .formulario {
-  margin-top: var(--e3);
-  padding: var(--e4);
-  border: 1px solid var(--borde-tarjeta);
-  border-radius: var(--radio);
-  background: var(--superficie);
-}
-/* Avisos dentro de la barra (p. ej. "Claude no esta disponible"): debajo. */
-.acciones-pagina > p { flex: 1 1 100%; order: 10; margin: 0; }
-.ver-editar > .editar-cita { margin-top: 0; padding-top: 0; border-top: 0; }
-.ver-editar > .editar-cita[open] {
-  grid-column: 1 / -1;
-  margin-top: var(--e3);
-  padding-top: var(--e2);
-  border-top: 1px solid var(--borde);
-}
+/* (La fila "Ver la cita / Editar" ya no existe: Editar va en la primera
+   linea, .cita-primera-linea, y la informacion siempre a la vista,
+   .info-cita.) */
 
 .mas-datos > summary {
   cursor: pointer;
@@ -2204,4 +2144,102 @@ h1 {
   height: 1.1em;
   vertical-align: -0.18em;
   flex: none;
+}
+
+/* Tarjeta de cita, primera linea: etiquetas (que bajan de linea si no
+   caben) y "Editar" a la derecha. Abierto, el formulario de editar baja a
+   ocupar todo el ancho debajo de las etiquetas. */
+.cita-primera-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2) var(--e3);
+  margin: 0 0 .5rem;
+}
+.cita-primera-linea > .cita-etiquetas { flex: 1 1 auto; min-width: 0; margin: 0; }
+.cita-primera-linea > .editar-cita { margin: 0 0 0 auto; padding: 0; border: 0; }
+.cita-primera-linea > .editar-cita[open] {
+  flex: 1 1 100%;
+  order: 9;
+  margin-top: var(--e2);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+}
+
+/* El telefono de la primera linea: etiqueta con aspecto de enlace (se
+   pulsa para llamar). */
+.pastilla.telefono {
+  color: var(--acento);
+  background: var(--acento-suave);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Informacion de la cita: siempre a la vista y compacta, dato y valor en
+   dos columnas (en el movil, uno debajo de otro). */
+.info-cita {
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+.info-cita .ficha-mini {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--e1) var(--e3);
+  margin: 0;
+}
+.info-cita .ficha-mini dd { margin: 0; }
+@media (max-width: 720px) {
+  .info-cita .ficha-mini { grid-template-columns: minmax(0, 1fr); }
+  .info-cita .ficha-mini dd { margin-bottom: var(--e2); }
+}
+
+/* Documentos de la cita, al final de la tarjeta, separados como la
+   informacion. */
+.documentos-cita {
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+.documentos-cita-titulo {
+  margin: 0 0 var(--e2);
+  color: var(--texto-tenue);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+.documentos-cita .lista-documentos { margin: 0; }
+
+/* La etiqueta del hospital es un enlace al mapa: se ve como etiqueta,
+   pero al pasar por encima se subraya (se puede pulsar). */
+a.pastilla.centro { color: inherit; text-decoration: none; }
+a.pastilla.centro:hover { text-decoration: underline; }
+
+/* Pie de la tarjeta: "+ Anadir algo para esta cita" a la derecha, en la
+   misma linea que "N cosas que preparar". Se hace con una rejilla de dos
+   columnas: todo ocupa el ancho entero (1 / -1) y el boton se coloca
+   encima, en la primera fila y la segunda columna. Abierto, su formulario
+   baja a ocupar todo el ancho. En el movil se queda debajo: en una
+   pantalla estrecha los dos textos se pisarian. */
+@media (min-width: 721px) {
+  .cita > .cita-pie {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--e3);
+    align-items: start;
+  }
+  .cita > .cita-pie > * { grid-column: 1 / -1; }
+  .cita > .cita-pie > :first-child { grid-row: 1; }
+  .cita > .cita-pie > .anadir {
+    grid-row: 1;
+    grid-column: 2;
+    width: auto;
+    margin: 0;
+    justify-self: end;
+    position: relative;   /* por encima de la lista si se solaparan */
+    z-index: 1;
+  }
+  .cita > .cita-pie > .anadir[open] {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    margin-top: var(--e2);
+  }
 }
