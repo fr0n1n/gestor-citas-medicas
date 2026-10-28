@@ -639,16 +639,24 @@ input:focus, select:focus, textarea:focus {
 
 /* --- Botones ----------------------------------------------------------- */
 
+/* Regla de los botones: todos rectangulares con las esquinas un poco
+   redondeadas (8px, el radio de las tarjetas de opciones de DJI; la
+   pildora se probo y se descarto) y con la misma altura, sean <button>,
+   <a> o <summary>. En cada fila, la accion
+   que se espera de ti va rellena de azul y primero; lo demas (llamar,
+   ver mas...) con borde fino y despues. */
 .boton {
   display: inline-block;
-  padding: .45rem .9rem;
+  padding: .45rem 1rem;
   border: 1px solid transparent;
-  border-radius: var(--radio);
+  border-radius: 8px;
   /* Principal en el azul de las acciones: el unico color de los botones. */
   background: var(--primario);
   color: var(--sobre-primario);
+  font-family: inherit;  /* <button> no hereda la letra por defecto */
   font-size: .93rem;
   font-weight: 600;
+  line-height: 1.25;     /* igual en <button>, <a> y <summary> */
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -659,14 +667,15 @@ input:focus, select:focus, textarea:focus {
 .boton.secundario {
   background: var(--superficie);
   color: var(--texto);
-  border-color: var(--borde);
+  /* Borde visible: en DJI el secundario es un contorno fino oscuro. */
+  border-color: var(--borde-fuerte);
 }
 
 /* El principal se oscurece al pasar el raton; el secundario, gris suave. */
 .boton.secundario:hover { background: var(--acento-suave); }
 
 .boton.peligro { background: var(--rojo); }
-.boton.pequeno { padding: .28rem .6rem; font-size: .85rem; }
+.boton.pequeno { padding: .3rem .8rem; font-size: .85rem; }
 
 .enlace-sutil {
   background: none;
@@ -1635,8 +1644,8 @@ h1 {
   align-items: center;
   gap: var(--e2);
   padding: .4rem .85rem;
-  border-radius: 999px;
-  /* Es una accion: mismo color que el boton principal. */
+  border-radius: 8px;
+  /* Es una accion: mismo color y forma que el boton principal. */
   background: var(--primario);
   color: var(--sobre-primario);
   font-size: .92rem;
