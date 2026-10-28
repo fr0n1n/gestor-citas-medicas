@@ -696,7 +696,7 @@
 #}
 {% macro formulario_cerrar(evento, destino='/') %}
 <details class="cerrar-cita">
-  <summary class="boton pequeno">¿Ya fue? Cerrarla</summary>
+  <summary class="boton pequeno">Cerrar la cita</summary>
   <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario">
     <input type="hidden" name="destino" value="{{ destino }}">
     <label class="ancho">

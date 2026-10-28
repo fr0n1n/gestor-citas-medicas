@@ -102,7 +102,7 @@
             {% if e.estado == EstadoEvento.POR_SOLICITAR %}
               <form method="post" action="/eventos/{{ e.id }}/estado">
                 <input type="hidden" name="estado" value="solicitada">
-                <button type="submit" class="boton pequeno">Ya la he pedido</button>
+                <button type="submit" class="boton pequeno">Marcar como pedida</button>
               </form>
             {% else %}
               {% if e.toca_reclamar(config.dias_alerta_espera) %}
@@ -112,7 +112,7 @@
                 <a class="boton secundario pequeno" href="tel:{{ e.centro.telefono }}">☎ {{ e.centro.telefono }}</a>
               {% endif %}
               <details>
-                <summary class="boton pequeno">Ya tiene fecha</summary>
+                <summary class="boton pequeno">Apuntar fecha</summary>
                 <form method="post" action="/eventos/{{ e.id }}/estado" class="form-fecha">
                   <input type="hidden" name="estado" value="confirmada">
                   <label>Fecha <input type="date" name="fecha" required></label>

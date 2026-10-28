@@ -34,7 +34,15 @@
       <li class="tarea {% if a.urgente %}urgente{% endif %}">
         <div class="tarea-texto">
           <a href="{{ a.enlace }}">{{ a.texto }}</a>
-          {% if a.detalle %}<span class="tenue">{{ a.detalle }}</span>{% endif %}
+          {# La situacion, dicha en la fila: en "Reclamar" no se veia si la
+             cita tenia fecha, y el boton "Ya tiene fecha" parecia decir que
+             si. Aqui va el estado; en el boton, lo que hace al pulsarlo. #}
+          {% if a.detalle or a.clase == 'reclamar' %}
+            <span class="tenue">
+              {{- a.detalle or '' -}}
+              {%- if a.clase == 'reclamar' %}{% if a.detalle %} · {% endif %}sin fecha todavía{% endif -%}
+            </span>
+          {% endif %}
         </div>
 
         <div class="tarea-accion">
@@ -44,7 +52,9 @@
             <form method="post" action="/requisitos/{{ a.objeto.id }}/alternar" class="en-linea">
               <input type="hidden" name="destino" value="/">
               <button type="submit" class="boton pequeno">
-                {% if a.objeto.en_la_cita %}Ya lo he pedido{% else %}Ya lo tengo preparado{% endif %}
+                {# Los botones empiezan por un verbo: dicen lo que hacen, no un
+                   estado (antes "Ya lo tengo preparado" se leia como dato). #}
+                {% if a.objeto.en_la_cita %}Marcar como pedido{% else %}Marcar como preparado{% endif %}
               </button>
             </form>
 
@@ -52,7 +62,7 @@
             <form method="post" action="/eventos/{{ a.objeto.id }}/transporte" class="en-linea">
               <input type="hidden" name="destino" value="/">
               <input type="hidden" name="transporte" value="solicitado">
-              <button type="submit" class="boton pequeno">Ya la he pedido</button>
+              <button type="submit" class="boton pequeno">Marcar como pedida</button>
             </form>
             {% if telefono_ambulancia %}
               <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
@@ -62,7 +72,7 @@
             <form method="post" action="/eventos/{{ a.objeto.id }}/transporte" class="en-linea">
               <input type="hidden" name="destino" value="/">
               <input type="hidden" name="transporte" value="confirmado">
-              <button type="submit" class="boton pequeno">Confirmada</button>
+              <button type="submit" class="boton pequeno">Marcar como confirmada</button>
             </form>
             {% if telefono_ambulancia %}
               <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
@@ -71,7 +81,7 @@
           {% elif a.clase == 'por_solicitar' %}
             <form method="post" action="/eventos/{{ a.objeto.id }}/estado" class="en-linea">
               <input type="hidden" name="estado" value="solicitada">
-              <button type="submit" class="boton pequeno">Ya la he pedido</button>
+              <button type="submit" class="boton pequeno">Marcar como pedida</button>
             </form>
             {% if a.objeto.centro and a.objeto.centro.telefono %}
               <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">☎ {{ a.objeto.centro.telefono }}</a>
@@ -82,7 +92,7 @@
                cuando ya esta hecho; despues, con borde, el telefono. Antes
                aqui iba al reves y el telefono salia azul solo en esta fila. #}
             <details>
-              <summary class="boton pequeno">Ya tiene fecha</summary>
+              <summary class="boton pequeno">Apuntar fecha</summary>
               <form method="post" action="/eventos/{{ a.objeto.id }}/estado" class="form-fecha">
                 {# Se vuelve a Hoy (antes saltaba a la ficha de la cita) y el
                    aviso de arriba dice la fecha y hora que han quedado. #}
