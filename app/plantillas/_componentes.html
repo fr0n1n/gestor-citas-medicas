@@ -102,8 +102,11 @@
       <p class="cita-cuando-falta"><span class="pastilla es-manana">Mañana</span></p>
     {% endif %}
 
+    {# Primera linea, lo importante en el orden en que se pregunta: donde
+       (el hospital), que (la especialidad), en que punto esta (confirmada,
+       solicitada...) y como se va (ambulancia). Antes el estado y la
+       ambulancia iban abajo, despues de las fechas. #}
     <p class="cita-etiquetas">
-      <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
       {% if mostrar_centro and evento.centro %}
         <span class="pastilla centro" title="{{ evento.centro.nombre }}">{{ evento.centro.nombre|centro_corto }}</span>
       {% elif not mostrar_centro and evento.ubicacion %}
@@ -116,6 +119,17 @@
         {% if sitio %}
           <span class="pastilla centro" title="{{ sitio }}">{{ sitio|centro_corto(34) }}</span>
         {% endif %}
+      {% endif %}
+      <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
+      {% if not cerrada %}
+        <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+        <span class="pastilla transporte-{{ evento.transporte.value }}">
+          <span class="icono-ambulancia">🚑</span>
+          {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
+            {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
+            {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
+          {%- else %} Sin ambulancia{% endif %}
+        </span>
       {% endif %}
     </p>
 
@@ -185,16 +199,6 @@
 
       </ol>
 
-      <p class="cita-situacion">
-        <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
-        <span class="pastilla transporte-{{ evento.transporte.value }}">
-          <span class="icono-ambulancia">🚑</span>
-          {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
-            {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
-            {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
-          {%- else %} Sin ambulancia{% endif %}
-        </span>
-      </p>
     {% endif %}
 
     {% if ns.aviso %}

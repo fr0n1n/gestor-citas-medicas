@@ -859,15 +859,7 @@ details > summary.boton { user-select: none; }
   border-bottom-color: var(--verde);
 }
 
-/* En que punto esta y si lleva ambulancia, debajo de la fecha: son las dos
-   preguntas que se hacen sin abrir nada. */
-.cita-situacion {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--e2);
-  align-items: center;
-  margin: var(--e3) 0 0;
-}
+/* (Estado y ambulancia van ahora en la primera linea, .cita-etiquetas.) */
 .cita.cita-cerrada {
   background: var(--superficie);
   border-color: var(--borde-tarjeta);
@@ -1377,11 +1369,12 @@ details > summary.boton { user-select: none; }
 /* Area y centro, juntos y marcados bajo el titulo de la cita: son las dos
    preguntas que uno se hace antes de leer nada mas. */
 .cita-etiquetas {
-  /* Las dos en la misma linea, siempre. Si no cabe, el nombre del centro se
-     corta con puntos suspensivos en vez de bajar a la linea de abajo: lo
-     que distingue a un hospital de otro esta al principio del nombre. */
+  /* Hospital, especialidad, estado y ambulancia en una linea. Si no caben
+     (movil), bajan de linea en ese mismo orden; el nombre del centro, si
+     aun asi no cabe, se corta con puntos suspensivos: lo que distingue a
+     un hospital de otro esta al principio del nombre. */
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: .4rem;
   margin: 0 0 .5rem;
@@ -1390,6 +1383,7 @@ details > summary.boton { user-select: none; }
 
 .cita-etiquetas .pastilla.centro {
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
