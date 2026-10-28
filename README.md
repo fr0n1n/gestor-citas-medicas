@@ -205,6 +205,71 @@ viva en un servidor accesible desde la red:
 Las piezas de seguridad están en `app/seguridad.py`, sin dependencias
 externas y con sus propios tests.
 
+### Cómo abrirla desde fuera de casa
+
+La contraseña de la app es la **última** barrera, no debería ser la única:
+son datos de salud. Pon otra capa delante. De más a menos recomendable:
+
+**1. Solo por VPN (Tailscale o WireGuard).** Nadie fuera de tu red privada
+llega ni a ver la página. Con [Tailscale](https://tailscale.com), en el
+servidor:
+
+```bash
+sudo tailscale up                                   # une el servidor a tu red de Tailscale
+sudo tailscale serve --bg http://127.0.0.1:8080     # la publica con HTTPS SOLO dentro de esa red
+```
+
+```ini
+# .env: el nombre que te da Tailscale (lo ves con `tailscale status`)
+MEDICOS_HOSTS_PERMITIDOS=servidor.tu-red.ts.net
+```
+
+**2. Túnel de Cloudflare con Cloudflare Access.** Sin abrir puertos en el
+router, y Cloudflare pide un código enviado a un correo autorizado *antes*
+de dejarte llegar al login de la app:
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create medicos
+cloudflared tunnel route dns medicos citas.tudominio.com
+```
+
+```yaml
+# ~/.cloudflared/config.yml
+tunnel: medicos
+credentials-file: /home/TU_USUARIO/.cloudflared/<id-del-tunel>.json
+ingress:
+  - hostname: citas.tudominio.com
+    service: http://127.0.0.1:8080
+  - service: http_status:404
+```
+
+Después, en el panel de Cloudflare: *Zero Trust → Access → Applications →
+Self-hosted*, con el dominio `citas.tudominio.com` y una política
+*Allow* con *Emails* = solo los correos de quien deba entrar (método
+*One-time PIN*). Sin esa política, el túnel solo oculta tu IP: la app
+quedaría abierta a todo internet.
+
+**3. Tu propio proxy con HTTPS (nginx + Let's Encrypt).** Abre el puerto
+443 del router hacia nginx (ver [nginx](#nginx)). Es la opción más expuesta:
+añade el límite de intentos de login por IP que trae comentado
+[`despliegue/nginx-medicos.conf`](despliegue/nginx-medicos.conf) y, si
+puedes, una autenticación previa en el proxy.
+
+**Nunca:**
+- abrir en el router el puerto del contenedor (`8080`) directamente;
+- entrar por HTTP sin cifrar desde fuera de casa;
+- cambiar `MEDICOS_IP_ESCUCHA` a `0.0.0.0` si el proxy está en la misma
+  máquina: con `127.0.0.1` solo el proxy habla con el contenedor.
+
+**Además:**
+- reconstruye la imagen de vez en cuando (`docker compose up -d --build`),
+  aunque no cambie el código: así se actualizan las librerías del sistema
+  que leen PDF e imágenes. El CI pasa `pip-audit` sobre las versiones del
+  `Dockerfile`;
+- cifra las copias de seguridad de `datos/` si salen del servidor;
+- usa contraseñas largas (frases): la app exige 10 caracteres como mínimo.
+
 ---
 
 ## Copias de seguridad
