@@ -1978,14 +1978,34 @@ h1 {
 .tarea-texto a:hover { color: var(--acento); }
 .tarea-texto .tenue { display: block; font-size: var(--t-sm); }
 
+/* Dos huecos fijos, iguales en todas las filas: a la izquierda lo que se
+   marca cuando esta hecho (azul); a la derecha, llamar (con borde). Cada
+   boton ocupa su hueco entero, asi que todos miden lo mismo y forman dos
+   columnas. Si una fila no tiene telefono, su hueco queda vacio y nada se
+   mueve. Antes cada boton media lo que su texto y no cuadraban. */
 .tarea-accion {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 10.5rem 10.5rem;
   gap: var(--e2);
+  align-items: start;
 }
+.tarea-accion > * { min-width: 0; margin: 0; }
+.tarea-accion .boton,
+.tarea-accion .llamada-revisar {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+/* "Ya tiene fecha" o "Cerrarla" abiertos: su formulario usa los dos huecos. */
+.tarea-accion > details[open] { grid-column: 1 / -1; }
 
 .tarea-accion .llamada-revisar { text-decoration: none; }
+
+/* Movil: las acciones bajan debajo del texto y los dos huecos se reparten
+   el ancho, mismos sitios que en el ordenador. */
+@media (max-width: 720px) {
+  .tarea-accion { flex: 1 1 100%; grid-template-columns: 1fr 1fr; }
+}
 
 /* --- Estado de la cita, arriba del todo -------------------------------- */
 
