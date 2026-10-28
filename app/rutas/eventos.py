@@ -378,6 +378,19 @@ def cambiar_estado(
     sesion.commit()
 
     mensaje = cambio.aviso or f"Cita marcada como {nuevo.value.replace('_', ' ')}."
+    # Al confirmar con fecha, el aviso repite lo que ha quedado apuntado
+    # ("... confirmada: lunes 16 de noviembre de 2026 a las 10:30"): se ve
+    # al momento si se ha tecleado mal el dia o la hora.
+    if cambio.estado == EstadoEvento.CONFIRMADA and evento.fecha:
+        cuando = (
+            f"{logica.nombre_dia(evento.fecha)} {evento.fecha.day} de "
+            f"{logica.nombre_mes(evento.fecha.month)} de {evento.fecha.year}"
+        )
+        if evento.hora:
+            cuando += f" a las {evento.hora.strftime('%H:%M')}"
+        mensaje = f"«{evento.titulo}» confirmada: {cuando}."
+        if cambio.aviso:
+            mensaje += f" {cambio.aviso}"
     # `destino` deja volver a la cita desde la que se edito, que es donde
     # estaba la persona: una prueba se pone al dia desde la cita para la
     # que hace falta, sin pasar por su propia ficha.

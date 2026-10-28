@@ -84,6 +84,9 @@
             <details>
               <summary class="boton pequeno">Ya tiene fecha</summary>
               <form method="post" action="/eventos/{{ a.objeto.id }}/estado" class="form-fecha">
+                {# Se vuelve a Hoy (antes saltaba a la ficha de la cita) y el
+                   aviso de arriba dice la fecha y hora que han quedado. #}
+                <input type="hidden" name="destino" value="/">
                 <input type="hidden" name="estado" value="confirmada">
                 <label>Fecha <input type="date" name="fecha" required></label>
                 <label>Hora <input type="time" name="hora"></label>
