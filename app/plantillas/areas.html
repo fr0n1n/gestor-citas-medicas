@@ -1,14 +1,23 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Áreas</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun. La accion es "+ Nueva cita" porque un area nace de ahi:
+   no hay alta de areas aparte (ver la explicacion de abajo). #}
+{% call cabecera_pagina('Áreas', atras='/', contador=(areas|length if areas else none)) %}
+  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
+{% endcall %}
 <p class="intro">
   Todo lo de cada especialista, junto: sus citas, lo que hay que preparar y
   sus documentos. Las áreas con cita más próxima salen primero.
+</p>
+{# Se preguntaba como se crea un area: no hay boton propio porque un area
+   es la especialidad de una cita (consultas.areas_para_elegir). #}
+<p class="tenue">
+  <strong>¿Cómo se crea un área?</strong> Al crear o editar una cita, en el campo
+  <em>Especialidad</em>: elige una de las sugeridas o escribe una nueva. En cuanto
+  una cita la usa, el área aparece aquí con su color.
 </p>
 
 {% if areas %}
@@ -46,7 +55,9 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="tenue">Todavía no hay citas ni documentos.</p>
+  {# Estado vacio con su accion al lado, no solo el aviso. #}
+  <p class="tenue">Todavía no hay citas ni documentos.
+    <a href="/eventos/nuevo">Crea la primera cita</a> y su especialidad será la primera área.</p>
 {% endif %}
 
 {% endblock %}
