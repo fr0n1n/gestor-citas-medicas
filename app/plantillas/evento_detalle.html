@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos with context %}
+{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ evento.titulo }}</h1>
-  <div class="navegacion-mes">
-    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-    <a class="boton secundario pequeno" href="/eventos/{{ evento.id }}/editar">Editar</a>
-  </div>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{% call cabecera_pagina(evento.titulo, atras='/') %}
+  <a class="boton secundario" href="/eventos/{{ evento.id }}/editar">✎ Editar</a>
+{% endcall %}
 
 <p class="meta">
   {{ evento.tipo|etiqueta }}

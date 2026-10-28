@@ -10,10 +10,12 @@
      {% call cabecera_pagina('Citas', atras='/') %}
        <a class="boton" href="...">+ Nueva cita</a>
      {% endcall %} #}
-{% macro cabecera_pagina(titulo, atras=none, contador=none) %}
+{% macro cabecera_pagina(titulo, atras=none, contador=none, estado=none) %}
 <header class="cabecera-pagina">
   <div class="titulo-fila">
-    <h1>{{ titulo }}{% if contador is not none %} <span class="contador">· {{ contador }}</span>{% endif %}</h1>
+    {# estado: etiqueta opcional junto al titulo (p. ej. el de un documento). #}
+    <h1>{{ titulo }}{% if contador is not none %} <span class="contador">· {{ contador }}</span>{% endif %}
+      {%- if estado %} <span class="titulo-estado">{{ estado }}</span>{% endif %}</h1>
     {% if atras %}<a class="boton secundario pequeno atras" href="{{ atras }}" data-atras>← Atrás</a>{% endif %}
   </div>
   {% if caller %}<div class="acciones-pagina">{{ caller() }}</div>{% endif %}

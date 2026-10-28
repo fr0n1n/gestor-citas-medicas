@@ -1,13 +1,11 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import estado_documento with context %}
+{% from "_componentes.html" import estado_documento, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ documento.titulo or documento.nombre_original or 'Documento' }}</h1>
-  {{ estado_documento(documento) }}
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina(documento.titulo or documento.nombre_original or 'Documento', atras='/documentos', estado=estado_documento(documento)) }}
 
 <p class="meta tenue">
   {% if documento.tema %}<span class="pastilla">{{ documento.tema }}</span> {% endif %}

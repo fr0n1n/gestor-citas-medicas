@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Pacientes y centros</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina('Pacientes y centros', atras='/') }}
 
 <section class="bloque">
   <h2>Pacientes</h2>

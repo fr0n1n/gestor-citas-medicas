@@ -925,6 +925,9 @@ details > summary.boton { user-select: none; }
   margin: 0 0 var(--e3);
 }
 .titulo-fila h1 { margin: 0; }
+/* Etiqueta de estado junto al titulo (ficha de documento): mas pequena
+   que el titulo y centrada con el. */
+.titulo-estado { font-size: var(--t-sm); font-weight: 400; vertical-align: middle; }
 
 /* "Tramites · 3": el numero, mas discreto que el titulo. */
 .contador { color: var(--texto-tenue); font-weight: 400; }

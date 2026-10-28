@@ -1,18 +1,16 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ nombre_mes(mes)|capitalize }} {{ anio }}</h1>
-  <nav class="navegacion-mes">
-    <a class="boton secundario pequeno"
-       href="/calendario?anio={{ anterior[0] }}&mes={{ anterior[1] }}">‹ Anterior</a>
-    <a class="boton secundario pequeno" href="/calendario">Hoy</a>
-    <a class="boton secundario pequeno"
-       href="/calendario?anio={{ siguiente[0] }}&mes={{ siguiente[1] }}">Siguiente ›</a>
-  </nav>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{% call cabecera_pagina(nombre_mes(mes)|capitalize ~ ' ' ~ anio, atras='/') %}
+  {# Moverse por los meses: todo secundario, no hay accion principal. #}
+  <a class="boton secundario" href="/calendario?anio={{ anterior[0] }}&mes={{ anterior[1] }}">‹ Anterior</a>
+  <a class="boton secundario" href="/calendario">Hoy</a>
+  <a class="boton secundario" href="/calendario?anio={{ siguiente[0] }}&mes={{ siguiente[1] }}">Siguiente ›</a>
+{% endcall %}
 
 <table class="calendario">
   <thead>

@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import formulario_subida, estado_documento, lista_documentos with context %}
+{% from "_componentes.html" import formulario_subida, estado_documento, lista_documentos, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ tramite.titulo }}</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina(tramite.titulo, atras='/tramites') }}
 <p class="meta">
   <span class="pastilla">{{ tramite.estado|etiqueta }}</span>
   {% if tramite.organismo %} · {{ tramite.organismo }}{% endif %}

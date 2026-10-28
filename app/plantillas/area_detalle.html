@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import tarjeta_evento, lista_documentos, formulario_subida with context %}
+{% from "_componentes.html" import tarjeta_evento, lista_documentos, formulario_subida, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1 class="titulo-area area-color-{{ area.color }}">{{ area.nombre }}</h1>
-  <a class="boton secundario pequeno" href="/areas">Todas las áreas</a>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun: titulo con "Atras" a la derecha y la barra debajo. #}
+{% call cabecera_pagina(area.nombre, atras='/areas') %}
+  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
+  <a class="boton secundario" href="/areas">Todas las áreas</a>
+{% endcall %}
 
 <p class="intro">
   Todo lo de {{ area.nombre|lower }}: citas, preparativos y papeles, sin
