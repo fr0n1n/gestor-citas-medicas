@@ -1,15 +1,15 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Centros</h1>
-  <div class="navegacion-mes">
-    <a class="boton" href="/centros/nuevo">+ Nuevo centro</a>
-    <a class="boton secundario pequeno" href="/eventos/nuevo">+ Nueva cita</a>
-    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-  </div>
-</div>
+{# Cabecera comun, como en Citas: titulo con "Atras" a la derecha y la
+   barra debajo. Los dos botones al mismo tamano: antes "Nueva cita" era
+   mas pequeno y parecia otra cosa. Contador: cuantos centros hay. #}
+{% call cabecera_pagina('Centros', atras='/', contador=(centros|length if centros else none)) %}
+  <a class="boton" href="/centros/nuevo">+ Nuevo centro</a>
+  <a class="boton secundario" href="/eventos/nuevo">+ Nueva cita</a>
+{% endcall %}
 <p class="intro">
   Dónde toca ir y a qué teléfono llamar. Cada hospital y cada ambulatorio
   por separado: uno manda la cita y la prueba se hace en otro, y conviene
