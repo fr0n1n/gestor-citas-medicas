@@ -159,16 +159,12 @@
       <p class="cita-cuando-falta"><span class="pastilla es-manana">Mañana</span></p>
     {% endif %}
 
-    {# Primera linea: etiquetas y, a la derecha, las acciones de su
-       situacion (Cerrar la cita, Apuntar fecha, Marcar como pedida...: lo
-       que llega en el {% call %}) y Editar. Antes iban al fondo de la
-       tarjeta, en una franja aparte. #}
+    {# Primera linea: etiquetas y, a la derecha, Editar. #}
     <div class="cita-primera-linea">
     {{ etiquetas_cita(evento, mostrar_centro) }}
-    {# Acciones y Editar, juntos en un bloque a la derecha: si no caben al
-       lado de las etiquetas, baja el bloque entero, alineado a la derecha. #}
+    {# Editar, a la derecha (si no cabe al lado de las etiquetas, baja
+       alineado a la derecha). #}
     <div class="cita-derecha">
-    {% if caller %}<div class="cita-acciones-arriba">{{ caller() }}</div>{% endif %}
     {# Editar, a la derecha de la primera linea, donde se busca para cambiar
        algo. Abierto, el formulario baja a ocupar todo el ancho. #}
     <details class="editar-cita">
@@ -394,6 +390,11 @@
      para algo que se hace en un segundo. #}
   {% if not cerrada %}
       <div class="cita-pie">
+        {# Acciones de su situacion (Cerrar la cita, Apuntar fecha, Marcar
+           como pedida...: lo que llega en el {% call %}), a la izquierda en
+           la misma linea que "+ Anadir algo" (a la derecha): se aprovecha
+           una linea. Antes iban en una franja aparte al fondo. #}
+        {% if caller %}<div class="cita-acciones-pie">{{ caller() }}</div>{% endif %}
         {% if pendientes %}
           {# Abierto por defecto: lo que hay que preparar se tiene que ver
              sin pulsar nada; quien quiera, lo pliega. #}
