@@ -6,11 +6,83 @@
 {# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
    y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
 {{ cabecera_pagina(tramite.titulo, atras='/tramites') }}
-<p class="meta">
-  <span class="pastilla">{{ tramite.estado|etiqueta }}</span>
-  {% if tramite.organismo %} · {{ tramite.organismo }}{% endif %}
-  {% if tramite.paciente %} · {{ tramite.paciente.nombre }}{% endif %}
-</p>
+{# Misma forma que una cita: primera linea con lo importante en etiquetas
+   (organismo, estado, plazo, expediente) y "Editar" a la derecha, que
+   abre los datos. Antes era una linea de texto suelta y el formulario de
+   datos estaba siempre abierto en medio de la pagina. #}
+<div class="cita-primera-linea">
+  <p class="cita-etiquetas">
+    {% if tramite.organismo %}<span class="pastilla centro">{{ tramite.organismo }}</span>{% endif %}
+    <span class="pastilla">{{ tramite.estado|etiqueta }}</span>
+    {% if tramite.fecha_limite %}
+      <span class="pastilla {% if tramite.fecha_limite < hoy %}es-hoy{% endif %}">Plazo {{ tramite.fecha_limite|fecha }} · {{ tramite.fecha_limite|relativo }}</span>
+    {% endif %}
+    {% if tramite.expediente %}<span class="pastilla">Exp. {{ tramite.expediente }}</span>{% endif %}
+  </p>
+  <details class="editar-cita">
+    <summary class="boton secundario pequeno">
+      <span class="si-cerrado">{{ icono("editar") }} Editar</span>
+      <span class="si-abierto">Cancelar</span>
+    </summary>
+    <form method="post" action="/tramites/{{ tramite.id }}" class="formulario">
+      <label class="ancho">
+        Título
+        <input type="text" name="titulo" required value="{{ tramite.titulo }}">
+      </label>
+      <label>
+        Organismo
+        <input type="text" name="organismo" value="{{ tramite.organismo or '' }}">
+      </label>
+      <label>
+        Estado
+        <select name="estado">
+          {% for e in EstadoTramite %}
+            <option value="{{ e.value }}"
+              {% if tramite.estado.value == e.value %}selected{% endif %}>
+              {{ e|etiqueta }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Prioridad
+        <select name="prioridad">
+          {% for p in Prioridad %}
+            <option value="{{ p.value }}"
+              {% if tramite.prioridad.value == p.value %}selected{% endif %}>
+              {{ p|etiqueta }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Nº de expediente
+        <input type="text" name="expediente" value="{{ tramite.expediente or '' }}">
+      </label>
+      <label>
+        Iniciado el
+        <input type="date" name="iniciado_en" value="{{ tramite.iniciado_en|iso }}">
+      </label>
+      <label>
+        Plazo
+        <input type="date" name="fecha_limite" value="{{ tramite.fecha_limite|iso }}">
+      </label>
+      <label>
+        Resuelto el
+        <input type="date" name="resuelto_en" value="{{ tramite.resuelto_en|iso }}">
+      </label>
+      <label class="ancho">
+        Notas
+        <textarea name="notas" rows="4">{{ tramite.notas or '' }}</textarea>
+      </label>
+      <div class="ancho acciones-pie">
+        <button type="submit" class="boton">Guardar</button>
+      </div>
+    </form>
+  </details>
+</div>
+<p class="meta">{% if tramite.paciente %}{{ tramite.paciente.nombre }}{% endif %}
+  {% if tramite.notas %}<br><span class="tenue">{{ tramite.notas }}</span>{% endif %}</p>
 
 <section class="bloque">
   <h2>Pasos</h2>
@@ -60,65 +132,6 @@
   </form>
 </section>
 
-<section class="bloque">
-  <h2>Datos del trámite</h2>
-  <form method="post" action="/tramites/{{ tramite.id }}" class="formulario">
-    <label class="ancho">
-      Título
-      <input type="text" name="titulo" required value="{{ tramite.titulo }}">
-    </label>
-    <label>
-      Organismo
-      <input type="text" name="organismo" value="{{ tramite.organismo or '' }}">
-    </label>
-    <label>
-      Estado
-      <select name="estado">
-        {% for e in EstadoTramite %}
-          <option value="{{ e.value }}"
-            {% if tramite.estado.value == e.value %}selected{% endif %}>
-            {{ e|etiqueta }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      Prioridad
-      <select name="prioridad">
-        {% for p in Prioridad %}
-          <option value="{{ p.value }}"
-            {% if tramite.prioridad.value == p.value %}selected{% endif %}>
-            {{ p|etiqueta }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      Nº de expediente
-      <input type="text" name="expediente" value="{{ tramite.expediente or '' }}">
-    </label>
-    <label>
-      Iniciado el
-      <input type="date" name="iniciado_en" value="{{ tramite.iniciado_en|iso }}">
-    </label>
-    <label>
-      Plazo
-      <input type="date" name="fecha_limite" value="{{ tramite.fecha_limite|iso }}">
-    </label>
-    <label>
-      Resuelto el
-      <input type="date" name="resuelto_en" value="{{ tramite.resuelto_en|iso }}">
-    </label>
-    <label class="ancho">
-      Notas
-      <textarea name="notas" rows="4">{{ tramite.notas or '' }}</textarea>
-    </label>
-    <div class="ancho acciones-pie">
-      <button type="submit" class="boton">Guardar</button>
-      <a class="boton secundario" href="/tramites">Volver</a>
-    </div>
-  </form>
-</section>
 
 <section class="bloque">
   <h2>Documentos</h2>
