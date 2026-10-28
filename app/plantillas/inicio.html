@@ -5,6 +5,27 @@
 
 <h1>Hoy, {{ panel.hoy|fecha_larga }}</h1>
 
+{# Las acciones, arriba y a la vista: antes estaban al final de la pagina,
+   debajo de todas las citas, y habia que bajar para encontrarlas.
+   "Subir un papel" es un desplegable para no empujar los pendientes
+   hacia abajo; al abrirlo, el formulario ocupa toda la fila.
+   Para cuando llega un papel y todavia no sabes a que cita va: se sube y
+   Claude dice que es y a cual pertenece. #}
+<div class="acciones-hoy">
+  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
+  <details class="subir-papel">
+    <summary class="boton secundario">
+      <span class="si-cerrado">Subir un papel</span>
+      <span class="si-abierto">Cerrar</span>
+    </summary>
+    <div class="subir-papel-formulario">
+      {{ formulario_subida('/', ia_lista=ia_lista) }}
+    </div>
+  </details>
+  <a class="boton secundario" href="/espera">Ver lo que está en espera</a>
+  <a class="boton secundario" href="/documentos">📎 Documentos</a>
+</div>
+
 {% if panel.todo_en_orden %}
   <div class="panel-ok">
     <p><strong>No hay nada pendiente de hacer.</strong></p>
@@ -144,18 +165,5 @@
     <p class="tenue">No hay ninguna cita con fecha en los próximos quince días.</p>
   {% endif %}
 </section>
-
-{# Para cuando llega un papel y todavia no sabes a que cita va: se sube y
-   Claude dice que es y a cual pertenece. #}
-<section class="bloque">
-  <h2>Subir un papel</h2>
-  {{ formulario_subida('/', ia_lista=ia_lista) }}
-</section>
-
-<p class="acciones-pie">
-  <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
-  <a class="boton secundario" href="/espera">Ver lo que está en espera</a>
-  <a class="boton secundario" href="/documentos">📎 Subir documentos</a>
-</p>
 
 {% endblock %}

@@ -912,6 +912,26 @@ details > summary.boton { user-select: none; }
   padding: var(--e2) var(--e4) var(--e3);
 }
 .ver-editar > .mas-datos { border-top: 0; padding: 0; min-width: 0; }
+
+/* Acciones de Hoy, en una fila bajo el titulo. "Subir un papel" abierto
+   ocupa la fila entera y se coloca al final, con su formulario debajo. */
+.acciones-hoy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2);
+  margin: 0 0 var(--e5);
+}
+.subir-papel > summary { list-style: none; }
+.subir-papel > summary::-webkit-details-marker { display: none; }
+.subir-papel[open] { flex: 1 1 100%; order: 9; }
+.subir-papel-formulario {
+  margin-top: var(--e3);
+  padding: var(--e4);
+  border: 1px solid var(--borde-tarjeta);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
 .ver-editar > .editar-cita { margin-top: 0; padding-top: 0; border-top: 0; }
 .ver-editar > .editar-cita[open] {
   grid-column: 1 / -1;
