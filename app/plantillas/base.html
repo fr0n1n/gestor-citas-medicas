@@ -28,6 +28,9 @@
       {% for p in pacientes %}
         <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
       {% endfor %}
+      {# Dar de alta un paciente desde donde se elige: lleva a Ajustes con
+         el formulario abierto (ver seleccionar_paciente). #}
+      <option value="nuevo">+ Nuevo paciente</option>
     </select>
     <noscript><button type="submit">Ir</button></noscript>
   </form>

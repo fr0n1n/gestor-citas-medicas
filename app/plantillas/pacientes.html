@@ -68,7 +68,9 @@
     <p class="tenue">Todavía no hay ningún paciente. Crea el primero aquí abajo.</p>
   {% endfor %}
 
-  <details class="anadir" {% if not todos %}open{% endif %}>
+  {# Abierto si no hay pacientes o si se viene de "+ Nuevo paciente" en el
+     selector de la cabecera (?nuevo=1); el id es el ancla del salto. #}
+  <details class="anadir" id="nuevo-paciente" {% if not todos or request.query_params.get('nuevo') %}open{% endif %}>
     <summary class="boton">+ Nuevo paciente</summary>
     <form method="post" action="/pacientes" class="formulario">
       <label class="ancho">

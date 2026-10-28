@@ -83,6 +83,10 @@ def calendario(
 @router.get("/seleccionar-paciente")
 def seleccionar_paciente(id: str = "todos", destino: str = "/"):
     """Cambia el paciente activo y vuelve a donde se estaba."""
+    # "+ Nuevo paciente" es la ultima opcion del selector de la cabecera:
+    # no cambia el paciente activo, lleva al formulario de alta ya abierto.
+    if id == "nuevo":
+        return volver("/pacientes?nuevo=1#nuevo-paciente")
     respuesta = volver(destino)
     respuesta.set_cookie(
         COOKIE_PACIENTE,
