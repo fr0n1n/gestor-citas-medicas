@@ -136,7 +136,8 @@ class TestNombreCorto(unittest.TestCase):
         from app.centros import nombre_corto
 
         casos = {
-            "Centro de Salud Arroyo Blanco-Villamar": "C.S. Arroyo Blanco",
+            # Sin abreviar: "C.S." no se entendia (ver ABREVIATURAS).
+            "Centro de Salud Arroyo Blanco-Villamar": "Centro de Salud Arroyo Blanco",
             "Hospital de Alta Resolución de Villamar": "HAR Villamar",
             "Hospital Universitario Virgen del Faro (Vistamar)":
                 "H.U. Virgen del Faro",
