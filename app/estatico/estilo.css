@@ -428,7 +428,10 @@ h3 { font-size: 1rem; margin: 0; }
 /* Dentro de una tarjeta hay menos ancho: el texto se queda con lo que
    sobra de su linea (la casilla va delante) y los botones bajan juntos,
    no de uno en uno. */
-.requisito.compacta .requisito-cuerpo { flex: 1 1 calc(100% - 3rem); }
+/* En la tarjeta de la cita, casilla, texto y "Editar" en la misma linea:
+   antes el texto ocupaba toda la fila y "Editar" caia debajo. Abierto,
+   el editor sigue bajando a su propia linea (.editar-requisito[open]). */
+.requisito.compacta .requisito-cuerpo { flex: 1 1 0; min-width: 0; }
 .requisito-texto { font-weight: 600; }
 .limite { font-size: .88rem; }
 
@@ -895,6 +898,26 @@ details > summary.boton { user-select: none; }
 .mas-datos {
   border-top: 1px solid var(--borde);
   padding: var(--e2) var(--e4) var(--e3);
+}
+
+/* "Ver la cita" a la izquierda y "Editar" a la derecha, en la misma fila.
+   La raya y el margen pasan del desplegable a la fila entera. Al abrir
+   Editar, su formulario baja a ocupar todo el ancho. */
+.ver-editar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: var(--e3);
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+.ver-editar > .mas-datos { border-top: 0; padding: 0; min-width: 0; }
+.ver-editar > .editar-cita { margin-top: 0; padding-top: 0; border-top: 0; }
+.ver-editar > .editar-cita[open] {
+  grid-column: 1 / -1;
+  margin-top: var(--e3);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
 }
 
 .mas-datos > summary {

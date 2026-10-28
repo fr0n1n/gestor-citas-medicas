@@ -190,7 +190,9 @@
   {% if not cerrada %}
       <div class="cita-pie">
         {% if pendientes %}
-          <details class="preparar">
+          {# Abierto por defecto: lo que hay que preparar se tiene que ver
+             sin pulsar nada; quien quiera, lo pliega. #}
+          <details class="preparar" open>
             <summary class="apunte">
               📋 {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
             </summary>
@@ -204,7 +206,7 @@
           <span class="apunte listo">✓ Preparativos hechos</span>
         {% endif %}
         {% if gestiones %}
-          <details class="preparar">
+          <details class="preparar" open>
             <summary class="apunte">
               🗣 {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
             </summary>
@@ -228,7 +230,10 @@
   {# Todo lo de la cita, aqui mismo y editable: ver un dato y poder
      corregirlo son la misma accion, y mandar a otra pagina para cambiar
      una planta o un telefono era perder el sitio en la lista. Plegado,
-     para que la lista siga siendo una lista. #}
+     para que la lista siga siendo una lista.
+     "Ver la cita" y "Editar" van en la misma fila (.ver-editar): editar
+     queda a la vista, a la derecha, sin tener que desplegar antes. #}
+  <div class="ver-editar">
   <details class="mas-datos">
     <summary class="apunte">Ver la cita</summary>
 
@@ -284,7 +289,10 @@
       </p>
     {% endif %}
 
-    {# Y si hay que cambiar algo, se pide. #}
+  </details>
+
+    {# Y si hay que cambiar algo, se pide: fuera de "Ver la cita", a su
+       derecha. Abierto, el formulario ocupa todo el ancho debajo. #}
     <details class="editar-cita">
       <summary class="boton secundario pequeno">
         <span class="si-cerrado">✎ Editar</span>
@@ -402,7 +410,7 @@
         <span class="tenue">Se lleva por delante lo apuntado para ella.</span>
       </form>
     </details>
-  </details>
+  </div>
 
   {% if caller %}<div class="cita-acciones">{{ caller() }}</div>{% endif %}
 </article>
