@@ -8,6 +8,7 @@ import hashlib
 
 from datetime import date, datetime, time
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Annotated
 from urllib.parse import quote
 
@@ -187,6 +188,41 @@ def paciente_activo(request: Request) -> int | None:
 PacienteDep = Annotated[int | None, Depends(paciente_activo)]
 
 
+# Nombre que ve la persona segun el proveedor configurado: la web dice
+# quien lee los documentos (con datos medicos, importa saber a quien se
+# envian) y no "Claude" a fuego aunque se use otro.
+NOMBRES_IA = {
+    "claude-cli": "Claude",
+    "anthropic": "Claude",
+    "openai": "GPT",
+    "gemini": "Gemini",
+    "ollama": "Ollama",
+}
+
+
+def estado_ia() -> SimpleNamespace:
+    """Si hay IA para analizar documentos, como se llama y, si no, por que.
+
+    Sin cuenta de IA configurada (o con el proveedor "ninguno") las
+    plantillas no ensenan ninguna opcion de IA: la app funciona igual, a
+    mano. El motivo se muestra solo en Ajustes.
+    """
+    from ..ia.base import obtener_analizador
+
+    try:
+        analizador = obtener_analizador()
+        lista, motivo = analizador.disponible()
+    except ValueError as error:
+        return SimpleNamespace(lista=False, nombre=None, proveedor=None, motivo=str(error))
+    return SimpleNamespace(
+        lista=lista,
+        # "ninguno" no es un nombre que ensenar: sin IA, sin nombre.
+        nombre=None if analizador.nombre == "ninguno" else NOMBRES_IA.get(analizador.nombre, analizador.nombre),
+        proveedor=analizador.nombre,
+        motivo=motivo,
+    )
+
+
 def contexto(
     request: Request,
     sesion: Session,
@@ -206,6 +242,7 @@ def contexto(
         "paciente_id": paciente_id,
         "aviso": request.query_params.get("aviso"),
         "usuario": getattr(request.state, "usuario", None),
+        "ia": estado_ia(),
     }
     base.update(extra)
     return base

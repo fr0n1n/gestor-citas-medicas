@@ -7,10 +7,8 @@
    Hoy es la portada: no lleva "Atras". #}
 {% call cabecera_pagina('Hoy, ' ~ (panel.hoy|fecha_larga)) %}
   <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
-  {# Para cuando llega un papel y todavia no sabes a que cita va: se sube
-     y Claude dice que es y a cual pertenece. #}
-  {{ formulario_subida('/', ia_lista=ia_lista, etiqueta='Subir un papel',
-                       clase_boton='boton secundario') }}
+  {# Subir documentos vive en Documentos (con selector de cita) y en la
+     ficha de cada cita; aqui solo el acceso. #}
   <a class="boton secundario" href="/espera">Ver lo que está en espera</a>
   <a class="boton secundario" href="/documentos">📎 Documentos</a>
 {% endcall %}

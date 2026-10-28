@@ -6,11 +6,13 @@
 {# Las tres formas de que entre una cita, juntas: a mano, dictada por
    telefono o en un papel. Apuntar una llamada es dar de alta una cita
    tanto como el boton de al lado, asi que viven en la misma fila.
-   Cabecera comun (ver cabecera_pagina): "Atras" arriba, titulo y debajo
+   Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha y debajo
    la barra; solo "+ Nueva cita" va rellena. #}
 {% call cabecera_pagina('Citas', atras='/') %}
   <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
 
+  {# Apuntar una llamada es dictarle el texto a la IA: sin IA no se ofrece. #}
+  {% if ia.lista %}
   <details class="anadir">
     <summary class="boton secundario">☎ Apuntar llamada</summary>
     <form method="post" action="/documentos/llamada" class="formulario">
@@ -31,18 +33,18 @@
         </label>
       {% endif %}
       <div class="ancho acciones">
-        <button type="submit" class="boton">Que lo lea Claude</button>
+        <button type="submit" class="boton">Que lo lea {{ ia.nombre }}</button>
         <button type="reset" class="boton secundario" data-cerrar>Cancelar</button>
       </div>
     </form>
   </details>
-
-  {{ formulario_subida('/citas?etapa=' ~ etapa ~ '&orden=' ~ orden, ia_lista=ia_lista,
-                       etiqueta='📎 Subir papeles', clase_boton='boton secundario') }}
-
-  {% if not ia_lista %}
-    <p class="tenue">Claude no está disponible ahora mismo: {{ ia_motivo }}</p>
   {% endif %}
+
+  {# Subir documentos se hace desde Documentos (eligiendo la cita) o desde
+     la ficha de la cita: aqui, el acceso. #}
+  <a class="boton secundario" href="/documentos">📎 Subir documentos</a>
+
+
 {% endcall %}
 
 {# Las tres etapas de la vida de una cita. Separadas a proposito: mezclarlas

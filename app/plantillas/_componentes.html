@@ -585,8 +585,11 @@
 {# Subida de documentos. Si se usa desde una cita o un tramite, lo que se
    sube queda asociado a ella directamente. #}
 {# clase_boton: en una barra de acciones solo la accion principal va
-   rellena; ahi se pasa 'boton secundario'. #}
-{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos', clase_boton='boton') %}
+   rellena; ahi se pasa 'boton secundario'.
+   citas: si se pasa (p. ej. desde Documentos), sale un selector "Para que
+   cita" para adjuntar el papel a una; si no se elige y hay IA, la IA
+   propone a cual va al analizarlo. #}
+{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos', clase_boton='boton', citas=none) %}
 <details class="anadir subida" {% if abierto %}open{% endif %}>
   <summary class="{{ clase_boton }}">{{ etiqueta }}</summary>
   <form method="post" action="/documentos/subir" enctype="multipart/form-data" class="formulario">
@@ -602,6 +605,18 @@
       <input type="file" name="archivos" multiple required
              accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif">
     </label>
+
+    {% if citas and not evento_id and not tramite_id %}
+    <label class="ancho">
+      Para qué cita <span class="tenue">(opcional)</span>
+      <select name="evento">
+        <option value="">{% if ia.lista %}Que {{ ia.nombre }} proponga a cuál va{% else %}Ninguna: la asocio después{% endif %}</option>
+        {% for c in citas %}
+          <option value="{{ c.id }}">{{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% else %} · {{ c.estado|etiqueta|lower }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
 
     {% if not evento_id and not tramite_id and pacientes|length > 1 %}
     <label>
@@ -626,7 +641,7 @@
     {% if ia_lista %}
     <label class="casilla-inline ancho">
       <input type="checkbox" name="analizar" value="si" checked>
-      Analizar con Claude al subir (la propuesta queda guardada aunque cierres la página)
+      Analizar con {{ ia.nombre }} al subir (la propuesta queda guardada aunque cierres la página)
     </label>
     {% endif %}
 
@@ -649,9 +664,9 @@
   {% if d.revisado %}
     <span class="pastilla estado-realizada">Archivado</span>
   {% elif d.estado_ia == 'en_cola' %}
-    <span class="pastilla estado-solicitada">En cola para Claude</span>
+    <span class="pastilla estado-solicitada">En cola para {{ ia.nombre or 'la IA' }}</span>
   {% elif d.estado_ia == 'analizando' %}
-    <span class="pastilla estado-solicitada">Claude lo está leyendo…</span>
+    <span class="pastilla estado-solicitada">{{ ia.nombre or 'La IA' }} lo está leyendo…</span>
   {% elif d.estado_ia == 'propuesta' %}
     <span class="llamada-revisar">Revisar propuesta</span>
   {% elif d.estado_ia == 'error' %}

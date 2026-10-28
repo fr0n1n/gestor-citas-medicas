@@ -61,14 +61,16 @@
   </p>
 </section>
 
-{# --- Analisis con Claude --- #}
-{% if not documento.revisado %}
+{# --- Analisis con IA ---
+   Sin IA configurada no se ensena, salvo que el documento ya tenga un
+   analisis en marcha, con error o con propuesta (de cuando si la habia). #}
+{% if not documento.revisado and (ia.lista or documento.analizando or documento.estado_ia in ('error', 'propuesta')) %}
 <section class="bloque">
-  <h2>Análisis con Claude</h2>
+  <h2>Análisis con {{ ia.nombre or 'IA' }}</h2>
 
   {% if documento.analizando %}
     <p class="en-curso">
-      <strong>{{ 'Esperando turno…' if documento.estado_ia == 'en_cola' else 'Claude está leyendo el documento…' }}</strong>
+      <strong>{{ 'Esperando turno…' if documento.estado_ia == 'en_cola' else ((ia.nombre or 'La IA') ~ ' está leyendo el documento…') }}</strong>
     </p>
     <p class="tenue">
       Suele tardar menos de un minuto. <strong>Puedes cerrar esta página</strong>:
@@ -210,7 +212,7 @@
       {% endfor %}
 
       {% if not propuesta.eventos and not propuesta.tramites %}
-        <p class="tenue">Claude no ha encontrado citas ni trámites en este documento: solo se archivará.</p>
+        <p class="tenue">{{ ia.nombre or 'La IA' }} no ha encontrado citas ni trámites en este documento: solo se archivará.</p>
       {% endif %}
 
       <p class="acciones-pie">
@@ -228,13 +230,11 @@
     </div>
 
   {% elif ia_lista %}
-    <p class="tenue">Claude leerá el documento y propondrá a qué cita o trámite
+    <p class="tenue">{{ ia.nombre }} leerá el documento y propondrá a qué cita o trámite
       pertenece y qué hay que hacer. Nada se guarda hasta que tú lo confirmes.</p>
     <form method="post" action="/documentos/{{ documento.id }}/analizar" class="acciones-pie">
-      <button type="submit" class="boton">✨ Analizar con Claude</button>
+      <button type="submit" class="boton">✨ Analizar con {{ ia.nombre }}</button>
     </form>
-  {% else %}
-    <p class="tenue">No disponible: {{ ia_motivo }}</p>
   {% endif %}
 </section>
 {% endif %}
@@ -267,7 +267,7 @@
 <section class="bloque">
   <details class="anadir" {% if not ia_lista and not documento.revisado %}open{% endif %}>
     <summary class="boton secundario pequeno">
-      {{ 'Editar datos del documento' if documento.revisado else 'Archivar a mano, sin Claude' }}
+      {{ 'Editar datos del documento' if documento.revisado else ('Archivar a mano, sin ' ~ ia.nombre if ia.lista else 'Archivar a mano') }}
     </summary>
     <form method="post" action="/documentos/{{ documento.id }}/archivar" class="formulario">
       <label class="ancho">Título
@@ -325,7 +325,7 @@
     <button type="submit" class="boton peligro pequeno">Eliminar documento</button>
   </form>
   <p class="tenue">Si lo has subido por error, esto lo quita del todo, aunque
-    Claude lo esté leyendo.</p>
+    {{ ia.nombre or 'la IA' }} lo esté leyendo.</p>
 </section>
 
 {% endblock %}
