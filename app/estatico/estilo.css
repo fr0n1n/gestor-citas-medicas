@@ -2134,3 +2134,57 @@ h1 {
 .telefonos-centro li { padding: var(--e1) 0; }
 .telefonos-centro a { font-weight: 500; }
 .telefonos-centro .tenue { font-size: var(--t-sm); }
+
+/* --- Bordes limpios (rediseno, 2026-10) -------------------------------- *
+ * Antes cada tarjeta llevaba una raya gruesa de color a la izquierda
+ * (area, urgencia, estado...) y las confirmadas un marco verde: cinco
+ * colores de raya en una misma pantalla, repitiendo lo que ya dicen las
+ * etiquetas ("Digestivo", "Confirmada"). Ahora todo lleva un borde fino
+ * gris y el color queda solo para lo que avisa:
+ *   - cita de hoy o de prioridad alta: borde fino rojo;
+ *   - pendiente urgente o preparativo vencido: el texto en rojo/ambar.
+ * Se mantienen las lineas que no son decoracion: la linea de tiempo de los
+ * pasos y del hilo, el aviso de arriba y la zona de peligro.
+ * Las reglas llevan ":root" delante para ganar a las anteriores sin tener
+ * que tocarlas una a una.
+ * --------------------------------------------------------------------- */
+:root .cita,
+:root .cita.prioridad-alta,
+:root .cita.cita-cerrada,
+:root .requisito,
+:root .requisito.urgencia-vencido,
+:root .requisito.urgencia-hoy,
+:root .requisito.urgencia-proximo,
+:root .requisito.hecho,
+:root .tarjeta.prioridad-alta,
+:root .tarjeta-area,
+:root .tarjeta-centro,
+:root .hilo,
+:root .bloque.destacado,
+:root .lista-documentos li.con-propuesta,
+:root .resumen-acciones {
+  border-left: 1px solid var(--borde-tarjeta);
+}
+
+/* Filas dentro de un bloque: sin raya ni sangria, el bloque ya las agrupa. */
+:root .tarea,
+:root .titulo-area,
+:root .previa,
+:root .pendiente-cita,
+:root .resumen-lista a { border-left: 0; padding-left: 0; }
+
+/* Sin marco de color por estado ni por "manana"; el fondo, neutro. */
+:root .cita.estado-confirmada,
+:root .cita-manana { border-color: var(--borde-tarjeta); }
+:root .requisito.urgencia-vencido,
+:root .requisito.urgencia-hoy,
+:root .requisito.hecho { background: var(--superficie); }
+
+/* Lo que avisa, en fino: hoy y prioridad alta. */
+:root .cita-hoy,
+:root .cita.prioridad-alta { border-color: var(--rojo); box-shadow: none; }
+
+/* Urgencia dicha con el texto, no con una barra. */
+:root .tarea.urgente .tarea-texto .tenue { color: var(--rojo); }
+:root .requisito.urgencia-vencido .limite { color: var(--rojo); font-weight: 500; }
+:root .requisito.urgencia-hoy .limite { color: var(--ambar); font-weight: 500; }
