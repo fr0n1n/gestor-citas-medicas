@@ -1,6 +1,18 @@
 /* Hoja de estilos unica, sin frameworks ni CDN: la aplicacion tiene que
    funcionar con el ordenador desconectado de internet. */
 
+/* Open Sans dentro del proyecto (licencia SIL OFL 1.1, ver
+   fuentes/OFL-open-sans.txt). Recortada a alfabeto latino (con n, tildes
+   y euro) y grosores 400 a 600: 29 KB en vez de 520. Origen:
+   github.com/google/fonts, ofl/opensans, commit 9862abc. */
+@font-face {
+  font-family: "Open Sans";
+  src: url("fuentes/open-sans.woff2") format("woff2");
+  font-weight: 400 600;   /* fuente variable: un fichero, todos los grosores */
+  font-style: normal;
+  font-display: swap;     /* mientras carga, se ve el texto con la del sistema */
+}
+
 /* Tamano base algo menor (15px si el navegador esta en 16): en % y no en
    px para respetar a quien tenga la letra del navegador mas grande. Todo
    lo medido en rem (letra y espacios) se ajusta en proporcion. */
@@ -135,7 +147,12 @@ html { font-size: 93.75%; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Open Sans (la de DJI) servida por la propia app: nada de cargarla de
+     internet, la CSP lo bloquearia y la app tiene que ir sin conexion. Si
+     no carga, la del sistema. */
+  font-family: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Letras un poco mas juntas: es lo que le da a DJI su aire compacto. */
+  letter-spacing: -.01em;
   font-size: var(--t-md);
   line-height: 1.5;
   color: var(--texto);
