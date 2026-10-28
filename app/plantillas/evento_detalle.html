@@ -48,19 +48,16 @@
 
 <section class="bloque ficha">
   <dl>
-    <dt>Área</dt>
-    <dd>
-      {% if evento.especialidad %}
-        <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
-        {% if evento.especialidad != evento.area %}
-          <span class="tenue">· escrito como «{{ evento.especialidad }}»</span>
-        {% endif %}
-      {% else %}
+    {# Misma norma que la tarjeta: lo que ya dice la primera linea (area,
+       centro y su mapa, telefono, ambulancia) no se repite aqui. #}
+    {% if not evento.especialidad %}
+      <dt>Área</dt>
+      <dd>
         <span class="tenue">Sin área.</span>
         <a href="/eventos/{{ evento.id }}/editar">Ponerle una</a>
         <span class="tenue">para que se agrupe con las de su especialista.</span>
-      {% endif %}
-    </dd>
+      </dd>
+    {% endif %}
 
     {% if evento.solicitada_en %}
       <dt>Pedida el</dt>
@@ -82,17 +79,17 @@
       {% endif %}
     </dd>
 
-    {% set lugar = linea_lugar(evento)|trim %}
-    {% if lugar %}
+    {# Donde: solo lo que no esta en la etiqueta del hospital (planta,
+       consulta, medico). El mapa del centro esta en esa etiqueta; aqui solo
+       se ofrece si la cita trae su propio enlace (p. ej. de un documento)
+       o no tiene centro. Lo abre el navegador: la app no habla con mapas. #}
+    {% set lugar = linea_lugar(evento, incluir_centro=false)|trim %}
+    {% set propios = (evento.ubicacion|urls) + (evento.notas|urls) %}
+    {% set enlace_mapa = propios[0] if propios else (none if evento.centro else evento.ubicacion|mapa) %}
+    {% if lugar or enlace_mapa %}
       <dt>Dónde</dt>
       <dd>
         {{ lugar|sin_enlaces }}
-        {# El enlace que trajera el documento manda; si no hay, se construye
-           uno de busqueda con la direccion. En los dos casos lo abre el
-           navegador: la aplicacion no habla con ningun mapa. #}
-        {% set propios = (evento.ubicacion|urls) + (evento.notas|urls) %}
-        {% set enlace_mapa = propios[0] if propios
-                             else (evento.centro.direccion if evento.centro else evento.ubicacion)|mapa %}
         {% if enlace_mapa %}
           <a class="boton secundario pequeno mapa" href="{{ enlace_mapa }}"
              target="_blank" rel="noopener noreferrer">Ver en el mapa</a>
@@ -100,23 +97,8 @@
       </dd>
     {% endif %}
 
-    {% if evento.centro and evento.centro.telefono %}
-      <dt>Teléfono</dt>
-      <dd><a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a></dd>
-    {% endif %}
 
-    {% if evento.necesita_ambulancia or evento.transporte_notas %}
-      <dt>Ambulancia</dt>
-      <dd>
-        {{ evento.transporte|etiqueta }}
-        {% if evento.transporte_hora %}
-          · <strong>pasa a las {{ evento.transporte_hora|hora }}</strong>
-        {% endif %}
-        {% if evento.transporte_notas %}<span class="tenue">· {{ evento.transporte_notas|enlazado }}</span>{% endif %}
-      </dd>
-    {% endif %}
 
-    {% if evento.motivo %}<dt>Motivo de la cita</dt><dd>{{ evento.motivo|enlazado }}</dd>{% endif %}
     {% if evento.notas %}<dt>Notas</dt><dd class="multilinea">{{ evento.notas|enlazado }}</dd>{% endif %}
     {% if evento.resultado %}
       <dt>Resultado</dt><dd class="multilinea">{{ evento.resultado|enlazado }}</dd>
@@ -156,6 +138,11 @@
 </section>
 
 {# --- Requisitos previos --- #}
+{# --- Motivo, encima de lo que hay que preparar (como en la tarjeta) --- #}
+{% if evento.motivo %}
+  <p class="cita-motivo"><span class="tenue">Motivo de la cita:</span> {{ evento.motivo|enlazado }}</p>
+{% endif %}
+
 {# --- Todo lo que falta para esta cita, en una sola lista --- #}
 <section class="bloque">
   <h2>Para esta cita</h2>
@@ -252,17 +239,6 @@
   {% endif %}
 
   {{ formulario_pendiente(evento, '/eventos/' ~ evento.id) }}
-</section>
-
-{# --- Documentos --- #}
-<section class="bloque">
-  <h2>Documentos de esta cita</h2>
-  {% if evento.documentos %}
-    {{ lista_documentos(evento.documentos) }}
-  {% else %}
-    <p class="tenue">Ningún papel escaneado todavía para esta cita.</p>
-  {% endif %}
-  {{ formulario_subida('/eventos/' ~ evento.id, evento_id=evento.id, ia_lista=ia_lista) }}
 </section>
 
 {# --- El hilo, al final: es contexto, no algo que hacer --- #}
@@ -388,6 +364,17 @@
       <div class="ancho"><button type="submit" class="boton">Crear y enlazar</button></div>
     </form>
   </details>
+</section>
+
+{# --- Documentos, lo ultimo (como en la tarjeta), antes de Eliminar --- #}
+<section class="bloque">
+  <h2>Documentos de esta cita</h2>
+  {% if evento.documentos %}
+    {{ lista_documentos(evento.documentos) }}
+  {% else %}
+    <p class="tenue">Ningún papel escaneado todavía para esta cita.</p>
+  {% endif %}
+  {{ formulario_subida('/eventos/' ~ evento.id, evento_id=evento.id, ia_lista=ia_lista) }}
 </section>
 
 <section class="bloque zona-peligro">
