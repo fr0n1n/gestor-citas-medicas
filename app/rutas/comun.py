@@ -20,6 +20,7 @@ from sqlmodel import Session
 
 from .. import areas as _areas
 from .. import centros as _centros
+from .. import iconos as _iconos
 from .. import enlaces as _enlaces
 from .. import consultas, logica
 from ..config import a_local, config, hoy
@@ -121,6 +122,8 @@ plantillas.env.filters["mapa"] = _enlaces.mapa_de
 plantillas.env.filters["sitio_mapa"] = _enlaces.nombre_de_mapa
 plantillas.env.filters["urls"] = _enlaces.urls_de
 plantillas.env.filters["centro_corto"] = _centros.nombre_corto
+# {{ icono("telefono") }}: iconos SVG en vez de emojis (ver app/iconos.py).
+plantillas.env.globals["icono"] = _iconos.icono
 plantillas.env.filters["slug_area"] = _areas.slug
 plantillas.env.filters["color_area"] = _areas.color
 

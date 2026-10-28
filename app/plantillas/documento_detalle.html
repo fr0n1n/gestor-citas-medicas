@@ -231,7 +231,7 @@
     <p class="tenue">{{ ia.nombre }} leerá el documento y propondrá a qué cita o trámite
       pertenece y qué hay que hacer. Nada se guarda hasta que tú lo confirmes.</p>
     <form method="post" action="/documentos/{{ documento.id }}/analizar" class="acciones-pie">
-      <button type="submit" class="boton">✨ Analizar con {{ ia.nombre }}</button>
+      <button type="submit" class="boton">{{ icono("destello") }} Analizar con {{ ia.nombre }}</button>
     </form>
   {% endif %}
 </section>

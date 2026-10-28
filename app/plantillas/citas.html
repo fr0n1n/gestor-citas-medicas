@@ -14,7 +14,7 @@
   {# Apuntar una llamada es dictarle el texto a la IA: sin IA no se ofrece. #}
   {% if ia.lista %}
   <details class="anadir">
-    <summary class="boton secundario">☎ Apuntar llamada</summary>
+    <summary class="boton secundario">{{ icono("telefono") }} Apuntar llamada</summary>
     <form method="post" action="/documentos/llamada" class="formulario">
       <input type="hidden" name="destino" value="/citas?etapa={{ etapa }}&amp;orden={{ orden }}">
       <label class="ancho">
@@ -42,7 +42,7 @@
 
   {# Subir documentos se hace desde Documentos (eligiendo la cita) o desde
      la ficha de la cita: aqui, el acceso. #}
-  <a class="boton secundario" href="/documentos">📎 Subir documentos</a>
+  <a class="boton secundario" href="/documentos">{{ icono("clip") }} Subir documentos</a>
 
 
 {% endcall %}
@@ -108,10 +108,10 @@
               </form>
             {% else %}
               {% if e.toca_reclamar(config.dias_alerta_espera) %}
-                <span class="apunte aviso-reclamar">⚠ Toca reclamar</span>
+                <span class="apunte aviso-reclamar">{{ icono("aviso") }} Toca reclamar</span>
               {% endif %}
               {% if e.centro and e.centro.telefono %}
-                <a class="boton secundario pequeno" href="tel:{{ e.centro.telefono }}">☎ {{ e.centro.telefono }}</a>
+                <a class="boton secundario pequeno" href="tel:{{ e.centro.telefono }}">{{ icono("telefono") }} {{ e.centro.telefono }}</a>
               {% endif %}
               <details>
                 <summary class="boton pequeno">Apuntar fecha</summary>

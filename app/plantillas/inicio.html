@@ -10,7 +10,7 @@
   {# Subir documentos vive en Documentos (con selector de cita) y en la
      ficha de cada cita; aqui solo el acceso. #}
   <a class="boton secundario" href="/espera">Ver lo que está en espera</a>
-  <a class="boton secundario" href="/documentos">📎 Documentos</a>
+  <a class="boton secundario" href="/documentos">{{ icono("clip") }} Documentos</a>
 {% endcall %}
 
 {% if panel.todo_en_orden %}
@@ -63,7 +63,7 @@
               <button type="submit" class="boton pequeno">Marcar como pedida</button>
             </form>
             {% if telefono_ambulancia %}
-              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">{{ icono("telefono") }} {{ telefono_ambulancia }}</a>
             {% endif %}
 
           {% elif a.clase == 'confirmar_transporte' %}
@@ -73,7 +73,7 @@
               <button type="submit" class="boton pequeno">Marcar como confirmada</button>
             </form>
             {% if telefono_ambulancia %}
-              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+              <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">{{ icono("telefono") }} {{ telefono_ambulancia }}</a>
             {% endif %}
 
           {% elif a.clase == 'por_solicitar' %}
@@ -82,7 +82,7 @@
               <button type="submit" class="boton pequeno">Marcar como pedida</button>
             </form>
             {% if a.objeto.centro and a.objeto.centro.telefono %}
-              <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">☎ {{ a.objeto.centro.telefono }}</a>
+              <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">{{ icono("telefono") }} {{ a.objeto.centro.telefono }}</a>
             {% endif %}
 
           {% elif a.clase == 'reclamar' %}
@@ -102,7 +102,7 @@
               </form>
             </details>
             {% if a.objeto.centro and a.objeto.centro.telefono %}
-              <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">☎ {{ a.objeto.centro.telefono }}</a>
+              <a class="boton secundario pequeno" href="tel:{{ a.objeto.centro.telefono }}">{{ icono("telefono") }} {{ a.objeto.centro.telefono }}</a>
             {% endif %}
 
           {% elif a.clase == 'sin_cerrar' %}

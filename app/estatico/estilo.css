@@ -2196,3 +2196,12 @@ h1 {
    el selector y solo se ve al elegir "+ Nuevo centro..." (app.js). */
 .centro-fila { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem 1rem; }
 .alta-centro { margin: 0; }
+
+/* Iconos SVG (app/iconos.py): del tamano y el color del texto que
+   acompanan; alineados con la linea de base. Sustituyen a los emojis. */
+.ico {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  flex: none;
+}

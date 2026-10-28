@@ -6,7 +6,7 @@
 {# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
    y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
 {% call cabecera_pagina(evento.titulo, atras='/') %}
-  <a class="boton secundario" href="/eventos/{{ evento.id }}/editar">✎ Editar</a>
+  <a class="boton secundario" href="/eventos/{{ evento.id }}/editar">{{ icono("editar") }} Editar</a>
 {% endcall %}
 
 {# La misma primera linea que su tarjeta (hospital, especialidad, estado,
@@ -126,7 +126,7 @@
 
 {# --- Ambulancia --- #}
 <section class="bloque">
-  <h2><span class="icono-ambulancia">🚑</span> Ambulancia</h2>
+  <h2><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Ambulancia</h2>
   {% if evento.falta_pedir_ambulancia(config.dias_aviso_transporte) %}
     <p class="banda-error">Esta cita es el {{ evento.fecha|fecha }} y la ambulancia
       todavía está sin solicitar.</p>
@@ -216,7 +216,7 @@
               <select name="transporte" aria-label="Ambulancia para {{ pr.titulo }}">
                 {% for t in EstadoTransporte %}
                   <option value="{{ t.value }}" {% if pr.transporte == t %}selected{% endif %}>
-                    {% if t.value == 'no_necesita' %}Sin ambulancia{% else %}🚑 {{ t|etiqueta }}{% endif %}
+                    {% if t.value == 'no_necesita' %}Sin ambulancia{% else %}{{ t|etiqueta }}{% endif %}
                   </option>
                 {% endfor %}
               </select>
@@ -242,7 +242,7 @@
 
     </ul>
     <p class="tenue pista">
-      Para cambiar lo que pone o el plazo de algo, el lápiz ✎ de su línea.
+      Para cambiar lo que pone o el plazo de algo, el botón «Editar» de su línea.
     </p>
   {% else %}
     <p class="tenue">
@@ -279,7 +279,7 @@
 
   {% if evento.antes_de %}
     <p class="hilo-linea">
-      <span class="hilo-flecha">⏱</span> Hace falta para
+      <span class="hilo-flecha">{{ icono("reloj") }}</span> Hace falta para
       <a href="/eventos/{{ evento.antes_de.id }}">{{ evento.antes_de.titulo }}</a>
       {% if evento.antes_de.fecha %}<span class="tenue">· {{ evento.antes_de.fecha|fecha }}</span>{% endif %}
     </p>

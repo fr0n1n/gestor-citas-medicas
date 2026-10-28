@@ -43,7 +43,7 @@
         </ul>
 
         {% if v.centro.telefono %}
-          <p class="meta telefono-centro">☎ {{ v.centro.telefono }}</p>
+          <p class="meta telefono-centro">{{ icono("telefono") }} {{ v.centro.telefono }}</p>
         {% endif %}
       </a>
     {% endfor %}

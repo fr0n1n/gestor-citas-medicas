@@ -45,7 +45,7 @@
 {% macro etiqueta_transporte(evento) %}
   {% if evento.necesita_ambulancia %}
     <span class="pastilla transporte-{{ evento.transporte.value }}"
-          title="{{ evento.transporte|etiqueta }}"><span class="icono-ambulancia">🚑</span> {{ evento.transporte|etiqueta }}</span>
+          title="{{ evento.transporte|etiqueta }}"><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> {{ evento.transporte|etiqueta }}</span>
   {% endif %}
 {% endmacro %}
 
@@ -102,7 +102,7 @@
   {% if not cerrada %}
     <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
     <span class="pastilla transporte-{{ evento.transporte.value }}">
-      <span class="icono-ambulancia">🚑</span>
+      <span class="icono-ambulancia">{{ icono("ambulancia") }}</span>
       {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
         {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
         {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
@@ -215,7 +215,7 @@
     {% if ns.aviso %}
       {% set u = ns.aviso.urgencia(config.dias_aviso_requisito) %}
       <p class="cita-aviso">
-        ⚠ {{ ns.aviso.descripcion }} —
+        {{ icono("aviso") }} {{ ns.aviso.descripcion }} —
         {% if u == Urgencia.HOY %}es hoy{% else %}debería estar hecho el {{ ns.aviso.fecha_limite|fecha }}{% endif %}
       </p>
     {% endif %}
@@ -232,7 +232,7 @@
              sin pulsar nada; quien quiera, lo pliega. #}
           <details class="preparar" open>
             <summary class="apunte">
-              📋 {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
+              {{ icono("lista") }} {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
             </summary>
             <ul class="lista-requisitos compacta">
               {% for r in pendientes %}
@@ -246,7 +246,7 @@
         {% if gestiones %}
           <details class="preparar" open>
             <summary class="apunte">
-              🗣 {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
+              {{ icono("mensaje") }} {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
             </summary>
             <ul class="lista-requisitos compacta">
               {% for r in gestiones %}
@@ -256,7 +256,7 @@
           </details>
         {% endif %}
         {% if evento.documentos %}
-          <span class="apunte">📎 {{ evento.documentos|length }} documento{{ 's' if evento.documentos|length != 1 }}</span>
+          <span class="apunte">{{ icono("clip") }} {{ evento.documentos|length }} documento{{ 's' if evento.documentos|length != 1 }}</span>
         {% endif %}
 
         {# Apuntar sin entrar en la cita: lo que te dicen por telefono se
@@ -282,7 +282,7 @@
        repetirlos aqui solo alargaba la lista. Aqui va lo que no cabe. #}
     <dl class="ficha-mini">
       {% if evento.necesita_ambulancia and evento.transporte_notas %}
-        <dt><span class="icono-ambulancia">🚑</span> Cómo se pide</dt>
+        <dt><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Cómo se pide</dt>
         <dd>
           {{ evento.transporte_notas }}
           {%- if telefono_ambulancia %} · <a href="tel:{{ telefono_ambulancia }}">{{ telefono_ambulancia }}</a>{% endif %}
@@ -333,7 +333,7 @@
        derecha. Abierto, el formulario ocupa todo el ancho debajo. #}
     <details class="editar-cita">
       <summary class="boton secundario pequeno">
-        <span class="si-cerrado">✎ Editar</span>
+        <span class="si-cerrado">{{ icono("editar") }} Editar</span>
         <span class="si-abierto">Cancelar</span>
       </summary>
 
@@ -425,7 +425,7 @@
     <form method="post" action="/eventos/{{ evento.id }}/transporte" class="panel-cita">
       <input type="hidden" name="destino" value="{{ destino }}">
       <label>
-        <span class="icono-ambulancia">🚑</span> Ambulancia
+        <span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Ambulancia
         <select name="transporte">
           {% for tr in EstadoTransporte %}
             <option value="{{ tr.value }}" {% if evento.transporte == tr %}selected{% endif %}>
@@ -444,7 +444,7 @@
       <div class="panel-acciones">
         <button type="submit" class="boton pequeno">Guardar</button>
         {% if telefono_ambulancia %}
-          <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
+          <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">{{ icono("telefono") }} {{ telefono_ambulancia }}</a>
         {% endif %}
       </div>
     </form>
@@ -498,8 +498,8 @@
     <br>
     {% if requisito.fecha_limite %}
       <span class="limite">
-        {% if u == Urgencia.VENCIDO %}⚠ Debería estar hecho el
-        {% elif u == Urgencia.HOY %}⚠ Es hoy:
+        {% if u == Urgencia.VENCIDO %}{{ icono("aviso") }} Debería estar hecho el
+        {% elif u == Urgencia.HOY %}{{ icono("aviso") }} Es hoy:
         {% else %}Antes del{% endif %}
         {{ requisito.fecha_limite|fecha }}
         <span class="tenue">({{ requisito.fecha_limite|relativo }})</span>
@@ -524,7 +524,7 @@
        era cual, y la X borraba. Eliminar vive ahora aqui dentro, con su
        nombre y lejos de lo que se pulsa a diario. #}
     <details class="editar-requisito">
-      <summary class="boton secundario pequeno">✎ Editar</summary>
+      <summary class="boton secundario pequeno">{{ icono("editar") }} Editar</summary>
       <form method="post" action="/requisitos/{{ requisito.id }}/editar" class="form-fecha">
         <input type="hidden" name="destino" value="{{ destino }}">
         <label class="ancho">Qué es
@@ -614,9 +614,9 @@
    citas: si se pasa (p. ej. desde Documentos), sale un selector "Para que
    cita" para adjuntar el papel a una; si no se elige y hay IA, la IA
    propone a cual va al analizarlo. #}
-{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos', clase_boton='boton', citas=none) %}
+{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='Subir documentos', clase_boton='boton', citas=none) %}
 <details class="anadir subida" {% if abierto %}open{% endif %}>
-  <summary class="{{ clase_boton }}">{{ etiqueta }}</summary>
+  <summary class="{{ clase_boton }}">{{ icono("clip") }} {{ etiqueta }}</summary>
   <form method="post" action="/documentos/subir" enctype="multipart/form-data" class="formulario">
     <input type="hidden" name="destino" value="{{ destino }}">
     {% if evento_id %}<input type="hidden" name="evento" value="{{ evento_id }}">{% endif %}
@@ -712,7 +712,7 @@
            lleva a la ficha del documento, donde se ve entero. #}
         <a class="miniatura-enlace" href="/documentos/{{ d.id }}">
           <img src="/documentos/{{ d.id }}/vista" alt="" class="miniatura" loading="lazy">
-          <span class="miniatura icono">📄</span>
+          <span class="miniatura icono">{{ icono("documento") }}</span>
         </a>
         <span class="documento-texto">
           <strong><a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_original or d.nombre_archivo }}</a></strong>
