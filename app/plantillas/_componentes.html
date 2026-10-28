@@ -1,3 +1,26 @@
+{# Cabecera de pagina: la misma en todas, para que los botones esten
+   siempre en el mismo sitio.
+     - El titulo, con un contador opcional ("Tramites · 3"), y en la misma
+       linea, a la derecha, "← Atras" (opcional), como estaba en Tramites
+       e Historia.
+     - Justo debajo, la barra de acciones (lo que va dentro del {% call %}):
+       la principal primero y rellena, las demas con borde. Los
+       desplegables (apuntar, subir...) se abren debajo, a todo el ancho.
+   Uso:
+     {% call cabecera_pagina('Citas', atras='/') %}
+       <a class="boton" href="...">+ Nueva cita</a>
+     {% endcall %} #}
+{% macro cabecera_pagina(titulo, atras=none, contador=none) %}
+<header class="cabecera-pagina">
+  <div class="titulo-fila">
+    <h1>{{ titulo }}{% if contador is not none %} <span class="contador">· {{ contador }}</span>{% endif %}</h1>
+    {% if atras %}<a class="boton secundario pequeno atras" href="{{ atras }}" data-atras>← Atrás</a>{% endif %}
+  </div>
+  {% if caller %}<div class="acciones-pagina">{{ caller() }}</div>{% endif %}
+</header>
+{% endmacro %}
+
+
 {# Trozos reutilizados por varias pantallas. #}
 
 {# El area (Traumatologia, Neurologia...) con su color, para distinguir de
@@ -557,9 +580,11 @@
 
 {# Subida de documentos. Si se usa desde una cita o un tramite, lo que se
    sube queda asociado a ella directamente. #}
-{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos') %}
+{# clase_boton: en una barra de acciones solo la accion principal va
+   rellena; ahi se pasa 'boton secundario'. #}
+{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos', clase_boton='boton') %}
 <details class="anadir subida" {% if abierto %}open{% endif %}>
-  <summary class="boton">{{ etiqueta }}</summary>
+  <summary class="{{ clase_boton }}">{{ etiqueta }}</summary>
   <form method="post" action="/documentos/subir" enctype="multipart/form-data" class="formulario">
     <input type="hidden" name="destino" value="{{ destino }}">
     {% if evento_id %}<input type="hidden" name="evento" value="{{ evento_id }}">{% endif %}
