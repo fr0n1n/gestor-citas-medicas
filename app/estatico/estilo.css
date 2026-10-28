@@ -384,7 +384,7 @@ h3 { font-size: var(--t-md); margin: 0; }
 .pastilla {
   display: inline-block;
   padding: .12rem .55rem;
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   font-size: var(--t-xs);
   font-weight: 500;
   white-space: nowrap;
@@ -442,7 +442,7 @@ h3 { font-size: var(--t-md); margin: 0; }
   flex: 0 0 auto;
   align-self: center;
   padding: .1rem .55rem;
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   background: var(--verde);
   color: #fff;
   font-size: var(--t-xs);
@@ -1693,7 +1693,7 @@ h1 {
 
 /* Las pastillas, todas con la misma forma. */
 .pastilla {
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   line-height: 1.45;
 }
 
@@ -2062,7 +2062,7 @@ h1 {
   align-self: center;
   padding: .1rem .5rem;
   border: 1px solid var(--borde);
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   font-size: var(--t-xs);
   color: var(--texto-tenue);
   white-space: nowrap;
@@ -2104,7 +2104,7 @@ h1 {
    mira: es el dato que falta, no una nota al pie. */
 .aviso-sin-fecha {
   padding: .1rem .5rem;
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   background: var(--ambar-suave);
   color: var(--ambar);
   font-size: var(--t-xs);
