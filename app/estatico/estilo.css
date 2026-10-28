@@ -2188,3 +2188,8 @@ h1 {
 :root .tarea.urgente .tarea-texto .tenue { color: var(--rojo); }
 :root .requisito.urgencia-vencido .limite { color: var(--rojo); font-weight: 500; }
 :root .requisito.urgencia-hoy .limite { color: var(--ambar); font-weight: 500; }
+
+/* Formulario de cita: el alta de un centro nuevo ocupa toda la fila bajo
+   el selector y solo se ve al elegir "+ Nuevo centro..." (app.js). */
+.centro-fila { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem 1rem; }
+.alta-centro { margin: 0; }

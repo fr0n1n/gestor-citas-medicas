@@ -195,14 +195,23 @@
               <input type="time" name="hora" value="{{ pr.hora|iso }}"
                      aria-label="Hora de {{ pr.titulo }}">
 
-              <select name="centro" aria-label="Dónde se hace {{ pr.titulo }}">
+              <select name="centro" aria-label="Dónde se hace {{ pr.titulo }}"
+                      data-centro-nuevo="alta-centro-pr-{{ pr.id }}">
                 <option value="">— Sin centro —</option>
                 {% for c in centros %}
                   <option value="{{ c.id }}" {% if pr.centro_id == c.id %}selected{% endif %}>
                     {{ c.nombre|centro_corto(30) }}
                   </option>
                 {% endfor %}
+                <option value="nuevo">+ Nuevo centro…</option>
               </select>
+              {# "+ Nuevo centro...": app.js abre este campo; /al-dia ya crea
+                 el centro a partir del nombre (o reutiliza uno parecido). #}
+              <details class="alta-centro" id="alta-centro-pr-{{ pr.id }}">
+                <summary class="oculto">Nuevo centro</summary>
+                <input type="text" name="centro_nuevo" placeholder="Nombre del centro"
+                       aria-label="Nombre del centro nuevo para {{ pr.titulo }}">
+              </details>
 
               <select name="transporte" aria-label="Ambulancia para {{ pr.titulo }}">
                 {% for t in EstadoTransporte %}

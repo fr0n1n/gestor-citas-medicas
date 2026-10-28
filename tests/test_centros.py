@@ -211,3 +211,19 @@ class TestAliasLocales(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNuevoCentroDesdeElDesplegable(unittest.TestCase):
+    """La opcion "+ Nuevo centro..." sin nombre no borra el centro que habia."""
+
+    def test_nuevo_sin_nombre_conserva_el_actual(self):
+        from app.rutas.eventos import _centro_del_formulario
+
+        self.assertEqual(_centro_del_formulario(None, "nuevo", "", "", "", "", actual=7), 7)
+        self.assertIsNone(_centro_del_formulario(None, "nuevo", "  ", "", "", ""))
+
+    def test_un_centro_de_la_lista_sigue_igual(self):
+        from app.rutas.eventos import _centro_del_formulario
+
+        self.assertEqual(_centro_del_formulario(None, "3", "", "", "", "", actual=7), 3)
+        self.assertIsNone(_centro_del_formulario(None, "", "", "", "", "", actual=7))

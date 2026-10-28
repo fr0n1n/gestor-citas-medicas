@@ -358,15 +358,29 @@
         <input type="text" name="especialidad" value="{{ evento.especialidad or '' }}">
       </label>
       <label>Centro
-        <select name="centro">
+        <select name="centro" data-centro-nuevo="alta-centro-{{ evento.id }}">
           <option value="">— Sin centro —</option>
           {% for c in centros %}
             <option value="{{ c.id }}" {% if evento.centro_id == c.id %}selected{% endif %}>
               {{ c.nombre|centro_corto(34) }}
             </option>
           {% endfor %}
+          <option value="nuevo">+ Nuevo centro…</option>
         </select>
       </label>
+      {# Alta rapida, igual que en el formulario de cita: se abre al elegir
+         "+ Nuevo centro..." (app.js). Nombre y telefono, lo que se dicta. #}
+      <details class="ancho anadir alta-centro" id="alta-centro-{{ evento.id }}">
+        <summary class="oculto">Nuevo centro</summary>
+        <div class="formulario">
+          <label class="ancho">Nombre del centro
+            <input type="text" name="centro_nuevo">
+          </label>
+          <label>Teléfono
+            <input type="tel" name="centro_telefono">
+          </label>
+        </div>
+      </details>
       <label>Dónde <span class="tenue">(planta, consulta)</span>
         <input type="text" name="ubicacion" value="{{ evento.ubicacion|sin_enlaces if evento.ubicacion else '' }}">
       </label>

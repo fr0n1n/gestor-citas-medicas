@@ -55,17 +55,24 @@ def _centro_del_formulario(
     direccion: str,
     telefono: str,
     mapa: str,
+    actual: int | None = None,
 ) -> int | None:
     """El centro elegido en la lista, o el que se acaba de escribir.
 
     Lo escrito a mano manda: si alguien se molesta en teclear el nombre es
     porque el de la lista no valia. Si ese nombre resulta ser uno que ya
     existe escrito de otra forma, se reutiliza en vez de duplicarlo.
+
+    `centro == "nuevo"` es la opcion "+ Nuevo centro..." del desplegable.
+    Si se elige y no se escribe ningun nombre, se queda el centro que ya
+    tenia la cita (`actual`): no se borra por haber abierto el alta.
     """
     if nombre_nuevo.strip():
         return consultas.asegurar_centro(
             sesion, nombre_nuevo, telefono, direccion, mapa
         )
+    if centro == "nuevo":
+        return actual
     return entero_de(centro)
 
 
@@ -276,7 +283,8 @@ def actualizar(
     evento.tipo = _enum(TipoEvento, tipo, "tipo")
     evento.especialidad = texto(especialidad)
     evento.centro_id = _centro_del_formulario(
-        sesion, centro, centro_nuevo, centro_direccion, centro_telefono, centro_mapa
+        sesion, centro, centro_nuevo, centro_direccion, centro_telefono, centro_mapa,
+        actual=evento.centro_id,
     )
     evento.profesional = texto(profesional)
     evento.ubicacion = texto(ubicacion)
@@ -304,6 +312,8 @@ def guardar_ficha(
     titulo: Annotated[str, Form()] = "",
     especialidad: Annotated[str, Form()] = "",
     centro: Annotated[str, Form()] = "",
+    centro_nuevo: Annotated[str, Form()] = "",
+    centro_telefono: Annotated[str, Form()] = "",
     ubicacion: Annotated[str, Form()] = "",
     profesional: Annotated[str, Form()] = "",
     motivo: Annotated[str, Form()] = "",
@@ -326,7 +336,11 @@ def guardar_ficha(
     if nuevo_titulo:
         evento.titulo = nuevo_titulo
     evento.especialidad = texto(especialidad)
-    evento.centro_id = entero_de(centro)
+    # Admite "+ Nuevo centro..." desde la tarjeta, igual que el formulario.
+    evento.centro_id = _centro_del_formulario(
+        sesion, centro, centro_nuevo, "", centro_telefono, "",
+        actual=evento.centro_id,
+    )
     evento.ubicacion = texto(ubicacion)
     evento.profesional = texto(profesional)
     evento.motivo = texto(motivo)

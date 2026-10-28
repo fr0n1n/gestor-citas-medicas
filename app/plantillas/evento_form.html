@@ -67,9 +67,14 @@
     </span>
   </label>
 
+  {# Alta rapida de un centro: se elige "+ Nuevo centro..." al final de la
+     lista y app.js abre el formulario de debajo (sin boton aparte, que era
+     redundante). Sin JavaScript no se puede abrir: se acepta, todos los
+     navegadores actuales lo tienen. #}
+  <div class="ancho centro-fila">
   <label>
     Centro
-    <select name="centro">
+    <select name="centro" data-centro-nuevo="alta-centro">
       <option value="">— Sin especificar —</option>
       {% for c in centros %}
         <option value="{{ c.id }}"
@@ -77,13 +82,16 @@
           {{ c.nombre }}
         </option>
       {% endfor %}
+      {# El servidor lo trata como "sin centro" (entero_de) y usa el que se
+         escriba en el formulario de alta. #}
+      <option value="nuevo">+ Nuevo centro…</option>
     </select>
   </label>
 
   {# Cuando llaman por telefono de un sitio que todavia no esta dado de alta,
      no hay que irse a otra pantalla a crearlo. #}
-  <details class="ancho anadir" {% if centros|length == 0 %}open{% endif %}>
-    <summary class="boton secundario pequeno">¿No está el centro? Añádelo aquí</summary>
+  <details class="anadir alta-centro" id="alta-centro" {% if centros|length == 0 %}open{% endif %}>
+    <summary class="oculto">Nuevo centro</summary>
     <div class="formulario">
       <label class="ancho">
         Nombre del centro
@@ -109,6 +117,7 @@
       </p>
     </div>
   </details>
+  </div>
 
   <label>
     Médico
