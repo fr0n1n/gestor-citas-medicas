@@ -897,6 +897,50 @@ details > summary.boton { user-select: none; }
   padding: var(--e2) var(--e4) var(--e3);
 }
 
+/* --- Cabecera de pagina (macro cabecera_pagina) ------------------------ *
+ * La misma en todas las paginas: el titulo con "Atras" a su derecha y,
+ * justo debajo, la barra de acciones. Asi los botones estan siempre en el
+ * mismo sitio, tambien en el movil (si no caben, bajan de linea).
+ * --------------------------------------------------------------------- */
+.cabecera-pagina { margin: 0 0 var(--e5); }
+/* Titulo a la izquierda y "Atras" a la derecha, en la misma linea. */
+.titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin: 0 0 var(--e3);
+}
+.titulo-fila h1 { margin: 0; }
+/* Etiqueta de estado junto al titulo (ficha de documento): mas pequena
+   que el titulo y centrada con el. */
+.titulo-estado { font-size: var(--t-sm); font-weight: 400; vertical-align: middle; }
+
+/* "Tramites · 3": el numero, mas discreto que el titulo. */
+.contador { color: var(--texto-tenue); font-weight: 400; }
+
+.acciones-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2);
+}
+.acciones-pagina > details { margin: 0; }
+.acciones-pagina > details > summary { list-style: none; }
+.acciones-pagina > details > summary::-webkit-details-marker { display: none; }
+/* Un desplegable abierto (apuntar llamada, subir...) baja a su propia
+   fila, a todo el ancho, despues de los botones. */
+.acciones-pagina > details[open] { flex: 1 1 100%; order: 9; }
+.acciones-pagina > details[open] > .formulario {
+  margin-top: var(--e3);
+  padding: var(--e4);
+  border: 1px solid var(--borde-tarjeta);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+/* Avisos dentro de la barra (p. ej. "Claude no esta disponible"): debajo. */
+.acciones-pagina > p { flex: 1 1 100%; order: 10; margin: 0; }
+
 /* (La fila "Ver la cita / Editar" ya no existe: Editar va en la primera
    linea, .cita-primera-linea, y la informacion siempre a la vista,
    .info-cita.) */
