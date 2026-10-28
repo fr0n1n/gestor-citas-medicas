@@ -191,17 +191,13 @@ code {
    maquetacion: sus dos <nav> se colocan como si estuvieran sueltos. */
 .menus { display: contents; }
 
-/* Movil: antes la cabecera ocupaba tres o cuatro filas (logo, dos menus y
-   el usuario) y el contenido empezaba a media pantalla. Ahora son dos:
+/* Cuando todo no cabe en una fila (por debajo de ~1340px: portatiles,
+   ventanas a media pantalla, moviles) la cabecera pasa a dos filas:
    arriba logo, paciente, tema y salir; debajo todas las secciones en una
-   fila que se desliza con el dedo. No se esconde ninguna seccion. */
-@media (max-width: 720px) {
-  .cabecera { gap: .5rem; padding: .5rem .75rem; }
-  .selector { flex: 1 1 auto; min-width: 0; }
-  .selector select { width: 100%; max-width: 100%; }
-  /* El nombre ya se sabe; "Salir" basta. */
-  .sesion-usuario .tenue { display: none; }
-
+   fila que se desliza. Antes solo se hacia en el movil, y en anchos
+   intermedios "Salir" caia a otra fila y el boton de tema se cortaba.
+   No se esconde ninguna seccion. */
+@media (max-width: 1340px) {
   .menus {
     display: flex;
     order: 9;              /* despues del tema y la sesion: segunda fila */
@@ -209,14 +205,26 @@ code {
     gap: .25rem;
     overflow-x: auto;      /* se desliza en horizontal en vez de partirse */
     scrollbar-width: none; /* sin barra: el gesto es el de cualquier app */
-    margin: 0 -.75rem;     /* llega hasta los bordes de la pantalla... */
-    padding: 0 .75rem;     /* ...sin pegar el primer enlace al borde */
+    margin: 0 -1.25rem;    /* llega hasta los bordes de la cabecera... */
+    padding: 0 1.25rem;    /* ...sin pegar el primer enlace al borde */
   }
   .menus::-webkit-scrollbar { display: none; }
   .menus .navegacion { flex-wrap: nowrap; margin-left: 0; }
   .navegacion a { white-space: nowrap; }
   /* Una raya fina separa lo diario de lo ocasional. */
   .navegacion.secundaria { border-left: 1px solid var(--borde); padding-left: .25rem; }
+  /* Tema y salir, a la derecha de la primera fila. */
+  .selector-tema { margin-left: auto; }
+}
+
+/* Movil: ademas, menos margen, el selector de paciente ocupa el hueco
+   libre y se oculta el nombre de usuario (ya se sabe; "Salir" basta). */
+@media (max-width: 720px) {
+  .cabecera { gap: .5rem; padding: .5rem .75rem; }
+  .selector { flex: 1 1 auto; min-width: 0; }
+  .selector select { width: 100%; max-width: 100%; }
+  .sesion-usuario .tenue { display: none; }
+  .menus { margin: 0 -.75rem; padding: 0 .75rem; }
 }
 
 .contenido {
