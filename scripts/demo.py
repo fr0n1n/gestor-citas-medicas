@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sqlmodel import Session, select  # noqa: E402
 
-from app.config import hoy  # noqa: E402
+from app.config import config, hoy  # noqa: E402
 from app.db import crear_tablas, motor  # noqa: E402
 from app.enums import (  # noqa: E402
     EstadoEvento,
@@ -38,6 +38,48 @@ from app.modelos import (  # noqa: E402
     Requisito,
     Tramite,
 )
+
+
+def pdf_sencillo(titulo: str, texto: str) -> bytes:
+    """Un PDF de una pagina con el titulo y el texto, sin librerias.
+
+    Los documentos de la demo eran solo la ficha, sin fichero: no se podian
+    ver ni tenian miniatura. Con esto la demo se ensena entera (y sirve para
+    las capturas del README). Fuente Helvetica estandar del PDF: el texto va
+    en latin-1 (los de la demo no llevan tildes).
+    """
+    def esc(t: str) -> str:
+        return t.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    lineas = [f"BT /F1 18 Tf 72 760 Td ({esc(titulo)}) Tj ET"]
+    y = 720
+    for parrafo in (texto or "").split("\n"):
+        lineas.append(f"BT /F1 12 Tf 72 {y} Td ({esc(parrafo)}) Tj ET")
+        y -= 18
+    lineas.append("BT /F1 9 Tf 72 60 Td (Documento de ejemplo generado por scripts/demo.py) Tj ET")
+    contenido = "\n".join(lineas).encode("latin-1", "replace")
+    objetos = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+        b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Length " + str(len(contenido)).encode() + b" >>\nstream\n" + contenido + b"\nendstream",
+    ]
+    salida = bytearray(b"%PDF-1.4\n")
+    posiciones = []
+    for n, obj in enumerate(objetos, 1):
+        posiciones.append(len(salida))
+        salida += f"{n} 0 obj\n".encode() + obj + b"\nendobj\n"
+    inicio_xref = len(salida)
+    salida += f"xref\n0 {len(objetos) + 1}\n0000000000 65535 f \n".encode()
+    for pos in posiciones:
+        salida += f"{pos:010d} 00000 n \n".encode()
+    salida += (
+        f"trailer\n<< /Size {len(objetos) + 1} /Root 1 0 R >>\n"
+        f"startxref\n{inicio_xref}\n%%EOF\n"
+    ).encode()
+    return bytes(salida)
 
 
 def main() -> int:
@@ -275,6 +317,10 @@ def main() -> int:
         ]
         for fecha, nombre, titulo, cita, texto in documentos:
             archivo = f"{fecha.isoformat()}_{nombre}.pdf"
+            # El fichero de verdad, para poder verlo y tener miniatura.
+            destino = config.dir_documentos / "archivo" / archivo
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_bytes(pdf_sencillo(titulo, texto))
             documento = Documento(
                     paciente_id=paciente.id,
                     nombre_archivo=archivo,

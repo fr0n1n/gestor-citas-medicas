@@ -1,16 +1,14 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import tarjeta_evento with context %}
+{% from "_componentes.html" import tarjeta_evento, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ vista.centro.nombre }}</h1>
-  <div class="navegacion-mes">
-    <a class="boton" href="/eventos/nuevo?centro={{ vista.centro.id }}">+ Nueva cita aquí</a>
-    <a class="boton secundario pequeno" href="/centros">Todos los centros</a>
-    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-  </div>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{% call cabecera_pagina(vista.centro.nombre, atras='/centros') %}
+  <a class="boton" href="/eventos/nuevo?centro={{ vista.centro.id }}">+ Nueva cita aquí</a>
+  <a class="boton secundario" href="/centros">Todos los centros</a>
+{% endcall %}
 
 <section class="bloque ficha">
   <dl>

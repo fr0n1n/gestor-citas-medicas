@@ -28,13 +28,19 @@
       {% for p in pacientes %}
         <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
       {% endfor %}
+      {# Dar de alta un paciente desde donde se elige: lleva a Ajustes con
+         el formulario abierto (ver seleccionar_paciente). #}
+      <option value="nuevo">+ Nuevo paciente</option>
     </select>
     <noscript><button type="submit">Ir</button></noscript>
   </form>
   {% endif %}
 
   {# Lo del dia a dia arriba; lo que se consulta de vez en cuando, debajo
-     y mas discreto. Antes eran diez entradas al mismo nivel. #}
+     y mas discreto. Antes eran diez entradas al mismo nivel.
+     El envoltorio .menus no cambia nada en pantallas anchas; en el movil
+     junta los dos menus en una sola fila que se desliza con el dedo. #}
+  <div class="menus">
   <nav class="navegacion">
     {% set actual = request.url.path %}
     <a href="/" {% if actual == '/' %}class="activo"{% endif %}>Hoy</a>
@@ -49,19 +55,20 @@
     <a href="/documentos" {% if actual.startswith('/documentos') %}class="activo"{% endif %}>Documentos</a>
     <a href="/pacientes" {% if actual == '/pacientes' %}class="activo"{% endif %}>Ajustes</a>
   </nav>
+  </div>
 
   {#- Ojo con el nombre: una variable puesta aqui tapa la que envie la
      pagina. Se llamo "temas" y escondia la lista de areas de Documentos. -#}
   {%- set ciclo_tema = {
-        'auto':   ('claro',  '🖥️', 'Tema: automático (sigue al sistema). Pulsa para cambiar a claro'),
-        'claro':  ('oscuro', '☀️', 'Tema: claro. Pulsa para cambiar a oscuro'),
-        'oscuro': ('auto',   '🌙', 'Tema: oscuro. Pulsa para volver a automático'),
+        'auto':   ('claro',  'pantalla', 'Tema: automático (sigue al sistema). Pulsa para cambiar a claro'),
+        'claro':  ('oscuro', 'sol', 'Tema: claro. Pulsa para cambiar a oscuro'),
+        'oscuro': ('auto',   'luna', 'Tema: oscuro. Pulsa para volver a automático'),
      } -%}
   {%- set siguiente_tema, icono_tema, ayuda_tema = ciclo_tema.get(tema, ciclo_tema['auto']) -%}
   <form class="selector-tema" method="get" action="/tema">
     <input type="hidden" name="valor" value="{{ siguiente_tema }}">
     <input type="hidden" name="destino" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
-    <button type="submit" title="{{ ayuda_tema }}" aria-label="{{ ayuda_tema }}">{{ icono_tema }}</button>
+    <button type="submit" title="{{ ayuda_tema }}" aria-label="{{ ayuda_tema }}">{{ icono(icono_tema) }}</button>
   </form>
 
   {% if usuario %}

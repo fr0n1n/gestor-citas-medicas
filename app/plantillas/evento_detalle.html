@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos with context %}
+{% from "_componentes.html" import etiqueta_estado, fila_requisito, formulario_pendiente, linea_lugar, formulario_subida, estado_documento, lista_documentos, cabecera_pagina, etiquetas_cita with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>{{ evento.titulo }}</h1>
-  <div class="navegacion-mes">
-    <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-    <a class="boton secundario pequeno" href="/eventos/{{ evento.id }}/editar">Editar</a>
-  </div>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{% call cabecera_pagina(evento.titulo, atras='/') %}
+  <a class="boton secundario" href="/eventos/{{ evento.id }}/editar">{{ icono("editar") }} Editar</a>
+{% endcall %}
 
+{# La misma primera linea que su tarjeta (hospital, especialidad, estado,
+   ambulancia) y, debajo, que tipo de cita es y de quien. #}
+{{ etiquetas_cita(evento) }}
 <p class="meta">
   {{ evento.tipo|etiqueta }}
-  {% if evento.especialidad %} · {{ evento.especialidad }}{% endif %}
   {% if evento.paciente %} · {{ evento.paciente.nombre }}{% endif %}
 </p>
 
@@ -48,19 +48,16 @@
 
 <section class="bloque ficha">
   <dl>
-    <dt>Área</dt>
-    <dd>
-      {% if evento.especialidad %}
-        <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
-        {% if evento.especialidad != evento.area %}
-          <span class="tenue">· escrito como «{{ evento.especialidad }}»</span>
-        {% endif %}
-      {% else %}
+    {# Misma norma que la tarjeta: lo que ya dice la primera linea (area,
+       centro y su mapa, telefono, ambulancia) no se repite aqui. #}
+    {% if not evento.especialidad %}
+      <dt>Área</dt>
+      <dd>
         <span class="tenue">Sin área.</span>
         <a href="/eventos/{{ evento.id }}/editar">Ponerle una</a>
         <span class="tenue">para que se agrupe con las de su especialista.</span>
-      {% endif %}
-    </dd>
+      </dd>
+    {% endif %}
 
     {% if evento.solicitada_en %}
       <dt>Pedida el</dt>
@@ -82,17 +79,17 @@
       {% endif %}
     </dd>
 
-    {% set lugar = linea_lugar(evento)|trim %}
-    {% if lugar %}
+    {# Donde: solo lo que no esta en la etiqueta del hospital (planta,
+       consulta, medico). El mapa del centro esta en esa etiqueta; aqui solo
+       se ofrece si la cita trae su propio enlace (p. ej. de un documento)
+       o no tiene centro. Lo abre el navegador: la app no habla con mapas. #}
+    {% set lugar = linea_lugar(evento, incluir_centro=false)|trim %}
+    {% set propios = (evento.ubicacion|urls) + (evento.notas|urls) %}
+    {% set enlace_mapa = propios[0] if propios else (none if evento.centro else evento.ubicacion|mapa) %}
+    {% if lugar or enlace_mapa %}
       <dt>Dónde</dt>
       <dd>
         {{ lugar|sin_enlaces }}
-        {# El enlace que trajera el documento manda; si no hay, se construye
-           uno de busqueda con la direccion. En los dos casos lo abre el
-           navegador: la aplicacion no habla con ningun mapa. #}
-        {% set propios = (evento.ubicacion|urls) + (evento.notas|urls) %}
-        {% set enlace_mapa = propios[0] if propios
-                             else (evento.centro.direccion if evento.centro else evento.ubicacion)|mapa %}
         {% if enlace_mapa %}
           <a class="boton secundario pequeno mapa" href="{{ enlace_mapa }}"
              target="_blank" rel="noopener noreferrer">Ver en el mapa</a>
@@ -100,23 +97,8 @@
       </dd>
     {% endif %}
 
-    {% if evento.centro and evento.centro.telefono %}
-      <dt>Teléfono</dt>
-      <dd><a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a></dd>
-    {% endif %}
 
-    {% if evento.necesita_ambulancia or evento.transporte_notas %}
-      <dt>Ambulancia</dt>
-      <dd>
-        {{ evento.transporte|etiqueta }}
-        {% if evento.transporte_hora %}
-          · <strong>pasa a las {{ evento.transporte_hora|hora }}</strong>
-        {% endif %}
-        {% if evento.transporte_notas %}<span class="tenue">· {{ evento.transporte_notas|enlazado }}</span>{% endif %}
-      </dd>
-    {% endif %}
 
-    {% if evento.motivo %}<dt>Motivo</dt><dd>{{ evento.motivo|enlazado }}</dd>{% endif %}
     {% if evento.notas %}<dt>Notas</dt><dd class="multilinea">{{ evento.notas|enlazado }}</dd>{% endif %}
     {% if evento.resultado %}
       <dt>Resultado</dt><dd class="multilinea">{{ evento.resultado|enlazado }}</dd>
@@ -126,12 +108,12 @@
 
 {# --- Ambulancia --- #}
 <section class="bloque">
-  <h2><span class="icono-ambulancia">🚑</span> Ambulancia</h2>
+  <h2><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Ambulancia</h2>
   {% if evento.falta_pedir_ambulancia(config.dias_aviso_transporte) %}
     <p class="banda-error">Esta cita es el {{ evento.fecha|fecha }} y la ambulancia
       todavía está sin solicitar.</p>
   {% endif %}
-  <form method="post" action="/eventos/{{ evento.id }}/transporte" class="filtros">
+  <form method="post" action="/eventos/{{ evento.id }}/transporte" class="filtros form-linea">
     <input type="hidden" name="destino" value="/eventos/{{ evento.id }}">
     <label>
       Estado
@@ -156,6 +138,11 @@
 </section>
 
 {# --- Requisitos previos --- #}
+{# --- Motivo, encima de lo que hay que preparar (como en la tarjeta) --- #}
+{% if evento.motivo %}
+  <p class="cita-motivo"><span class="tenue">Motivo de la cita:</span> {{ evento.motivo|enlazado }}</p>
+{% endif %}
+
 {# --- Todo lo que falta para esta cita, en una sola lista --- #}
 <section class="bloque">
   <h2>Para esta cita</h2>
@@ -195,19 +182,28 @@
               <input type="time" name="hora" value="{{ pr.hora|iso }}"
                      aria-label="Hora de {{ pr.titulo }}">
 
-              <select name="centro" aria-label="Dónde se hace {{ pr.titulo }}">
+              <select name="centro" aria-label="Dónde se hace {{ pr.titulo }}"
+                      data-centro-nuevo="alta-centro-pr-{{ pr.id }}">
                 <option value="">— Sin centro —</option>
                 {% for c in centros %}
                   <option value="{{ c.id }}" {% if pr.centro_id == c.id %}selected{% endif %}>
                     {{ c.nombre|centro_corto(30) }}
                   </option>
                 {% endfor %}
+                <option value="nuevo">+ Nuevo centro…</option>
               </select>
+              {# "+ Nuevo centro...": app.js abre este campo; /al-dia ya crea
+                 el centro a partir del nombre (o reutiliza uno parecido). #}
+              <details class="alta-centro" id="alta-centro-pr-{{ pr.id }}">
+                <summary class="oculto">Nuevo centro</summary>
+                <input type="text" name="centro_nuevo" placeholder="Nombre del centro"
+                       aria-label="Nombre del centro nuevo para {{ pr.titulo }}">
+              </details>
 
               <select name="transporte" aria-label="Ambulancia para {{ pr.titulo }}">
                 {% for t in EstadoTransporte %}
                   <option value="{{ t.value }}" {% if pr.transporte == t %}selected{% endif %}>
-                    {% if t.value == 'no_necesita' %}Sin ambulancia{% else %}🚑 {{ t|etiqueta }}{% endif %}
+                    {% if t.value == 'no_necesita' %}Sin ambulancia{% else %}{{ t|etiqueta }}{% endif %}
                   </option>
                 {% endfor %}
               </select>
@@ -233,7 +229,7 @@
 
     </ul>
     <p class="tenue pista">
-      Para cambiar lo que pone o el plazo de algo, el lápiz ✎ de su línea.
+      Para cambiar lo que pone o el plazo de algo, el botón «Editar» de su línea.
     </p>
   {% else %}
     <p class="tenue">
@@ -243,17 +239,6 @@
   {% endif %}
 
   {{ formulario_pendiente(evento, '/eventos/' ~ evento.id) }}
-</section>
-
-{# --- Documentos --- #}
-<section class="bloque">
-  <h2>Documentos de esta cita</h2>
-  {% if evento.documentos %}
-    {{ lista_documentos(evento.documentos) }}
-  {% else %}
-    <p class="tenue">Ningún papel escaneado todavía para esta cita.</p>
-  {% endif %}
-  {{ formulario_subida('/eventos/' ~ evento.id, evento_id=evento.id, ia_lista=ia_lista) }}
 </section>
 
 {# --- El hilo, al final: es contexto, no algo que hacer --- #}
@@ -270,7 +255,7 @@
 
   {% if evento.antes_de %}
     <p class="hilo-linea">
-      <span class="hilo-flecha">⏱</span> Hace falta para
+      <span class="hilo-flecha">{{ icono("reloj") }}</span> Hace falta para
       <a href="/eventos/{{ evento.antes_de.id }}">{{ evento.antes_de.titulo }}</a>
       {% if evento.antes_de.fecha %}<span class="tenue">· {{ evento.antes_de.fecha|fecha }}</span>{% endif %}
     </p>
@@ -379,6 +364,17 @@
       <div class="ancho"><button type="submit" class="boton">Crear y enlazar</button></div>
     </form>
   </details>
+</section>
+
+{# --- Documentos, lo ultimo (como en la tarjeta), antes de Eliminar --- #}
+<section class="bloque">
+  <h2>Documentos de esta cita</h2>
+  {% if evento.documentos %}
+    {{ lista_documentos(evento.documentos) }}
+  {% else %}
+    <p class="tenue">Ningún papel escaneado todavía para esta cita.</p>
+  {% endif %}
+  {{ formulario_subida('/eventos/' ~ evento.id, evento_id=evento.id, ia_lista=ia_lista) }}
 </section>
 
 <section class="bloque zona-peligro">

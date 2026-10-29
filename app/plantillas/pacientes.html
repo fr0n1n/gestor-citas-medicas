@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Pacientes y centros</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina('Pacientes y centros', atras='/') }}
 
 <section class="bloque">
   <h2>Pacientes</h2>
@@ -68,7 +68,9 @@
     <p class="tenue">Todavía no hay ningún paciente. Crea el primero aquí abajo.</p>
   {% endfor %}
 
-  <details class="anadir" {% if not todos %}open{% endif %}>
+  {# Abierto si no hay pacientes o si se viene de "+ Nuevo paciente" en el
+     selector de la cabecera (?nuevo=1); el id es el ancla del salto. #}
+  <details class="anadir" id="nuevo-paciente" {% if not todos or request.query_params.get('nuevo') %}open{% endif %}>
     <summary class="boton">+ Nuevo paciente</summary>
     <form method="post" action="/pacientes" class="formulario">
       <label class="ancho">
@@ -183,6 +185,47 @@
     hacer una copia de seguridad completa.
   </p>
   <p><a href="/calendario.ics">Descargar el calendario en formato .ics</a></p>
+</section>
+
+{# Que IA lee los documentos, solo para consultar. Las claves NO se meten
+   desde aqui a proposito: guardadas en la base de datos viajarian en cada
+   copia de seguridad, y quien entrara con tu sesion podria desviar los
+   documentos medicos a otro servicio. Se cambian en el .env del servidor
+   (permisos 600, fuera de las copias). Ver docs/PROVEEDORES-IA.md. #}
+<section class="bloque" id="ia">
+  <h2>Análisis con IA</h2>
+  {% if ia.lista %}
+    <p><span class="pastilla estado-confirmada">Activo</span>
+      <strong>{{ ia.nombre }}</strong>
+      <span class="tenue">· proveedor <code>{{ ia.proveedor }}</code>
+      {%- if config.ia_modelo %} · modelo <code>{{ config.ia_modelo }}</code>{% endif %}</span></p>
+    <p class="tenue">{{ ia.motivo }}</p>
+    <p class="tenue">Lee los documentos que subes y propone a qué cita van; nada
+      cambia hasta que tú lo confirmas.</p>
+  {% else %}
+    <p><span class="pastilla">Sin IA</span>
+      Los documentos se guardan y se asocian a mano; las opciones de IA no aparecen.</p>
+    {% if ia.motivo %}<p class="tenue">Motivo: {{ ia.motivo }}</p>{% endif %}
+  {% endif %}
+  <details class="mas-datos">
+    <summary>Cómo activarla o cambiarla</summary>
+    <p>En el fichero <code>.env</code> del servidor, y después
+      <code>docker compose up -d</code>:</p>
+    <table class="tabla">
+      <thead><tr><th>Proveedor</th><th>Qué poner</th></tr></thead>
+      <tbody>
+        <tr><td>Claude con tu suscripción</td><td><code>MEDICOS_IA_PROVEEDOR=claude-cli</code> y <code>CLAUDE_CODE_OAUTH_TOKEN</code> (sale de <code>claude setup-token</code>)</td></tr>
+        <tr><td>Claude por API</td><td><code>MEDICOS_IA_PROVEEDOR=anthropic</code> y <code>ANTHROPIC_API_KEY</code></td></tr>
+        <tr><td>GPT</td><td><code>MEDICOS_IA_PROVEEDOR=openai</code> y <code>OPENAI_API_KEY</code></td></tr>
+        <tr><td>Gemini</td><td><code>MEDICOS_IA_PROVEEDOR=gemini</code> y <code>GEMINI_API_KEY</code></td></tr>
+        <tr><td>Local, sin salir de casa</td><td><code>MEDICOS_IA_PROVEEDOR=ollama</code> y <code>MEDICOS_OLLAMA_URL</code></td></tr>
+        <tr><td>Ninguna</td><td><code>MEDICOS_IA_PROVEEDOR=ninguno</code></td></tr>
+      </tbody>
+    </table>
+    <p class="tenue">Opcional: <code>MEDICOS_IA_MODELO</code> para elegir un modelo concreto.
+      Comprobar que funciona: <code>docker compose exec medicos python scripts/probar_ia.py</code>.
+      Las claves no se escriben aquí: van en el <code>.env</code>, que no entra en las copias.</p>
+  </details>
 </section>
 
 {% endblock %}

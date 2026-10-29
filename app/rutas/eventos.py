@@ -55,17 +55,24 @@ def _centro_del_formulario(
     direccion: str,
     telefono: str,
     mapa: str,
+    actual: int | None = None,
 ) -> int | None:
     """El centro elegido en la lista, o el que se acaba de escribir.
 
     Lo escrito a mano manda: si alguien se molesta en teclear el nombre es
     porque el de la lista no valia. Si ese nombre resulta ser uno que ya
     existe escrito de otra forma, se reutiliza en vez de duplicarlo.
+
+    `centro == "nuevo"` es la opcion "+ Nuevo centro..." del desplegable.
+    Si se elige y no se escribe ningun nombre, se queda el centro que ya
+    tenia la cita (`actual`): no se borra por haber abierto el alta.
     """
     if nombre_nuevo.strip():
         return consultas.asegurar_centro(
             sesion, nombre_nuevo, telefono, direccion, mapa
         )
+    if centro == "nuevo":
+        return actual
     return entero_de(centro)
 
 
@@ -276,7 +283,8 @@ def actualizar(
     evento.tipo = _enum(TipoEvento, tipo, "tipo")
     evento.especialidad = texto(especialidad)
     evento.centro_id = _centro_del_formulario(
-        sesion, centro, centro_nuevo, centro_direccion, centro_telefono, centro_mapa
+        sesion, centro, centro_nuevo, centro_direccion, centro_telefono, centro_mapa,
+        actual=evento.centro_id,
     )
     evento.profesional = texto(profesional)
     evento.ubicacion = texto(ubicacion)
@@ -304,6 +312,8 @@ def guardar_ficha(
     titulo: Annotated[str, Form()] = "",
     especialidad: Annotated[str, Form()] = "",
     centro: Annotated[str, Form()] = "",
+    centro_nuevo: Annotated[str, Form()] = "",
+    centro_telefono: Annotated[str, Form()] = "",
     ubicacion: Annotated[str, Form()] = "",
     profesional: Annotated[str, Form()] = "",
     motivo: Annotated[str, Form()] = "",
@@ -326,7 +336,11 @@ def guardar_ficha(
     if nuevo_titulo:
         evento.titulo = nuevo_titulo
     evento.especialidad = texto(especialidad)
-    evento.centro_id = entero_de(centro)
+    # Admite "+ Nuevo centro..." desde la tarjeta, igual que el formulario.
+    evento.centro_id = _centro_del_formulario(
+        sesion, centro, centro_nuevo, "", centro_telefono, "",
+        actual=evento.centro_id,
+    )
     evento.ubicacion = texto(ubicacion)
     evento.profesional = texto(profesional)
     evento.motivo = texto(motivo)
@@ -378,6 +392,19 @@ def cambiar_estado(
     sesion.commit()
 
     mensaje = cambio.aviso or f"Cita marcada como {nuevo.value.replace('_', ' ')}."
+    # Al confirmar con fecha, el aviso repite lo que ha quedado apuntado
+    # ("... confirmada: lunes 16 de noviembre de 2026 a las 10:30"): se ve
+    # al momento si se ha tecleado mal el dia o la hora.
+    if cambio.estado == EstadoEvento.CONFIRMADA and evento.fecha:
+        cuando = (
+            f"{logica.nombre_dia(evento.fecha)} {evento.fecha.day} de "
+            f"{logica.nombre_mes(evento.fecha.month)} de {evento.fecha.year}"
+        )
+        if evento.hora:
+            cuando += f" a las {evento.hora.strftime('%H:%M')}"
+        mensaje = f"«{evento.titulo}» confirmada: {cuando}."
+        if cambio.aviso:
+            mensaje += f" {cambio.aviso}"
     # `destino` deja volver a la cita desde la que se edito, que es donde
     # estaba la persona: una prueba se pone al dia desde la cita para la
     # que hace falta, sin pasar por su propia ficha.
@@ -760,14 +787,29 @@ def cerrar(
     derivada_titulo: Annotated[str, Form()] = "",
     derivada_tipo: Annotated[str, Form()] = TipoEvento.PRUEBA,
     destino: Annotated[str, Form()] = "",
+    como: Annotated[str, Form()] = "realizada",
 ):
     """Da una cita por hecha y, si salio algo de ella, lo crea enlazado.
+
+    `como` dice como termino: "realizada" (fue; lo de siempre) o
+    "cancelada" (se anulo o ya no hace falta: se guarda el motivo y no se
+    crea nada a partir de ella). Asi se puede cerrar tambien una solicitud
+    que nunca llego a tener fecha.
 
     Es el mismo gesto que se hace al salir de la consulta: apuntar que han
     dicho y que han mandado. Separarlo en dos pantallas hacia que lo segundo
     no se apuntara nunca.
     """
     evento = _buscar(sesion, evento_id)
+    if como == "cancelada":
+        evento.estado = EstadoEvento.CANCELADA
+        if resultado.strip():
+            evento.resultado = texto(resultado)
+        evento.actualizado_en = ahora()
+        sesion.add(evento)
+        sesion.commit()
+        return volver(destino or f"/eventos/{evento_id}", f"«{evento.titulo}» cancelada.")
+
     evento.estado = EstadoEvento.REALIZADA
     if resultado.strip():
         evento.resultado = texto(resultado)

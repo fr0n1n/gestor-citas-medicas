@@ -1,23 +1,19 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import formulario_subida, estado_documento with context %}
+{% from "_componentes.html" import formulario_subida, estado_documento, cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Documentos</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun. Antes aqui no se podia subir ("ve a Citas"); ahora si,
+   eligiendo opcionalmente la cita: es donde se busca al llegar un papel.
+   El fichero se guarda siempre; si hay IA, la IA lo lee y propone. #}
+{% call cabecera_pagina('Documentos', atras='/') %}
+  {% if pacientes %}
+    {{ formulario_subida('/documentos', ia_lista=ia_lista, citas=citas_abiertas) }}
+  {% endif %}
+{% endcall %}
 
 {% if not pacientes %}
   <p class="banda-aviso">Da de alta primero a un paciente en <a href="/pacientes">Ajustes</a>.</p>
-{% else %}
-  {# Aqui no se sube nada: un papel se sube donde se va a usar, en Citas,
-     que es donde se esta cuando llega. Esta pantalla es el archivo. #}
-  <p class="tenue">
-    Para subir un papel o apuntar una llamada, ve a
-    <a href="/citas?etapa=fecha">Citas</a>.
-    {% if not ia_lista %}<br>Análisis con Claude no disponible: {{ ia_motivo }}{% endif %}
-  </p>
 {% endif %}
 
 {# --- Bandeja de entrada --- #}
@@ -25,9 +21,9 @@
 <section class="bloque destacado">
   <h2>Pendientes de revisar ({{ pendientes|length }})</h2>
   <p class="tenue">
-    Nada de esto está todavía en la agenda. Ábrelos para confirmar lo que
-    propone Claude o para asociarlos a mano.
-    {% if refrescar %}Esta página se actualiza sola mientras Claude trabaja.{% endif %}
+    Nada de esto está todavía en la agenda. Ábrelos para
+    {% if ia.lista %}confirmar lo que propone {{ ia.nombre }} o para{% endif %} asociarlos a mano.
+    {% if refrescar %}Esta página se actualiza sola mientras {{ ia.nombre or 'la IA' }} trabaja.{% endif %}
   </p>
   <ul class="lista-documentos">
     {% for d in pendientes %}
@@ -36,7 +32,7 @@
           {% if d.es_imagen_visible %}
             <img src="/documentos/{{ d.id }}/fichero" alt="" class="miniatura" loading="lazy">
           {% else %}
-            <span class="miniatura icono">📄</span>
+            <span class="miniatura icono">{{ icono("documento") }}</span>
           {% endif %}
           <span class="documento-texto">
             <strong>{{ d.titulo or d.nombre_original or 'Documento' }}</strong>

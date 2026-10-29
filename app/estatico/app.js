@@ -4,6 +4,34 @@
 //
 // Todo funciona tambien sin JavaScript (hay botones <noscript> de respaldo).
 
+document.addEventListener("DOMContentLoaded", () => {
+  // En el movil los menus son una fila que se desliza: si la seccion
+  // actual queda fuera de la pantalla (Ajustes, Documentos...), se desliza
+  // hasta ella para que se vea donde estas. Sin JavaScript, simplemente
+  // no se desliza.
+  const activo = document.querySelector(".menus a.activo");
+  if (activo) activo.scrollIntoView({ block: "nearest", inline: "nearest" });
+});
+
+document.addEventListener("change", (evento) => {
+  // "+ Nuevo centro..." en el selector de centro de una cita: abre el
+  // formulario de alta de debajo y pone el cursor en el nombre. Si luego se
+  // elige otro centro, se cierra y se vacia: lo escrito ahi tiene prioridad
+  // al guardar y crearia un centro sin querer.
+  const selector = evento.target.closest("[data-centro-nuevo]");
+  if (!selector) return;
+  const alta = document.getElementById(selector.dataset.centroNuevo);
+  if (!alta) return;
+  if (selector.value === "nuevo") {
+    alta.open = true;
+    const nombre = alta.querySelector("input[name=centro_nuevo]");
+    if (nombre) nombre.focus();
+  } else {
+    alta.open = false;
+    alta.querySelectorAll("input").forEach((campo) => { campo.value = ""; });
+  }
+});
+
 document.addEventListener("change", (evento) => {
   // Selectores y casillas que envian su formulario al cambiar.
   const campo = evento.target.closest("[data-autoenvio]");

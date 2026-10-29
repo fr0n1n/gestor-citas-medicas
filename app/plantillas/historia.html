@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Historia</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina('Historia', atras='/') }}
 <p class="intro">
   El recorrido de cada asunto: una consulta y todo lo que salió de ella,
   en el orden en que pasó. Primero lo que sigue abierto.

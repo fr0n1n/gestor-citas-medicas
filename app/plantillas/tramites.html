@@ -1,11 +1,73 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Trámites</h1>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{% call cabecera_pagina('Trámites', atras='/', contador=(tramites|length if tramites else none)) %}
+  <details class="anadir" {% if not tramites %}open{% endif %}>
+    <summary class="boton">+ Nuevo trámite</summary>
+    <form method="post" action="/tramites" class="formulario">
+      <label class="ancho">
+        Título
+        <input type="text" name="titulo" required
+               placeholder="Solicitud de ayuda por dependencia">
+      </label>
+      <label>
+        Paciente
+        <select name="paciente" required>
+          {% for p in pacientes %}
+            <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>
+              {{ p.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Organismo
+        <input type="text" name="organismo" placeholder="Servicios Sociales">
+      </label>
+      <label>
+        Estado
+        <select name="estado">
+          {% for e in EstadoTramite %}
+            <option value="{{ e.value }}">{{ e|etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Prioridad
+        <select name="prioridad">
+          {% for p in Prioridad %}
+            <option value="{{ p.value }}" {% if p.value == 'normal' %}selected{% endif %}>
+              {{ p|etiqueta }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Nº de expediente
+        <input type="text" name="expediente">
+      </label>
+      <label>
+        Iniciado el
+        <input type="date" name="iniciado_en">
+      </label>
+      <label>
+        Plazo
+        <input type="date" name="fecha_limite">
+      </label>
+      <label class="ancho">
+        Notas
+        <textarea name="notas" rows="3"></textarea>
+      </label>
+      <div class="ancho">
+        <button type="submit" class="boton">Crear trámite</button>
+      </div>
+    </form>
+  </details>
+{% endcall %}
 <p class="intro">
   Gestiones administrativas: dependencia, incapacidad, ayudas, recursos.
   No son citas y no caben en el calendario, pero se olvidan igual de fácil.
@@ -40,69 +102,9 @@
   </tbody>
 </table>
 {% else %}
-  <p class="tenue">No hay ningún trámite registrado.</p>
+  {# Estado vacio con su accion: el alta esta arriba y abierta. #}
+  <p class="tenue">No hay ningún trámite registrado. Créalo con «+ Nuevo trámite», arriba.</p>
 {% endif %}
 
-<details class="anadir" {% if not tramites %}open{% endif %}>
-  <summary class="boton">+ Nuevo trámite</summary>
-  <form method="post" action="/tramites" class="formulario">
-    <label class="ancho">
-      Título
-      <input type="text" name="titulo" required
-             placeholder="Solicitud de ayuda por dependencia">
-    </label>
-    <label>
-      Paciente
-      <select name="paciente" required>
-        {% for p in pacientes %}
-          <option value="{{ p.id }}" {% if paciente_id == p.id %}selected{% endif %}>
-            {{ p.nombre }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      Organismo
-      <input type="text" name="organismo" placeholder="Servicios Sociales">
-    </label>
-    <label>
-      Estado
-      <select name="estado">
-        {% for e in EstadoTramite %}
-          <option value="{{ e.value }}">{{ e|etiqueta }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      Prioridad
-      <select name="prioridad">
-        {% for p in Prioridad %}
-          <option value="{{ p.value }}" {% if p.value == 'normal' %}selected{% endif %}>
-            {{ p|etiqueta }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>
-      Nº de expediente
-      <input type="text" name="expediente">
-    </label>
-    <label>
-      Iniciado el
-      <input type="date" name="iniciado_en">
-    </label>
-    <label>
-      Plazo
-      <input type="date" name="fecha_limite">
-    </label>
-    <label class="ancho">
-      Notas
-      <textarea name="notas" rows="3"></textarea>
-    </label>
-    <div class="ancho">
-      <button type="submit" class="boton">Crear trámite</button>
-    </div>
-  </form>
-</details>
 
 {% endblock %}

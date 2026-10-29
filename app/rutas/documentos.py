@@ -70,6 +70,18 @@ def listar(
 ):
     ia_lista, ia_motivo = _disponibilidad_ia()
     pendientes = consultas.documentos_pendientes(sesion, paciente_id)
+    # Para el selector "Para que cita" al subir: las que siguen abiertas
+    # (las realizadas o canceladas ya no esperan papeles), del paciente
+    # elegido si lo hay. Las que tienen fecha, primero.
+    consulta_citas = select(Evento).where(
+        Evento.estado.not_in((EstadoEvento.REALIZADA, EstadoEvento.CANCELADA))
+    )
+    if paciente_id:
+        consulta_citas = consulta_citas.where(Evento.paciente_id == paciente_id)
+    citas_abiertas = sorted(
+        sesion.exec(consulta_citas).all(),
+        key=lambda e: (e.fecha is None, e.fecha or datetime.max.date(), e.titulo),
+    )
     return render(
         request,
         "documentos.html",
@@ -84,6 +96,7 @@ def listar(
         busqueda=q or "",
         ia_lista=ia_lista,
         ia_motivo=ia_motivo,
+        citas_abiertas=citas_abiertas,
         refrescar=any(d.analizando for d in pendientes),
         titulo="Documentos",
     )

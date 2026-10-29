@@ -1,3 +1,28 @@
+{# Cabecera de pagina: la misma en todas, para que los botones esten
+   siempre en el mismo sitio.
+     - El titulo, con un contador opcional ("Tramites · 3"), y en la misma
+       linea, a la derecha, "← Atras" (opcional), como estaba en Tramites
+       e Historia.
+     - Justo debajo, la barra de acciones (lo que va dentro del {% call %}):
+       la principal primero y rellena, las demas con borde. Los
+       desplegables (apuntar, subir...) se abren debajo, a todo el ancho.
+   Uso:
+     {% call cabecera_pagina('Citas', atras='/') %}
+       <a class="boton" href="...">+ Nueva cita</a>
+     {% endcall %} #}
+{% macro cabecera_pagina(titulo, atras=none, contador=none, estado=none) %}
+<header class="cabecera-pagina">
+  <div class="titulo-fila">
+    {# estado: etiqueta opcional junto al titulo (p. ej. el de un documento). #}
+    <h1>{{ titulo }}{% if contador is not none %} <span class="contador">· {{ contador }}</span>{% endif %}
+      {%- if estado %} <span class="titulo-estado">{{ estado }}</span>{% endif %}</h1>
+    {% if atras %}<a class="boton secundario pequeno atras" href="{{ atras }}" data-atras>← Atrás</a>{% endif %}
+  </div>
+  {% if caller %}<div class="acciones-pagina">{{ caller() }}</div>{% endif %}
+</header>
+{% endmacro %}
+
+
 {# Trozos reutilizados por varias pantallas. #}
 
 {# El area (Traumatologia, Neurologia...) con su color, para distinguir de
@@ -20,7 +45,7 @@
 {% macro etiqueta_transporte(evento) %}
   {% if evento.necesita_ambulancia %}
     <span class="pastilla transporte-{{ evento.transporte.value }}"
-          title="{{ evento.transporte|etiqueta }}"><span class="icono-ambulancia">🚑</span> {{ evento.transporte|etiqueta }}</span>
+          title="{{ evento.transporte|etiqueta }}"><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> {{ evento.transporte|etiqueta }}</span>
   {% endif %}
 {% endmacro %}
 
@@ -50,6 +75,61 @@
   ni ningun formulario. Las acciones rapidas se pasan con {% call %} y se
   pintan fuera del enlace.
 #}
+{# Primera linea de una cita: la misma en la tarjeta (listas) y en su
+   ficha, para que se lea igual fuera y dentro. Si cambia el orden, cambia
+   en los dos sitios a la vez. #}
+{% macro etiquetas_cita(evento, mostrar_centro=true) %}
+{% set cerrada = evento.estado in (EstadoEvento.REALIZADA, EstadoEvento.CANCELADA) %}
+{# Primera linea, lo importante en el orden en que se pregunta: donde
+   (el hospital), que (la especialidad), en que punto esta (confirmada,
+   solicitada...) y como se va (ambulancia). Antes el estado y la
+   ambulancia iban abajo, despues de las fechas. #}
+<p class="cita-etiquetas">
+  {% if mostrar_centro and evento.centro %}
+    {# Pulsar el hospital abre el mapa para ir. La app no habla con Google:
+       solo construye el enlace (enlaces.mapa_de) y lo abre tu navegador al
+       pulsarlo. Con la direccion del centro, o con su nombre si no tiene. #}
+    {% set enlace_mapa = evento.centro.direccion|mapa or evento.centro.nombre|mapa %}
+    <a class="pastilla centro" href="{{ enlace_mapa }}" target="_blank" rel="noopener noreferrer"
+       title="Abrir {{ evento.centro.nombre }} en el mapa">{{ evento.centro.nombre|centro_corto }} ↗</a>
+  {% elif not mostrar_centro and evento.ubicacion %}
+    {# Estamos dentro de ese centro: lo util aqui es la planta. #}
+    <span class="pastilla centro" title="{{ evento.ubicacion|sin_enlaces }}">{{ evento.ubicacion|sin_enlaces }}</span>
+  {% elif evento.ubicacion %}
+    {# Sin centro dado de alta: el sitio sale del propio enlace del mapa
+       si lo lleva dentro, y si no de la ubicacion escrita. #}
+    {% set sitio = evento.ubicacion|sitio_mapa or evento.ubicacion|sin_enlaces %}
+    {% if sitio %}
+      <span class="pastilla centro" title="{{ sitio }}">{{ sitio|centro_corto(34) }}</span>
+    {% endif %}
+  {% endif %}
+  <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
+  {% if not cerrada %}
+    {# Si ya paso y nadie la ha cerrado, eso es lo que importa: "Sin cerrar"
+       (ambar) en vez de "Confirmada" (verde), que se contradecia con el
+       aviso del grupo. #}
+    {% if evento.ya_paso %}
+      <span class="pastilla estado-sin-cerrar">Sin cerrar</span>
+    {% else %}
+      <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
+    {% endif %}
+    <span class="pastilla transporte-{{ evento.transporte.value }}">
+      <span class="icono-ambulancia">{{ icono("ambulancia") }}</span>
+      {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
+        {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
+        {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
+      {%- else %} Sin ambulancia{% endif %}
+    </span>
+  {% endif %}
+  {# El telefono del centro, pulsable: llamar es lo que mas se hace con una
+     cita. Antes estaba escondido dentro de "Ver la cita". #}
+  {% if evento.centro and evento.centro.telefono %}
+    <a class="pastilla telefono" href="tel:{{ evento.centro.telefono }}">{{ icono("telefono") }} {{ evento.centro.telefono }}</a>
+  {% endif %}
+</p>
+{% endmacro %}
+
+
 {% macro tarjeta_evento(evento, destino='/', mostrar_fecha=true, mostrar_centro=true) %}
 {% set cerrada = evento.estado in (EstadoEvento.REALIZADA, EstadoEvento.CANCELADA) %}
 {% set pendientes = evento.preparativos_pendientes %}
@@ -74,27 +154,152 @@
     {# Hoy y manana, en su propia linea: si comparten sitio con el area y el
        centro, el nombre del hospital se queda en tres letras. #}
     {% if cuando_falta == 0 %}
-      <p class="cita-cuando-falta"><span class="pastilla es-hoy">HOY</span></p>
+      <p class="cita-cuando-falta"><span class="pastilla es-hoy">Hoy</span></p>
     {% elif cuando_falta == 1 %}
-      <p class="cita-cuando-falta"><span class="pastilla es-manana">MAÑANA</span></p>
+      <p class="cita-cuando-falta"><span class="pastilla es-manana">Mañana</span></p>
     {% endif %}
 
-    <p class="cita-etiquetas">
-      <span class="pastilla area-color-{{ evento.area|color_area }}">{{ evento.area }}</span>
-      {% if mostrar_centro and evento.centro %}
-        <span class="pastilla centro" title="{{ evento.centro.nombre }}">{{ evento.centro.nombre|centro_corto }}</span>
-      {% elif not mostrar_centro and evento.ubicacion %}
-        {# Estamos dentro de ese centro: lo util aqui es la planta. #}
-        <span class="pastilla centro" title="{{ evento.ubicacion|sin_enlaces }}">{{ evento.ubicacion|sin_enlaces }}</span>
-      {% elif evento.ubicacion %}
-        {# Sin centro dado de alta: el sitio sale del propio enlace del mapa
-           si lo lleva dentro, y si no de la ubicacion escrita. #}
-        {% set sitio = evento.ubicacion|sitio_mapa or evento.ubicacion|sin_enlaces %}
-        {% if sitio %}
-          <span class="pastilla centro" title="{{ sitio }}">{{ sitio|centro_corto(34) }}</span>
-        {% endif %}
+    {# Primera linea: etiquetas y, a la derecha, Editar. #}
+    <div class="cita-primera-linea">
+    {{ etiquetas_cita(evento, mostrar_centro) }}
+    {# Editar, a la derecha (si no cabe al lado de las etiquetas, baja
+       alineado a la derecha). #}
+    <div class="cita-derecha">
+    {# Editar, a la derecha de la primera linea, donde se busca para cambiar
+       algo. Abierto, el formulario baja a ocupar todo el ancho. #}
+    <details class="editar-cita">
+      <summary class="boton secundario pequeno">
+        <span class="si-cerrado">{{ icono("editar") }} Editar</span>
+        <span class="si-abierto">Cancelar</span>
+      </summary>
+
+    {# Cuando y en que punto esta: lo que mas cambia. #}
+    <form method="post" action="/eventos/{{ evento.id }}/estado" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label>Estado
+        <select name="estado">
+          <option value="{{ evento.estado.value }}" selected>{{ evento.estado|etiqueta }}</option>
+          {% for d in transiciones(evento.estado) %}
+            <option value="{{ d.value }}">{{ d|etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Día
+        <input type="date" name="fecha" value="{{ evento.fecha|iso }}">
+      </label>
+      <label>Hora
+        <input type="time" name="hora" value="{{ evento.hora|iso }}">
+      </label>
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+      </div>
+    </form>
+
+    {# Donde, con quien y lo que se apunto de la cita. #}
+    <form method="post" action="/eventos/{{ evento.id }}/ficha" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label class="ancho">Qué es
+        <input type="text" name="titulo" value="{{ evento.titulo }}">
+      </label>
+      <label>Área
+        <input type="text" name="especialidad" value="{{ evento.especialidad or '' }}">
+      </label>
+      <label>Centro
+        <select name="centro" data-centro-nuevo="alta-centro-{{ evento.id }}">
+          <option value="">— Sin centro —</option>
+          {% for c in centros %}
+            <option value="{{ c.id }}" {% if evento.centro_id == c.id %}selected{% endif %}>
+              {{ c.nombre|centro_corto(34) }}
+            </option>
+          {% endfor %}
+          <option value="nuevo">+ Nuevo centro…</option>
+        </select>
+      </label>
+      {# Alta rapida, igual que en el formulario de cita: se abre al elegir
+         "+ Nuevo centro..." (app.js). Nombre y telefono, lo que se dicta. #}
+      <details class="ancho anadir alta-centro" id="alta-centro-{{ evento.id }}">
+        <summary class="oculto">Nuevo centro</summary>
+        <div class="formulario">
+          <label class="ancho">Nombre del centro
+            <input type="text" name="centro_nuevo">
+          </label>
+          <label>Teléfono
+            <input type="tel" name="centro_telefono">
+          </label>
+        </div>
+      </details>
+      <label>Dónde <span class="tenue">(planta, consulta)</span>
+        <input type="text" name="ubicacion" value="{{ evento.ubicacion|sin_enlaces if evento.ubicacion else '' }}">
+      </label>
+      <label>Con
+        <input type="text" name="profesional" value="{{ evento.profesional or '' }}">
+      </label>
+      <label>Pedida el
+        <input type="date" name="solicitada_en" value="{{ evento.solicitada_en|iso }}">
+      </label>
+      <label class="ancho">Motivo de la cita
+        <input type="text" name="motivo" value="{{ evento.motivo or '' }}">
+      </label>
+      <label class="ancho">Notas
+        <input type="text" name="notas" value="{{ evento.notas or '' }}">
+      </label>
+      <label class="ancho">Lo que dijeron
+        <input type="text" name="resultado" value="{{ evento.resultado or '' }}">
+      </label>
+      {% if evento.centro and evento.centro.telefono %}
+        <p class="panel-telefono">
+          Teléfono del centro:
+          <a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a>
+        </p>
       {% endif %}
-    </p>
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+      </div>
+    </form>
+
+    {# La ambulancia, con el numero al que se pide delante. #}
+    <form method="post" action="/eventos/{{ evento.id }}/transporte" class="panel-cita">
+      <input type="hidden" name="destino" value="{{ destino }}">
+      <label>
+        <span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Ambulancia
+        <select name="transporte">
+          {% for tr in EstadoTransporte %}
+            <option value="{{ tr.value }}" {% if evento.transporte == tr %}selected{% endif %}>
+              {% if tr.value == 'no_necesita' %}Sin ambulancia{% else %}{{ tr|etiqueta }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Hora de paso
+        <input type="time" name="hora_paso" value="{{ evento.transporte_hora|iso }}">
+      </label>
+      <label class="ancho">Cómo se pide
+        <input type="text" name="notas" value="{{ evento.transporte_notas or '' }}"
+               placeholder="Con conductor y ayudante{% if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}">
+      </label>
+      <div class="panel-acciones">
+        <button type="submit" class="boton pequeno">Guardar</button>
+        {% if telefono_ambulancia %}
+          <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">{{ icono("telefono") }} {{ telefono_ambulancia }}</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {# Los papeles de esta cita, y la forma de subir uno mas. #}
+    {% if evento.documentos %}
+      {{ lista_documentos(evento.documentos) }}
+    {% endif %}
+    {{ formulario_subida(destino, evento_id=evento.id, ia_lista=false) }}
+
+      <form method="post" action="/eventos/{{ evento.id }}/borrar" class="borrar-requisito"
+            data-confirmar="¿Eliminar «{{ evento.titulo }}» y todo lo suyo? No se puede deshacer.">
+        <input type="hidden" name="destino" value="{{ destino }}">
+        <button type="submit" class="boton peligro pequeno">Eliminar la cita</button>
+        <span class="tenue">Se lleva por delante lo apuntado para ella.</span>
+      </form>
+    </details>
+    </div>
+    </div>
 
     <div class="cita-titulo">
       <h3>{{ evento.titulo }}</h3>
@@ -154,32 +359,44 @@
               <span class="tenue">cuando se pida</span>
             {% else %}
               <strong class="sin-fecha">Pendiente de que llamen</strong>
+              {# Lo que falta es la fecha: se apunta aqui mismo, al llamar.
+                 (Una fila "Fecha: pendiente de confirmar" aparte decia lo
+                 mismo que esta.) #}
+              {% if evento.estado == EstadoEvento.SOLICITADA %}
+              <details class="apuntar-fecha">
+                <summary class="boton pequeno">Apuntar fecha</summary>
+                <form method="post" action="/eventos/{{ evento.id }}/estado" class="form-fecha">
+                  <input type="hidden" name="destino" value="{{ destino }}">
+                  <input type="hidden" name="estado" value="confirmada">
+                  <label>Fecha <input type="date" name="fecha" required></label>
+                  <label>Hora <input type="time" name="hora"></label>
+                  <button type="submit" class="boton pequeno">Confirmar</button>
+                </form>
+              </details>
+              {% endif %}
             {% endif %}
             {% set lugar = linea_lugar(evento, incluir_centro=not mostrar_centro)|trim %}
             {% if lugar %}<span class="cita-lugar">{{ lugar }}</span>{% endif %}
           </span>
         </li>
 
+
       </ol>
 
-      <p class="cita-situacion">
-        <span class="pastilla estado-{{ evento.estado.value }}">{{ evento.estado|etiqueta }}</span>
-        <span class="pastilla transporte-{{ evento.transporte.value }}">
-          <span class="icono-ambulancia">🚑</span>
-          {%- if evento.necesita_ambulancia %} {{ evento.transporte|etiqueta }}
-            {%- if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}
-            {%- if evento.transporte_hora %} · pasa a las {{ evento.transporte_hora|hora }}{% endif %}
-          {%- else %} Sin ambulancia{% endif %}
-        </span>
-      </p>
     {% endif %}
 
     {% if ns.aviso %}
       {% set u = ns.aviso.urgencia(config.dias_aviso_requisito) %}
       <p class="cita-aviso">
-        ⚠ {{ ns.aviso.descripcion }} —
+        {{ icono("aviso") }} {{ ns.aviso.descripcion }} —
         {% if u == Urgencia.HOY %}es hoy{% else %}debería estar hecho el {{ ns.aviso.fecha_limite|fecha }}{% endif %}
       </p>
+    {% endif %}
+
+    {# El motivo, a la vista y justo encima de lo que hay que preparar: es
+       lo que explica la cita (antes "Por que", dentro de la informacion). #}
+    {% if evento.motivo %}
+      <p class="cita-motivo"><span class="tenue">Motivo de la cita:</span> {{ evento.motivo }}</p>
     {% endif %}
 
   </div>
@@ -189,10 +406,17 @@
      para algo que se hace en un segundo. #}
   {% if not cerrada %}
       <div class="cita-pie">
+        {# Acciones de su situacion (Cerrar la cita, Apuntar fecha, Marcar
+           como pedida...: lo que llega en el {% call %}), a la izquierda en
+           la misma linea que "+ Anadir algo" (a la derecha): se aprovecha
+           una linea. Antes iban en una franja aparte al fondo. #}
+        {% if caller %}<div class="cita-acciones-pie">{{ caller() }}</div>{% endif %}
         {% if pendientes %}
-          <details class="preparar">
+          {# Abierto por defecto: lo que hay que preparar se tiene que ver
+             sin pulsar nada; quien quiera, lo pliega. #}
+          <details class="preparar" open>
             <summary class="apunte">
-              📋 {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
+              {{ icono("lista") }} {{ pendientes|length }} cosa{{ 's' if pendientes|length != 1 }} que preparar
             </summary>
             <ul class="lista-requisitos compacta">
               {% for r in pendientes %}
@@ -204,9 +428,9 @@
           <span class="apunte listo">✓ Preparativos hechos</span>
         {% endif %}
         {% if gestiones %}
-          <details class="preparar">
+          <details class="preparar" open>
             <summary class="apunte">
-              🗣 {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
+              {{ icono("mensaje") }} {{ gestiones|length }} cosa{{ 's' if gestiones|length != 1 }} que pedir allí
             </summary>
             <ul class="lista-requisitos compacta">
               {% for r in gestiones %}
@@ -215,9 +439,8 @@
             </ul>
           </details>
         {% endif %}
-        {% if evento.documentos %}
-          <span class="apunte">📎 {{ evento.documentos|length }} documento{{ 's' if evento.documentos|length != 1 }}</span>
-        {% endif %}
+        {# (Los papeles salen en la informacion de la cita, con su enlace:
+           el recuento de aqui los repetia.) #}
 
         {# Apuntar sin entrar en la cita: lo que te dicen por telefono se
            apunta mientras hablas, en la tarjeta que tienes delante. #}
@@ -225,52 +448,27 @@
       </div>
   {% endif %}
 
-  {# Todo lo de la cita, aqui mismo y editable: ver un dato y poder
-     corregirlo son la misma accion, y mandar a otra pagina para cambiar
-     una planta o un telefono era perder el sitio en la lista. Plegado,
-     para que la lista siga siendo una lista. #}
-  <details class="mas-datos">
-    <summary class="apunte">Ver la cita</summary>
-
-    {# Primero, lo que hay. Abrir una cita para mirar como esta es lo que se
-       hace diez veces al dia; cambiarla, una. Si al desplegar salen los
-       campos, hay que leer un formulario para enterarse de la hora. #}
-    {# El estado, la fecha y la ambulancia ya estan arriba, en la tarjeta:
-       repetirlos aqui solo alargaba la lista. Aqui va lo que no cabe. #}
+  {# Informacion de la cita, siempre a la vista y sin repetir lo que ya
+     esta en la tarjeta: el centro (etiqueta, que abre el mapa: ahi esta la
+     direccion), el telefono (primera linea) y la planta (bajo la fecha). Si no hay nada que anadir, no aparece.
+     Los documentos van aparte, al final de la tarjeta. #}
+  {% set hay_info = (evento.necesita_ambulancia and evento.transporte_notas)
+        or evento.profesional
+        or evento.notas or evento.resultado
+        or evento.origen or evento.antes_de or evento.previas %}
+  {% if hay_info %}
+  <div class="info-cita">
     <dl class="ficha-mini">
       {% if evento.necesita_ambulancia and evento.transporte_notas %}
-        <dt><span class="icono-ambulancia">🚑</span> Cómo se pide</dt>
+        <dt><span class="icono-ambulancia">{{ icono("ambulancia") }}</span> Cómo se pide</dt>
         <dd>
           {{ evento.transporte_notas }}
           {%- if telefono_ambulancia %} · <a href="tel:{{ telefono_ambulancia }}">{{ telefono_ambulancia }}</a>{% endif %}
         </dd>
       {% endif %}
-      {% if evento.centro %}
-        <dt>Centro</dt>
-        <dd>
-          {{ evento.centro.nombre }}
-          {% if evento.centro.direccion %}
-            <br><span class="tenue">{{ evento.centro.direccion|sin_enlaces }}</span>
-          {% endif %}
-        </dd>
-        {% if evento.centro.telefono %}
-          <dt>Teléfono</dt>
-          <dd><a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a></dd>
-        {% endif %}
-      {% endif %}
-      {% if evento.ubicacion %}<dt>Dónde</dt><dd>{{ evento.ubicacion|sin_enlaces }}</dd>{% endif %}
       {% if evento.profesional %}<dt>Con</dt><dd>Dr./Dra. {{ evento.profesional }}</dd>{% endif %}
-      {% if evento.motivo %}<dt>Por qué</dt><dd>{{ evento.motivo }}</dd>{% endif %}
       {% if evento.notas %}<dt>Notas</dt><dd>{{ evento.notas }}</dd>{% endif %}
       {% if evento.resultado %}<dt>Dijeron</dt><dd>{{ evento.resultado }}</dd>{% endif %}
-      {% if evento.documentos %}
-        <dt>Papeles</dt>
-        <dd>
-          {% for d in evento.documentos %}
-            <a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_archivo }}</a>{% if not loop.last %}<br>{% endif %}
-          {% endfor %}
-        </dd>
-      {% endif %}
     </dl>
 
     {% if evento.origen or evento.antes_de or evento.previas %}
@@ -283,128 +481,18 @@
         {% endif %}
       </p>
     {% endif %}
+  </div>
+  {% endif %}
 
-    {# Y si hay que cambiar algo, se pide. #}
-    <details class="editar-cita">
-      <summary class="boton secundario pequeno">
-        <span class="si-cerrado">✎ Editar</span>
-        <span class="si-abierto">Cancelar</span>
-      </summary>
+  {# Los documentos, lo ultimo de la tarjeta: con su miniatura y "Ver
+     original", para verlos sin salir de la lista. #}
+  {% if evento.documentos %}
+  <div class="documentos-cita">
+    <p class="documentos-cita-titulo">{{ icono("clip") }} Documentos</p>
+    {{ lista_documentos(evento.documentos) }}
+  </div>
+  {% endif %}
 
-    {# Cuando y en que punto esta: lo que mas cambia. #}
-    <form method="post" action="/eventos/{{ evento.id }}/estado" class="panel-cita">
-      <input type="hidden" name="destino" value="{{ destino }}">
-      <label>Estado
-        <select name="estado">
-          <option value="{{ evento.estado.value }}" selected>{{ evento.estado|etiqueta }}</option>
-          {% for d in transiciones(evento.estado) %}
-            <option value="{{ d.value }}">{{ d|etiqueta }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label>Día
-        <input type="date" name="fecha" value="{{ evento.fecha|iso }}">
-      </label>
-      <label>Hora
-        <input type="time" name="hora" value="{{ evento.hora|iso }}">
-      </label>
-      <div class="panel-acciones">
-        <button type="submit" class="boton pequeno">Guardar</button>
-      </div>
-    </form>
-
-    {# Donde, con quien y lo que se apunto de la cita. #}
-    <form method="post" action="/eventos/{{ evento.id }}/ficha" class="panel-cita">
-      <input type="hidden" name="destino" value="{{ destino }}">
-      <label class="ancho">Qué es
-        <input type="text" name="titulo" value="{{ evento.titulo }}">
-      </label>
-      <label>Área
-        <input type="text" name="especialidad" value="{{ evento.especialidad or '' }}">
-      </label>
-      <label>Centro
-        <select name="centro">
-          <option value="">— Sin centro —</option>
-          {% for c in centros %}
-            <option value="{{ c.id }}" {% if evento.centro_id == c.id %}selected{% endif %}>
-              {{ c.nombre|centro_corto(34) }}
-            </option>
-          {% endfor %}
-        </select>
-      </label>
-      <label>Dónde <span class="tenue">(planta, consulta)</span>
-        <input type="text" name="ubicacion" value="{{ evento.ubicacion|sin_enlaces if evento.ubicacion else '' }}">
-      </label>
-      <label>Con
-        <input type="text" name="profesional" value="{{ evento.profesional or '' }}">
-      </label>
-      <label>Pedida el
-        <input type="date" name="solicitada_en" value="{{ evento.solicitada_en|iso }}">
-      </label>
-      <label class="ancho">Por qué
-        <input type="text" name="motivo" value="{{ evento.motivo or '' }}">
-      </label>
-      <label class="ancho">Notas
-        <input type="text" name="notas" value="{{ evento.notas or '' }}">
-      </label>
-      <label class="ancho">Lo que dijeron
-        <input type="text" name="resultado" value="{{ evento.resultado or '' }}">
-      </label>
-      {% if evento.centro and evento.centro.telefono %}
-        <p class="panel-telefono">
-          Teléfono del centro:
-          <a href="tel:{{ evento.centro.telefono }}">{{ evento.centro.telefono }}</a>
-        </p>
-      {% endif %}
-      <div class="panel-acciones">
-        <button type="submit" class="boton pequeno">Guardar</button>
-      </div>
-    </form>
-
-    {# La ambulancia, con el numero al que se pide delante. #}
-    <form method="post" action="/eventos/{{ evento.id }}/transporte" class="panel-cita">
-      <input type="hidden" name="destino" value="{{ destino }}">
-      <label>
-        <span class="icono-ambulancia">🚑</span> Ambulancia
-        <select name="transporte">
-          {% for tr in EstadoTransporte %}
-            <option value="{{ tr.value }}" {% if evento.transporte == tr %}selected{% endif %}>
-              {% if tr.value == 'no_necesita' %}Sin ambulancia{% else %}{{ tr|etiqueta }}{% endif %}
-            </option>
-          {% endfor %}
-        </select>
-      </label>
-      <label>Hora de paso
-        <input type="time" name="hora_paso" value="{{ evento.transporte_hora|iso }}">
-      </label>
-      <label class="ancho">Cómo se pide
-        <input type="text" name="notas" value="{{ evento.transporte_notas or '' }}"
-               placeholder="Con conductor y ayudante{% if telefono_ambulancia %} · {{ telefono_ambulancia }}{% endif %}">
-      </label>
-      <div class="panel-acciones">
-        <button type="submit" class="boton pequeno">Guardar</button>
-        {% if telefono_ambulancia %}
-          <a class="boton secundario pequeno" href="tel:{{ telefono_ambulancia }}">☎ {{ telefono_ambulancia }}</a>
-        {% endif %}
-      </div>
-    </form>
-
-    {# Los papeles de esta cita, y la forma de subir uno mas. #}
-    {% if evento.documentos %}
-      {{ lista_documentos(evento.documentos) }}
-    {% endif %}
-    {{ formulario_subida(destino, evento_id=evento.id, ia_lista=false) }}
-
-      <form method="post" action="/eventos/{{ evento.id }}/borrar" class="borrar-requisito"
-            data-confirmar="¿Eliminar «{{ evento.titulo }}» y todo lo suyo? No se puede deshacer.">
-        <input type="hidden" name="destino" value="{{ destino }}">
-        <button type="submit" class="boton peligro pequeno">Eliminar la cita</button>
-        <span class="tenue">Se lleva por delante lo apuntado para ella.</span>
-      </form>
-    </details>
-  </details>
-
-  {% if caller %}<div class="cita-acciones">{{ caller() }}</div>{% endif %}
 </article>
 {% endmacro %}
 
@@ -438,8 +526,8 @@
     <br>
     {% if requisito.fecha_limite %}
       <span class="limite">
-        {% if u == Urgencia.VENCIDO %}⚠ Debería estar hecho el
-        {% elif u == Urgencia.HOY %}⚠ Es hoy:
+        {% if u == Urgencia.VENCIDO %}{{ icono("aviso") }} Debería estar hecho el
+        {% elif u == Urgencia.HOY %}{{ icono("aviso") }} Es hoy:
         {% else %}Antes del{% endif %}
         {{ requisito.fecha_limite|fecha }}
         <span class="tenue">({{ requisito.fecha_limite|relativo }})</span>
@@ -464,7 +552,7 @@
        era cual, y la X borraba. Eliminar vive ahora aqui dentro, con su
        nombre y lejos de lo que se pulsa a diario. #}
     <details class="editar-requisito">
-      <summary class="boton secundario pequeno">✎ Editar</summary>
+      <summary class="boton secundario pequeno">{{ icono("editar") }} Editar</summary>
       <form method="post" action="/requisitos/{{ requisito.id }}/editar" class="form-fecha">
         <input type="hidden" name="destino" value="{{ destino }}">
         <label class="ancho">Qué es
@@ -549,9 +637,14 @@
 
 {# Subida de documentos. Si se usa desde una cita o un tramite, lo que se
    sube queda asociado a ella directamente. #}
-{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='📎 Subir documentos') %}
+{# clase_boton: en una barra de acciones solo la accion principal va
+   rellena; ahi se pasa 'boton secundario'.
+   citas: si se pasa (p. ej. desde Documentos), sale un selector "Para que
+   cita" para adjuntar el papel a una; si no se elige y hay IA, la IA
+   propone a cual va al analizarlo. #}
+{% macro formulario_subida(destino, evento_id=none, tramite_id=none, ia_lista=false, abierto=false, etiqueta='Subir documentos', clase_boton='boton', citas=none) %}
 <details class="anadir subida" {% if abierto %}open{% endif %}>
-  <summary class="boton">{{ etiqueta }}</summary>
+  <summary class="{{ clase_boton }}">{{ icono("clip") }} {{ etiqueta }}</summary>
   <form method="post" action="/documentos/subir" enctype="multipart/form-data" class="formulario">
     <input type="hidden" name="destino" value="{{ destino }}">
     {% if evento_id %}<input type="hidden" name="evento" value="{{ evento_id }}">{% endif %}
@@ -565,6 +658,18 @@
       <input type="file" name="archivos" multiple required
              accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif">
     </label>
+
+    {% if citas and not evento_id and not tramite_id %}
+    <label class="ancho">
+      Para qué cita <span class="tenue">(opcional)</span>
+      <select name="evento">
+        <option value="">{% if ia.lista %}Que {{ ia.nombre }} proponga a cuál va{% else %}Ninguna: la asocio después{% endif %}</option>
+        {% for c in citas %}
+          <option value="{{ c.id }}">{{ c.titulo }}{% if c.fecha %} · {{ c.fecha|fecha }}{% else %} · {{ c.estado|etiqueta|lower }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
 
     {% if not evento_id and not tramite_id and pacientes|length > 1 %}
     <label>
@@ -589,7 +694,7 @@
     {% if ia_lista %}
     <label class="casilla-inline ancho">
       <input type="checkbox" name="analizar" value="si" checked>
-      Analizar con Claude al subir (la propuesta queda guardada aunque cierres la página)
+      Analizar con {{ ia.nombre }} al subir (la propuesta queda guardada aunque cierres la página)
     </label>
     {% endif %}
 
@@ -612,9 +717,9 @@
   {% if d.revisado %}
     <span class="pastilla estado-realizada">Archivado</span>
   {% elif d.estado_ia == 'en_cola' %}
-    <span class="pastilla estado-solicitada">En cola para Claude</span>
+    <span class="pastilla estado-solicitada">En cola para {{ ia.nombre or 'la IA' }}</span>
   {% elif d.estado_ia == 'analizando' %}
-    <span class="pastilla estado-solicitada">Claude lo está leyendo…</span>
+    <span class="pastilla estado-solicitada">{{ ia.nombre or 'La IA' }} lo está leyendo…</span>
   {% elif d.estado_ia == 'propuesta' %}
     <span class="llamada-revisar">Revisar propuesta</span>
   {% elif d.estado_ia == 'error' %}
@@ -635,7 +740,7 @@
            lleva a la ficha del documento, donde se ve entero. #}
         <a class="miniatura-enlace" href="/documentos/{{ d.id }}">
           <img src="/documentos/{{ d.id }}/vista" alt="" class="miniatura" loading="lazy">
-          <span class="miniatura icono">📄</span>
+          <span class="miniatura icono">{{ icono("documento") }}</span>
         </a>
         <span class="documento-texto">
           <strong><a href="/documentos/{{ d.id }}">{{ d.titulo or d.nombre_original or d.nombre_archivo }}</a></strong>
@@ -657,21 +762,31 @@
   Cerrar una cita que ya paso: que dijeron y que mandaron, de una vez.
   Separarlo en dos pantallas hacia que lo segundo no se apuntara nunca.
 #}
-{% macro formulario_cerrar(evento, destino='/') %}
+{# clase: en una solicitud lo esperado es apuntar la fecha (azul) y
+   cerrarla es la excepcion: ahi se pasa 'boton secundario pequeno'. #}
+{% macro formulario_cerrar(evento, destino='/', clase='boton pequeno') %}
 <details class="cerrar-cita">
-  <summary class="boton pequeno">¿Ya fue? Cerrarla</summary>
-  <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario">
+  <summary class="{{ clase }}">Cerrar la cita</summary>
+  <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario form-cerrar">
     <input type="hidden" name="destino" value="{{ destino }}">
+    {# Una cita se termina de dos formas: fue, o se cancelo / ya no hace
+       falta. Con "se cancelo" se ocultan (solo CSS, :has) las preguntas de
+       pruebas nuevas, que no aplican. #}
+    <fieldset class="ancho como-termino">
+      <legend>¿Cómo terminó?</legend>
+      <label><input type="radio" name="como" value="realizada" checked> Ya fue</label>
+      <label><input type="radio" name="como" value="cancelada"> Se canceló o ya no hace falta</label>
+    </fieldset>
     <label class="ancho">
-      Qué dijo el médico
+      Qué dijo el médico, o el motivo si se canceló
       <textarea name="resultado" rows="3"
-                placeholder="Lo que te contaron y lo que hay que hacer">{{ evento.resultado or '' }}</textarea>
+                placeholder="Lo que te contaron y lo que hay que hacer · o: la anularon por teléfono">{{ evento.resultado or '' }}</textarea>
     </label>
     {# La pregunta cambia segun lo que se acabe de cerrar: de una consulta
        salen pruebas; de una prueba, la vuelta al especialista que la pidio
        para que la vea. #}
     {% set era_prueba = evento.tipo == TipoEvento.PRUEBA %}
-    <label class="ancho">
+    <label class="ancho solo-si-fue">
       {% if era_prueba %}
         ¿Hay que volver al especialista con el resultado?
       {% else %}
@@ -680,7 +795,7 @@
       <input type="text" name="derivada_titulo"
              placeholder="{% if era_prueba %}Revisión con {{ (evento.origen.especialidad if evento.origen else evento.especialidad) or 'el especialista' }}{% else %}RMN de columna{% endif %} — déjalo vacío si no">
     </label>
-    <label>
+    <label class="solo-si-fue">
       Qué es
       <select name="derivada_tipo">
         {% set sugerido = TipoEvento.REVISION if era_prueba else TipoEvento.PRUEBA %}
@@ -697,7 +812,7 @@
       </p>
     {% endif %}
     <div class="ancho">
-      <button type="submit" class="boton">Marcar como realizada</button>
+      <button type="submit" class="boton">Cerrar la cita</button>
     </div>
   </form>
 </details>

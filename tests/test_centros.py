@@ -125,9 +125,6 @@ class TestPiezas(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class TestNombreCorto(unittest.TestCase):
     """Los nombres largos, abreviados para caber en una pastilla."""
@@ -136,7 +133,8 @@ class TestNombreCorto(unittest.TestCase):
         from app.centros import nombre_corto
 
         casos = {
-            "Centro de Salud Arroyo Blanco-Villamar": "C.S. Arroyo Blanco",
+            # Sin abreviar: "C.S." no se entendia (ver ABREVIATURAS).
+            "Centro de Salud Arroyo Blanco-Villamar": "Centro de Salud Arroyo Blanco",
             "Hospital de Alta Resolución de Villamar": "HAR Villamar",
             "Hospital Universitario Virgen del Faro (Vistamar)":
                 "H.U. Virgen del Faro",
@@ -206,6 +204,34 @@ class TestAliasLocales(unittest.TestCase):
         self.centros.ALIAS = ()
 
         self.assertFalse(es_el_mismo(self.OFICIAL, "Hospital Clínico Vistamar"))
+
+
+
+# Estas pruebas importan las rutas, que necesitan FastAPI. En el CI no se
+# instala nada (ver .github/workflows/pruebas.yml), asi que se saltan solas
+# si no esta, igual que las de IA con pydantic.
+try:
+    import fastapi  # noqa: F401
+    HAY_FASTAPI = True
+except ImportError:  # pragma: no cover - depende del entorno
+    HAY_FASTAPI = False
+
+
+@unittest.skipUnless(HAY_FASTAPI, "hace falta fastapi")
+class TestNuevoCentroDesdeElDesplegable(unittest.TestCase):
+    """La opcion "+ Nuevo centro..." sin nombre no borra el centro que habia."""
+
+    def test_nuevo_sin_nombre_conserva_el_actual(self):
+        from app.rutas.eventos import _centro_del_formulario
+
+        self.assertEqual(_centro_del_formulario(None, "nuevo", "", "", "", "", actual=7), 7)
+        self.assertIsNone(_centro_del_formulario(None, "nuevo", "  ", "", "", ""))
+
+    def test_un_centro_de_la_lista_sigue_igual(self):
+        from app.rutas.eventos import _centro_del_formulario
+
+        self.assertEqual(_centro_del_formulario(None, "3", "", "", "", "", actual=7), 3)
+        self.assertIsNone(_centro_del_formulario(None, "", "", "", "", "", actual=7))
 
 
 if __name__ == "__main__":

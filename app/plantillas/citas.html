@@ -1,17 +1,20 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import tarjeta_evento, formulario_cerrar, formulario_subida with context %}
+{% from "_componentes.html" import tarjeta_evento, formulario_cerrar, formulario_subida, cabecera_pagina with context %}
 
 {% block contenido %}
 
 {# Las tres formas de que entre una cita, juntas: a mano, dictada por
    telefono o en un papel. Apuntar una llamada es dar de alta una cita
-   tanto como el boton de al lado, asi que viven en la misma fila. #}
-<div class="titulo-con-accion entrada-citas">
-  <h1>Citas</h1>
+   tanto como el boton de al lado, asi que viven en la misma fila.
+   Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha y debajo
+   la barra; solo "+ Nueva cita" va rellena. #}
+{% call cabecera_pagina('Citas', atras='/') %}
   <a class="boton" href="/eventos/nuevo">+ Nueva cita</a>
 
+  {# Apuntar una llamada es dictarle el texto a la IA: sin IA no se ofrece. #}
+  {% if ia.lista %}
   <details class="anadir">
-    <summary class="boton">☎ Apuntar llamada</summary>
+    <summary class="boton secundario">{{ icono("telefono") }} Apuntar llamada</summary>
     <form method="post" action="/documentos/llamada" class="formulario">
       <input type="hidden" name="destino" value="/citas?etapa={{ etapa }}&amp;orden={{ orden }}">
       <label class="ancho">
@@ -30,20 +33,19 @@
         </label>
       {% endif %}
       <div class="ancho acciones">
-        <button type="submit" class="boton">Que lo lea Claude</button>
+        <button type="submit" class="boton">Que lo lea {{ ia.nombre }}</button>
         <button type="reset" class="boton secundario" data-cerrar>Cancelar</button>
       </div>
     </form>
   </details>
-
-  {{ formulario_subida('/citas?etapa=' ~ etapa ~ '&orden=' ~ orden, ia_lista=ia_lista,
-                       etiqueta='📎 Subir papeles') }}
-
-  {% if not ia_lista %}
-    <p class="tenue">Claude no está disponible ahora mismo: {{ ia_motivo }}</p>
   {% endif %}
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+
+  {# Subir documentos se hace desde Documentos (eligiendo la cita) o desde
+     la ficha de la cita: aqui, el acceso. #}
+  <a class="boton secundario" href="/documentos">{{ icono("clip") }} Subir documentos</a>
+
+
+{% endcall %}
 
 {# Las tres etapas de la vida de una cita. Separadas a proposito: mezclarlas
    era lo que hacia imposible leer la pantalla. #}
@@ -102,24 +104,16 @@
             {% if e.estado == EstadoEvento.POR_SOLICITAR %}
               <form method="post" action="/eventos/{{ e.id }}/estado">
                 <input type="hidden" name="estado" value="solicitada">
-                <button type="submit" class="boton pequeno">Ya la he pedido</button>
+                <button type="submit" class="boton pequeno">Marcar como pedida</button>
               </form>
+              {{ formulario_cerrar(e, '/citas?etapa=' ~ etapa ~ '&orden=' ~ orden, clase='boton secundario pequeno') }}
             {% else %}
               {% if e.toca_reclamar(config.dias_alerta_espera) %}
-                <span class="apunte aviso-reclamar">⚠ Toca reclamar</span>
+                <span class="apunte aviso-reclamar">{{ icono("aviso") }} Toca reclamar</span>
               {% endif %}
-              {% if e.centro and e.centro.telefono %}
-                <a class="boton secundario pequeno" href="tel:{{ e.centro.telefono }}">☎ {{ e.centro.telefono }}</a>
-              {% endif %}
-              <details>
-                <summary class="boton pequeno">Ya tiene fecha</summary>
-                <form method="post" action="/eventos/{{ e.id }}/estado" class="form-fecha">
-                  <input type="hidden" name="estado" value="confirmada">
-                  <label>Fecha <input type="date" name="fecha" required></label>
-                  <label>Hora <input type="time" name="hora"></label>
-                  <button type="submit" class="boton pequeno">Confirmar</button>
-                </form>
-              </details>
+              {# "Apuntar fecha" esta ahora en la linea de tiempo de la tarjeta;
+                 aqui, como en las demas, cerrarla (fue o se cancelo). #}
+              {{ formulario_cerrar(e, '/citas?etapa=' ~ etapa ~ '&orden=' ~ orden, clase='boton secundario pequeno') }}
             {% endif %}
           {% endcall %}
         {% else %}

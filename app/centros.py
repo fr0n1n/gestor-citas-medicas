@@ -151,8 +151,9 @@ ABREVIATURAS: tuple[tuple[str, str], ...] = (
     ("hospital de alta resolucion ", "HAR "),
     ("hospital universitario ", "H.U. "),
     ("hospital regional universitario de ", "H.R.U. "),
-    ("centro de salud de ", "C.S. "),
-    ("centro de salud ", "C.S. "),
+    # "Centro de Salud" se deja entero: "C.S." no se entendia a simple
+    # vista, y desde que las etiquetas de la tarjeta bajan de linea si no
+    # caben, hay sitio para el nombre completo.
     ("consultorio ", "C. "),
     ("area hospitalaria ", "A.H. "),
 )

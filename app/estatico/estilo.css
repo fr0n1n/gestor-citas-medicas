@@ -1,19 +1,51 @@
 /* Hoja de estilos unica, sin frameworks ni CDN: la aplicacion tiene que
    funcionar con el ordenador desconectado de internet. */
 
+/* Open Sans dentro del proyecto (licencia SIL OFL 1.1, ver
+   fuentes/OFL-open-sans.txt). Recortada a alfabeto latino (con n, tildes
+   y euro) y grosores 400 a 600: 29 KB en vez de 520. Origen:
+   github.com/google/fonts, ofl/opensans, commit 9862abc. */
+@font-face {
+  font-family: "Open Sans";
+  src: url("fuentes/open-sans.woff2") format("woff2");
+  font-weight: 400 600;   /* fuente variable: un fichero, todos los grosores */
+  font-style: normal;
+  font-display: swap;     /* mientras carga, se ve el texto con la del sistema */
+}
+
+/* Tamano base algo menor (15px si el navegador esta en 16): en % y no en
+   px para respetar a quien tenga la letra del navegador mas grande. Todo
+   lo medido en rem (letra y espacios) se ajusta en proporcion. */
+html { font-size: 93.75%; }
+
 :root {
   color-scheme: light;
-  /* Grises con un punto de azul, para que el blanco no parezca sucio. */
-  --fondo: #f1f4f7;
+  /* Escala de letra: cinco escalones en vez de 24 tamanos casi iguales
+     (.85, .87, .88, .9...), que el ojo no distingue como jerarquia. */
+  --t-xs: .8rem;    /* detalle: etiquetas, fechas pequenas */
+  --t-sm: .875rem;  /* interfaz: menus, botones, datos secundarios */
+  --t-md: 1rem;     /* texto */
+  --t-lg: 1.25rem;  /* titulo de seccion (h2) */
+  --t-xl: 1.75rem;  /* titulo de pagina (h1) */
+  /* Paleta inspirada en DJI (awesome-design-md): fondo gris muy palido,
+     tarjetas blancas, grises neutros y un solo azul para las acciones. */
+  --fondo: #f7f9fa;
   --superficie: #ffffff;
-  --borde: #dde3ea;
+  --borde: #e8e8e8;
   /* El borde de las tarjetas se ve; el de las separaciones, apenas. */
-  --borde-tarjeta: #c3ccd6;
-  --borde-fuerte: #8695a5;
-  --texto: #10161c;
-  --texto-tenue: #5b6874;
-  --acento: #0b5cc4;
-  --acento-suave: #e6eefb;
+  --borde-tarjeta: #d9d9d9;
+  --borde-fuerte: #8c8c8c;
+  /* Nunca negro puro: gris muy oscuro, mas suave de leer. */
+  --texto: #262626;
+  --texto-tenue: #595959;
+  /* El azul de DJI: 5:1 sobre blanco, legible como texto (WCAG AA). */
+  --acento: #0070d5;
+  /* Fondo suave de lo activo o al pasar el raton: gris, no azul. */
+  --acento-suave: #f0f0f0;
+  /* Boton principal: el mismo azul, con texto blanco. */
+  --primario: #0070d5;
+  --primario-activo: #005bb0;
+  --sobre-primario: #ffffff;
 
   --rojo: #b3261e;
   --rojo-suave: #fdecea;
@@ -48,15 +80,23 @@
   color-scheme: dark;
   /* Mas contraste que antes: el fondo baja y el texto sube, que es lo que
      hace que se lea de un vistazo y no haya que acercarse. */
-  --fondo: #0e1216;
-  --superficie: #171c21;
-  --borde: #262e36;
-  --borde-tarjeta: #38434e;
-  --borde-fuerte: #5d6b79;
-  --texto: #eef3f8;
-  --texto-tenue: #9dabb8;
-  --acento: #6fb0f5;
-  --acento-suave: #14243a;
+  /* DJI no tiene modo oscuro: se construye con los grises de su pie de
+     pagina (#272727, #383838) y el mismo azul en los botones. */
+  --fondo: #1c1c1c;
+  --superficie: #272727;
+  --borde: #383838;
+  --borde-tarjeta: #414141;
+  --borde-fuerte: #6c7073;
+  --texto: #f5f5f5;
+  --texto-tenue: #b3b3b3;
+  /* Enlaces algo mas claros: el azul de los botones no se lee como texto
+     sobre fondo oscuro. */
+  --acento: #4da3ff;
+  --acento-suave: #333333;
+  /* Boton: el azul de siempre; con texto blanco da 5:1. */
+  --primario: #0070d5;
+  --primario-activo: #1a80e0;
+  --sobre-primario: #ffffff;
 
   --rojo: #f58a80;
   --rojo-suave: #3a201d;
@@ -74,24 +114,32 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
     color-scheme: dark;
-    --fondo: #14171a;
-    --superficie: #1c2024;
-    --borde: #2e343a;
-    --texto: #e7eaed;
-    --texto-tenue: #9aa4ad;
-    --acento: #6aa9f0;
-    --acento-suave: #17273a;
+    /* Los mismos valores que el bloque de oscuro elegido a mano: antes
+       eran parecidos pero no iguales, y faltaban los bordes de tarjeta. */
+    --fondo: #1c1c1c;
+    --superficie: #272727;
+    --borde: #383838;
+    --borde-tarjeta: #414141;
+    --borde-fuerte: #6c7073;
+    --texto: #f5f5f5;
+    --texto-tenue: #b3b3b3;
+    --acento: #4da3ff;
+    --acento-suave: #333333;
+    --primario: #0070d5;
+    --primario-activo: #1a80e0;
+    --sobre-primario: #ffffff;
 
-    --rojo: #f07a72;
-    --rojo-suave: #37211f;
-    --ambar: #e0b25f;
-    --ambar-suave: #332a1a;
-    --verde: #72c78f;
-    --verde-suave: #1a2c21;
-    --violeta: #b09bec;
+    --rojo: #f58a80;
+    --rojo-suave: #3a201d;
+    --ambar: #e8bb68;
+    --ambar-suave: #372c18;
+    --verde: #78d197;
+    --verde-suave: #162d1f;
+    --violeta: #b5a1f0;
     --violeta-suave: #26203a;
 
-    --sombra: 0 1px 2px rgba(0, 0, 0, .4);
+    --sombra: 0 1px 2px rgba(0, 0, 0, .45);
+    --sombra-alta: 0 6px 18px rgba(0, 0, 0, .5);
   }
 }
 
@@ -99,8 +147,13 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 16px;
+  /* Open Sans (la de DJI) servida por la propia app: nada de cargarla de
+     internet, la CSP lo bloquearia y la app tiene que ir sin conexion. Si
+     no carga, la del sistema. */
+  font-family: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Letras un poco mas juntas: es lo que le da a DJI su aire compacto. */
+  letter-spacing: -.01em;
+  font-size: var(--t-md);
   line-height: 1.5;
   color: var(--texto);
   background: var(--fondo);
@@ -135,8 +188,8 @@ code {
 }
 
 .marca {
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 600;
+  font-size: var(--t-md);
   text-decoration: none;
   color: var(--texto);
 }
@@ -155,11 +208,53 @@ code {
   border-radius: var(--radio);
   text-decoration: none;
   color: var(--texto-tenue);
-  font-size: .93rem;
+  font-size: var(--t-sm);
 }
 
-.navegacion a:hover { background: var(--acento-suave); color: var(--acento); }
-.navegacion a.activo { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
+/* Al pasar el raton, gris; la seccion activa, en el azul de las acciones
+   (en DJI el selector activo va en azul). */
+.navegacion a:hover { background: var(--acento-suave); color: var(--texto); }
+.navegacion a.activo { background: var(--acento-suave); color: var(--acento); font-weight: 500; }
+
+/* En pantallas anchas el envoltorio de los menus no existe a efectos de
+   maquetacion: sus dos <nav> se colocan como si estuvieran sueltos. */
+.menus { display: contents; }
+
+/* Cuando todo no cabe en una fila (por debajo de ~1340px: portatiles,
+   ventanas a media pantalla, moviles) la cabecera pasa a dos filas:
+   arriba logo, paciente, tema y salir; debajo todas las secciones en una
+   fila que se desliza. Antes solo se hacia en el movil, y en anchos
+   intermedios "Salir" caia a otra fila y el boton de tema se cortaba.
+   No se esconde ninguna seccion. */
+@media (max-width: 1340px) {
+  .menus {
+    display: flex;
+    order: 9;              /* despues del tema y la sesion: segunda fila */
+    flex: 1 1 100%;
+    gap: .25rem;
+    overflow-x: auto;      /* se desliza en horizontal en vez de partirse */
+    scrollbar-width: none; /* sin barra: el gesto es el de cualquier app */
+    margin: 0 -1.25rem;    /* llega hasta los bordes de la cabecera... */
+    padding: 0 1.25rem;    /* ...sin pegar el primer enlace al borde */
+  }
+  .menus::-webkit-scrollbar { display: none; }
+  .menus .navegacion { flex-wrap: nowrap; margin-left: 0; }
+  .navegacion a { white-space: nowrap; }
+  /* Una raya fina separa lo diario de lo ocasional. */
+  .navegacion.secundaria { border-left: 1px solid var(--borde); padding-left: .25rem; }
+  /* Tema y salir, a la derecha de la primera fila. */
+  .selector-tema { margin-left: auto; }
+}
+
+/* Movil: ademas, menos margen, el selector de paciente ocupa el hueco
+   libre y se oculta el nombre de usuario (ya se sabe; "Salir" basta). */
+@media (max-width: 720px) {
+  .cabecera { gap: .5rem; padding: .5rem .75rem; }
+  .selector { flex: 1 1 auto; min-width: 0; }
+  .selector select { width: 100%; max-width: 100%; }
+  .sesion-usuario .tenue { display: none; }
+  .menus { margin: 0 -.75rem; padding: 0 .75rem; }
+}
 
 .contenido {
   max-width: 62rem;
@@ -175,20 +270,23 @@ code {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
   border-top: 1px solid var(--borde);
 }
 
 /* --- Tipografia y bloques --------------------------------------------- */
 
-h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
-h2 { font-size: 1.15rem; margin: 0 0 .5rem; }
-h3 { font-size: 1rem; margin: 0; }
+/* Titulos: el navegador los pone en negrita gruesa (700); aqui todos a
+   600 y con las letras algo mas juntas, como en DJI. */
+h1, h2, h3 { font-weight: 600; letter-spacing: -.01em; }
+h1 { font-size: var(--t-xl); margin: 0 0 .5rem; }
+h2 { font-size: var(--t-lg); margin: 0 0 .5rem; }
+h3 { font-size: var(--t-md); margin: 0; }
 
 .intro { color: var(--texto-tenue); max-width: 46rem; margin-top: 0; }
 .tenue { color: var(--texto-tenue); font-weight: normal; }
-.meta { margin: .25rem 0; font-size: .92rem; }
+.meta { margin: .25rem 0; font-size: var(--t-sm); }
 .multilinea { white-space: pre-wrap; }
 
 .titulo-con-accion {
@@ -220,7 +318,7 @@ h3 { font-size: 1rem; margin: 0; }
 }
 
 .resumen-acciones {
-  font-size: 1.05rem;
+  font-size: var(--t-md);
   padding: .6rem .9rem;
   background: var(--ambar-suave);
   border-radius: var(--radio);
@@ -231,9 +329,10 @@ h3 { font-size: 1rem; margin: 0; }
   padding-bottom: .3rem;
   border-bottom: 1px solid var(--borde);
   color: var(--texto-tenue);
-  font-size: .95rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  /* Sin mayusculas (antes uppercase): se leen peor y "gritan"; la
+     jerarquia la da el grosor. */
+  font-size: var(--t-md);
+  font-weight: 600;
 }
 
 .banda-aviso {
@@ -285,9 +384,9 @@ h3 { font-size: 1rem; margin: 0; }
 .pastilla {
   display: inline-block;
   padding: .12rem .55rem;
-  border-radius: 999px;
-  font-size: .78rem;
-  font-weight: 600;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
+  font-size: var(--t-xs);
+  font-weight: 500;
   white-space: nowrap;
   background: var(--acento-suave);
   color: var(--acento);
@@ -343,11 +442,11 @@ h3 { font-size: 1rem; margin: 0; }
   flex: 0 0 auto;
   align-self: center;
   padding: .1rem .55rem;
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   background: var(--verde);
   color: #fff;
-  font-size: .75rem;
-  font-weight: 700;
+  font-size: var(--t-xs);
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -362,14 +461,17 @@ h3 { font-size: 1rem; margin: 0; }
 /* Dentro de una tarjeta hay menos ancho: el texto se queda con lo que
    sobra de su linea (la casilla va delante) y los botones bajan juntos,
    no de uno en uno. */
-.requisito.compacta .requisito-cuerpo { flex: 1 1 calc(100% - 3rem); }
-.requisito-texto { font-weight: 600; }
-.limite { font-size: .88rem; }
+/* En la tarjeta de la cita, casilla, texto y "Editar" en la misma linea:
+   antes el texto ocupaba toda la fila y "Editar" caia debajo. Abierto,
+   el editor sigue bajando a su propia linea (.editar-requisito[open]). */
+.requisito.compacta .requisito-cuerpo { flex: 1 1 0; min-width: 0; }
+.requisito-texto { font-weight: 500; }
+.limite { font-size: var(--t-sm); }
 
 .casilla {
   background: none;
   border: none;
-  font-size: 1.35rem;
+  font-size: var(--t-lg);
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -386,7 +488,7 @@ h3 { font-size: 1rem; margin: 0; }
   width: 100%;
   border-collapse: collapse;
   margin: .75rem 0;
-  font-size: .94rem;
+  font-size: var(--t-sm);
 }
 
 .tabla th, .tabla td {
@@ -396,7 +498,8 @@ h3 { font-size: 1rem; margin: 0; }
   vertical-align: top;
 }
 
-.tabla th { color: var(--texto-tenue); font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; }
+/* Cabeceras de tabla sin mayusculas: el grosor ya las distingue. */
+.tabla th { color: var(--texto-tenue); font-size: var(--t-sm); font-weight: 500; }
 .tabla tr:last-child td { border-bottom: none; }
 .tabla tr.fila-alerta { background: var(--rojo-suave); }
 .acciones-celda { white-space: nowrap; }
@@ -415,9 +518,9 @@ h3 { font-size: 1rem; margin: 0; }
 
 .calendario th {
   padding: .4rem;
-  font-size: .78rem;
-  text-transform: uppercase;
-  letter-spacing: .05em;
+  /* Lun, Mar... en vez de LUN, MAR: sin mayusculas forzadas. */
+  font-size: var(--t-sm);
+  font-weight: 500;
   color: var(--texto-tenue);
   border-bottom: 1px solid var(--borde);
 }
@@ -434,11 +537,11 @@ h3 { font-size: 1rem; margin: 0; }
 .celda-dia.otro-mes .numero-dia { color: var(--texto-tenue); opacity: .5; }
 .celda-dia.es-hoy { outline: 2px solid var(--acento); outline-offset: -2px; }
 
-.numero-dia { font-size: .8rem; color: var(--texto-tenue); display: block; margin-bottom: .2rem; }
+.numero-dia { font-size: var(--t-xs); color: var(--texto-tenue); display: block; margin-bottom: .2rem; }
 
 .chip {
   display: block;
-  font-size: .75rem;
+  font-size: var(--t-xs);
   padding: .15rem .35rem;
   margin-bottom: .15rem;
   border-radius: 4px;
@@ -453,7 +556,7 @@ h3 { font-size: 1rem; margin: 0; }
 .chip.estado-confirmada { background: var(--verde-suave); color: var(--verde); }
 .chip.estado-realizada  { background: var(--fondo); color: var(--texto-tenue); }
 .chip.estado-aplazada   { background: var(--ambar-suave); color: var(--ambar); }
-.chip-hora { font-weight: 700; }
+.chip-hora { font-weight: 500; }
 
 /* --- Formularios ------------------------------------------------------- */
 
@@ -470,7 +573,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: .25rem;
-  font-size: .88rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
 }
 
@@ -482,7 +585,7 @@ label.casilla-inline {
 
 input, select, textarea {
   font: inherit;
-  font-size: .95rem;
+  font-size: var(--t-sm);
   color: var(--texto);
   background: var(--superficie);
   border: 1px solid var(--borde);
@@ -522,7 +625,7 @@ input:focus, select:focus, textarea:focus {
    compite con lo que hay que hacer. */
 .pista {
   margin: var(--e2) 0 0;
-  font-size: .85rem;
+  font-size: var(--t-sm);
 }
 
 /* Lo apuntado de una llamada se lee tal cual: los saltos de linea los puso
@@ -535,75 +638,59 @@ input:focus, select:focus, textarea:focus {
   white-space: pre-wrap;
   word-break: break-word;
   font-family: inherit;
-  font-size: .95rem;
+  font-size: var(--t-sm);
   line-height: 1.5;
 }
 
-/* Los dos sitios por los que entra algo -- una llamada y un papel -- en la
-   misma linea, sin titulo encima: los botones ya dicen lo que hacen. El que
-   se abre se queda con el ancho entero, que un formulario en media columna
-   no se rellena. */
-/* Los botones viven en la fila del titulo. El "Atras" se va al final de
-   la linea, que es donde estaba, y lo que se abre baja a su propia fila. */
-.entrada-citas {
-  align-items: center;
-  /* Sin "space-between": al bajar de linea en el movil, repartir el hueco
-     dejaba los dos botones en las esquinas, como si no fueran lo mismo. */
-  justify-content: flex-start;
-}
-.entrada-citas > .atras { margin-left: auto; }
-
-/* Centrar en flex centra la caja CON sus margenes: el margen de arriba del
-   desplegable y el de abajo del titulo descolocaban los botones 8 y 4
-   pixeles. En esta fila los margenes verticales sobran. */
-.entrada-citas > h1,
-.entrada-citas > .boton,
-.entrada-citas > details { margin-top: 0; margin-bottom: 0; }
-
-.entrada-citas > details { flex: 0 0 auto; }
-
-/* Exactamente el mismo boton que el de al lado: en la misma fila, dos
-   botones de distinto alto se leen como dos cosas distintas. */
-.entrada-citas > details > summary.boton {
-  padding: .45rem .9rem;
-  font-size: .93rem;
-}
-.entrada-citas > details[open] { flex: 1 1 100%; order: 9; }
-.entrada-citas > p { flex: 1 1 100%; order: 10; margin: 0; }
+/* (La fila de entrada de Citas usa ahora la cabecera comun:
+   ver "Cabecera de pagina".) */
 
 /* --- Botones ----------------------------------------------------------- */
 
+/* Regla de los botones: todos rectangulares con las esquinas un poco
+   redondeadas (8px, el radio de las tarjetas de opciones de DJI; la
+   pildora se probo y se descarto) y con la misma altura, sean <button>,
+   <a> o <summary>. En cada fila, la accion
+   que se espera de ti va rellena de azul y primero; lo demas (llamar,
+   ver mas...) con borde fino y despues. */
 .boton {
   display: inline-block;
-  padding: .45rem .9rem;
+  padding: .45rem 1rem;
   border: 1px solid transparent;
-  border-radius: var(--radio);
-  background: var(--acento);
-  color: #fff;
-  font-size: .93rem;
-  font-weight: 600;
+  border-radius: 8px;
+  /* Principal en el azul de las acciones: el unico color de los botones. */
+  background: var(--primario);
+  color: var(--sobre-primario);
+  font-family: inherit;  /* <button> no hereda la letra por defecto */
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: 1.25;     /* igual en <button>, <a> y <summary> */
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.boton:hover { filter: brightness(1.08); }
+.boton:hover { background: var(--primario-activo); }
 
 .boton.secundario {
   background: var(--superficie);
   color: var(--texto);
-  border-color: var(--borde);
+  /* Borde visible: en DJI el secundario es un contorno fino oscuro. */
+  border-color: var(--borde-fuerte);
 }
 
+/* El principal se oscurece al pasar el raton; el secundario, gris suave. */
+.boton.secundario:hover { background: var(--acento-suave); }
+
 .boton.peligro { background: var(--rojo); }
-.boton.pequeno { padding: .28rem .6rem; font-size: .85rem; }
+.boton.pequeno { padding: .3rem .8rem; font-size: var(--t-sm); }
 
 .enlace-sutil {
   background: none;
   border: none;
   color: var(--texto-tenue);
   cursor: pointer;
-  font-size: .9rem;
+  font-size: var(--t-sm);
 }
 
 .en-linea { display: inline; margin: 0; }
@@ -628,7 +715,7 @@ input:focus, select:focus, textarea:focus {
 .resumen-fila {
   padding: .55rem .2rem;
   border-bottom: 1px solid var(--borde);
-  font-weight: 600;
+  font-weight: 500;
   width: 100%;
 }
 
@@ -643,12 +730,12 @@ details > summary.boton { user-select: none; }
   margin: 0;
 }
 
-.ficha dt { color: var(--texto-tenue); font-size: .88rem; }
+.ficha dt { color: var(--texto-tenue); font-size: var(--t-sm); }
 .ficha dd { margin: 0; }
 
 .lista-simple { margin: .5rem 0; padding-left: 1.2rem; }
 
-.nombre-archivo { font-size: .8rem; background: none; padding: 0; color: var(--texto-tenue); }
+.nombre-archivo { font-size: var(--t-xs); background: none; padding: 0; color: var(--texto-tenue); }
 
 .resultado {
   background: var(--fondo);
@@ -708,7 +795,7 @@ details > summary.boton { user-select: none; }
 .tarjeta-area h2 { color: hsl(var(--tono-area) 65% 32%); margin-bottom: .3rem; }
 .area-proxima { margin: .2rem 0 .5rem; }
 
-.area-cuentas { list-style: none; padding: 0; margin: 0; font-size: .88rem; }
+.area-cuentas { list-style: none; padding: 0; margin: 0; font-size: var(--t-sm); }
 .area-cuentas li { display: inline-block; margin: 0 .6rem .2rem 0; }
 .area-cuentas li::before { content: "• "; color: var(--texto-tenue); }
 
@@ -772,15 +859,7 @@ details > summary.boton { user-select: none; }
   border-bottom-color: var(--verde);
 }
 
-/* En que punto esta y si lleva ambulancia, debajo de la fecha: son las dos
-   preguntas que se hacen sin abrir nada. */
-.cita-situacion {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--e2);
-  align-items: center;
-  margin: var(--e3) 0 0;
-}
+/* (Estado y ambulancia van ahora en la primera linea, .cita-etiquetas.) */
 .cita.cita-cerrada {
   background: var(--superficie);
   border-color: var(--borde-tarjeta);
@@ -805,8 +884,8 @@ details > summary.boton { user-select: none; }
 .cita-ir {
   display: block;
   margin-top: var(--e3);
-  font-size: .9rem;
-  font-weight: 600;
+  font-size: var(--t-sm);
+  font-weight: 500;
   color: var(--acento);
 }
 
@@ -818,13 +897,61 @@ details > summary.boton { user-select: none; }
   padding: var(--e2) var(--e4) var(--e3);
 }
 
+/* --- Cabecera de pagina (macro cabecera_pagina) ------------------------ *
+ * La misma en todas las paginas: el titulo con "Atras" a su derecha y,
+ * justo debajo, la barra de acciones. Asi los botones estan siempre en el
+ * mismo sitio, tambien en el movil (si no caben, bajan de linea).
+ * --------------------------------------------------------------------- */
+.cabecera-pagina { margin: 0 0 var(--e5); }
+/* Titulo a la izquierda y "Atras" a la derecha, en la misma linea. */
+.titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin: 0 0 var(--e3);
+}
+.titulo-fila h1 { margin: 0; }
+/* Etiqueta de estado junto al titulo (ficha de documento): mas pequena
+   que el titulo y centrada con el. */
+.titulo-estado { font-size: var(--t-sm); font-weight: 400; vertical-align: middle; }
+
+/* "Tramites · 3": el numero, mas discreto que el titulo. */
+.contador { color: var(--texto-tenue); font-weight: 400; }
+
+.acciones-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2);
+}
+.acciones-pagina > details { margin: 0; }
+.acciones-pagina > details > summary { list-style: none; }
+.acciones-pagina > details > summary::-webkit-details-marker { display: none; }
+/* Un desplegable abierto (apuntar llamada, subir...) baja a su propia
+   fila, a todo el ancho, despues de los botones. */
+.acciones-pagina > details[open] { flex: 1 1 100%; order: 9; }
+.acciones-pagina > details[open] > .formulario {
+  margin-top: var(--e3);
+  padding: var(--e4);
+  border: 1px solid var(--borde-tarjeta);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+/* Avisos dentro de la barra (p. ej. "Claude no esta disponible"): debajo. */
+.acciones-pagina > p { flex: 1 1 100%; order: 10; margin: 0; }
+
+/* (La fila "Ver la cita / Editar" ya no existe: Editar va en la primera
+   linea, .cita-primera-linea, y la informacion siempre a la vista,
+   .info-cita.) */
+
 .mas-datos > summary {
   cursor: pointer;
   list-style: none;
   padding: var(--e1) 0;
   color: var(--acento);
-  font-size: .9rem;
-  font-weight: 600;
+  font-size: var(--t-sm);
+  font-weight: 500;
 }
 
 .mas-datos > summary::-webkit-details-marker { display: none; }
@@ -842,7 +969,7 @@ details > summary.boton { user-select: none; }
   padding: var(--e3);
   background: var(--fondo);
   border-radius: var(--radio);
-  font-size: .9rem;
+  font-size: var(--t-sm);
 }
 
 .panel-cita label {
@@ -851,7 +978,7 @@ details > summary.boton { user-select: none; }
   gap: .2rem;
   flex: 1 1 10rem;
   color: var(--texto-tenue);
-  font-size: .8rem;
+  font-size: var(--t-xs);
 }
 
 .panel-cita label.ancho { flex: 1 1 100%; }
@@ -859,7 +986,7 @@ details > summary.boton { user-select: none; }
 .panel-cita select {
   width: 100%;
   color: var(--texto);
-  font-size: .9rem;
+  font-size: var(--t-sm);
 }
 
 .panel-acciones {
@@ -869,10 +996,10 @@ details > summary.boton { user-select: none; }
   flex: 1 1 100%;
 }
 
-.panel-telefono { flex: 1 1 100%; margin: 0; font-size: .85rem; }
+.panel-telefono { flex: 1 1 100%; margin: 0; font-size: var(--t-sm); }
 .panel-hilo {
   margin: var(--e3) 0 0;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
 }
 
@@ -883,15 +1010,15 @@ details > summary.boton { user-select: none; }
      parrafo y hay que buscar con el dedo cual es cual. */
   gap: var(--e3) var(--e4);
   margin: var(--e3) 0 0;
-  font-size: .9rem;
+  font-size: var(--t-sm);
   line-height: 1.45;
 }
 
 .ficha-mini dt {
   color: var(--texto-tenue);
-  font-size: .8rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  /* "Centro", "Teléfono"... sin mayusculas forzadas. */
+  font-size: var(--t-sm);
+  font-weight: 500;
 }
 
 .ficha-mini dd { margin: 0; }
@@ -908,7 +1035,7 @@ details > summary.boton { user-select: none; }
 
 .cita-titulo h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--t-md);
   font-weight: 600;
   line-height: 1.35;
 }
@@ -957,28 +1084,28 @@ details > summary.boton { user-select: none; }
 
 .paso-nombre {
   grid-column: 2;
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  /* "Pedida", "Cita"... sin mayusculas: algo mas grande para que se lea
+     igual de bien que antes. */
+  font-size: var(--t-xs);
+  font-weight: 500;
   color: var(--texto-tenue);
   opacity: .85;
 }
 
 .paso-dato {
   grid-column: 3;
-  font-size: .95rem;
+  font-size: var(--t-sm);
 }
 
 .cita-cuando {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--t-lg);
+  font-weight: 600;
   letter-spacing: -.02em;
 }
 .cita-lugar {
   display: block;
   color: var(--texto-tenue);
-  font-size: .9rem;
+  font-size: var(--t-sm);
   /* Un enlace largo pegado en la ubicacion no puede romper la tarjeta. */
   overflow-wrap: anywhere;
 }
@@ -989,7 +1116,7 @@ details > summary.boton { user-select: none; }
   border-radius: 6px;
   background: var(--rojo-suave);
   color: var(--rojo);
-  font-size: .88rem;
+  font-size: var(--t-sm);
 }
 
 .cita-pie {
@@ -999,7 +1126,7 @@ details > summary.boton { user-select: none; }
   margin: .6rem 0 0;
   padding-top: .5rem;
   border-top: 1px solid var(--borde);
-  font-size: .85rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
 }
 
@@ -1017,7 +1144,7 @@ details > summary.boton { user-select: none; }
 }
 
 .cita-cerrada .cita-titulo h3 { color: var(--texto-tenue); font-weight: 500; }
-.cita-cerrada-linea { margin: .3rem 0 0; font-size: .9rem; color: var(--texto-tenue); }
+.cita-cerrada-linea { margin: .3rem 0 0; font-size: var(--t-sm); color: var(--texto-tenue); }
 
 @media (max-width: 420px) {
   .paso { grid-template-columns: 1.1rem 1fr; }
@@ -1028,8 +1155,8 @@ details > summary.boton { user-select: none; }
 .apunte.aviso-reclamar {
   align-self: center;
   color: var(--rojo);
-  font-size: .85rem;
-  font-weight: 600;
+  font-size: var(--t-sm);
+  font-weight: 500;
 }
 
 /* El desplegable de "Ya tiene fecha" no debe empujar a los botones vecinos. */
@@ -1055,7 +1182,7 @@ details > summary.boton { user-select: none; }
   border-radius: var(--radio) var(--radio) 0 0;
   color: var(--texto-tenue);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   margin-bottom: -2px;
   border-bottom: 2px solid transparent;
@@ -1074,7 +1201,7 @@ details > summary.boton { user-select: none; }
   color: var(--texto);
   border-radius: 999px;
   padding: 0 .4rem;
-  font-size: .78rem;
+  font-size: var(--t-xs);
 }
 
 .pestana.activa .cuenta { background: var(--acento); color: var(--superficie); }
@@ -1089,10 +1216,10 @@ details > summary.boton { user-select: none; }
   gap: var(--e2);
   margin: var(--e5) 0 var(--e3);
   padding-bottom: var(--e1);
-  font-size: .82rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  /* "Hoy", "Mañana"... en vez de HOY, MAÑANA: la jerarquia la dan el
+     grosor y el tamano, no las mayusculas. */
+  font-size: var(--t-md);
+  font-weight: 600;
   color: var(--texto-tenue);
   border-bottom: 2px solid var(--borde);
 }
@@ -1104,7 +1231,9 @@ details > summary.boton { user-select: none; }
 .grupo-titulo a:hover { text-decoration: underline; }
 .grupo-titulo .tenue { text-transform: none; font-weight: 400; }
 
-.grupo-aviso .grupo-titulo { color: var(--rojo); border-bottom-color: var(--rojo); }
+/* Citas que ya pasaron sin cerrar: pendiente (ambar), no urgente (rojo), y
+   con la misma raya fina que los demas grupos (bordes limpios). */
+.grupo-aviso .grupo-titulo { color: var(--ambar); }
 
 /* --- Centros ------------------------------------------------------------ */
 
@@ -1121,11 +1250,11 @@ details > summary.boton { user-select: none; }
 }
 
 .tarjeta-centro:hover { border-color: var(--acento); background: var(--acento-suave); }
-.tarjeta-centro h2 { margin: 0 0 .2rem; font-size: 1.05rem; }
-.telefono-centro { margin: .5rem 0 0; color: var(--acento); font-weight: 600; }
+.tarjeta-centro h2 { margin: 0 0 .2rem; font-size: var(--t-md); }
+.telefono-centro { margin: .5rem 0 0; color: var(--acento); font-weight: 500; }
 
 /* La barra secundaria del menu pesa menos que la principal. */
-.navegacion.secundaria a { font-size: .88rem; opacity: .8; }
+.navegacion.secundaria a { font-size: var(--t-sm); opacity: .8; }
 
 /* --- El hilo de una cita (de donde viene, que ha salido) ---------------- */
 
@@ -1173,7 +1302,7 @@ details > summary.boton { user-select: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: var(--t-xl);
   z-index: 0;
 }
 
@@ -1199,7 +1328,7 @@ details > summary.boton { user-select: none; }
 
 .pagina-documento figcaption {
   margin-top: .3rem;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   text-align: center;
 }
 
@@ -1214,7 +1343,7 @@ details > summary.boton { user-select: none; }
   border-radius: 6px;
   background: none;
   color: var(--texto-tenue);
-  font-size: 1rem;
+  font-size: var(--t-md);
   line-height: 1;
   cursor: pointer;
 }
@@ -1229,11 +1358,12 @@ details > summary.boton { user-select: none; }
 /* Area y centro, juntos y marcados bajo el titulo de la cita: son las dos
    preguntas que uno se hace antes de leer nada mas. */
 .cita-etiquetas {
-  /* Las dos en la misma linea, siempre. Si no cabe, el nombre del centro se
-     corta con puntos suspensivos en vez de bajar a la linea de abajo: lo
-     que distingue a un hospital de otro esta al principio del nombre. */
+  /* Hospital, especialidad, estado y ambulancia en una linea. Si no caben
+     (movil), bajan de linea en ese mismo orden; el nombre del centro, si
+     aun asi no cabe, se corta con puntos suspensivos: lo que distingue a
+     un hospital de otro esta al principio del nombre. */
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: .4rem;
   margin: 0 0 .5rem;
@@ -1242,6 +1372,7 @@ details > summary.boton { user-select: none; }
 
 .cita-etiquetas .pastilla.centro {
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1253,8 +1384,8 @@ details > summary.boton { user-select: none; }
 .cita-etiquetas .pastilla {
   /* De quien es y donde es se leen antes que el resto: van mas grandes y
      mas gruesas que las demas pastillas de la aplicacion. */
-  font-size: .95rem;
-  font-weight: 700;
+  font-size: var(--t-sm);
+  font-weight: 500;
   letter-spacing: 0;
   padding: .28rem .6rem;
 }
@@ -1324,12 +1455,12 @@ details > summary.boton { user-select: none; }
 }
 
 .eslabon-cuerpo { min-width: 0; }
-.eslabon-titulo { font-weight: 600; }
-.eslabon-meta { display: block; font-size: .87rem; }
+.eslabon-titulo { font-weight: 500; }
+.eslabon-meta { display: block; font-size: var(--t-sm); }
 
 .eslabon-resultado {
   margin: .35rem 0 0;
-  font-size: .88rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
   border-left: 2px solid var(--borde);
   padding-left: .6rem;
@@ -1359,7 +1490,7 @@ details > summary.boton { user-select: none; }
 
 .pestanas .agrupar select {
   padding: .3rem .5rem;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   background: var(--superficie);
@@ -1408,7 +1539,7 @@ details[open] > summary .si-abierto { display: inline; }
   margin-top: var(--e3);
   padding-top: var(--e2);
   border-top: 1px solid var(--borde);
-  font-size: .85rem;
+  font-size: var(--t-sm);
 }
 
 /* Mover un preparativo a otra cita. Como el de quitar: discreto. */
@@ -1463,13 +1594,13 @@ h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
 .pastilla.es-hoy {
   background: var(--rojo);
   color: #fff;
-  letter-spacing: .06em;
+  /* "Hoy" sin mayusculas ni espaciado: el rojo ya es la alerta. */
 }
 
 .pastilla.es-manana {
   background: var(--ambar);
   color: #fff;
-  letter-spacing: .06em;
+  /* Igual que "Hoy": sin espaciado de mayusculas. */
 }
 
 .cita-hoy {
@@ -1481,7 +1612,7 @@ h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
 
 /* Los rotulos de los tramos de la portada: "Hoy" y "Manana" pesan mas. */
 .tramo-cercano {
-  font-size: 1.05rem;
+  font-size: var(--t-md);
   color: var(--texto);
   border-bottom-width: 2px;
 }
@@ -1492,8 +1623,8 @@ h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
 .cita-cuando-falta { margin: 0 0 .5rem; }
 
 .cita-cuando-falta .pastilla {
-  font-size: .9rem;
-  font-weight: 800;
+  font-size: var(--t-sm);
+  font-weight: 500;
   padding: .25rem .8rem;
 }
 
@@ -1501,13 +1632,13 @@ h2 .icono-ambulancia { font-size: 1.2em; vertical-align: -.1em; }
 .ayuda {
   display: block;
   margin-top: .25rem;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   line-height: 1.35;
 }
 
 /* El telefono de la ambulancia en la tarjeta. No es un enlace porque la
    tarjeta entera ya lo es; para llamar, se entra en la cita. */
-.telefono-ambulancia { font-weight: 600; white-space: nowrap; }
+.telefono-ambulancia { font-weight: 500; white-space: nowrap; }
 
 
 /* --- Ritmo y lineas de la pagina ---------------------------------------- *
@@ -1520,7 +1651,7 @@ section.bloque > h2 {
   margin: 0 0 var(--e3);
   padding-bottom: var(--e2);
   border-bottom: 1px solid var(--borde);
-  font-size: 1.05rem;
+  font-size: var(--t-md);
   letter-spacing: -.01em;
 }
 
@@ -1534,7 +1665,7 @@ section.bloque > h2 {
 
 h1 {
   letter-spacing: -.02em;
-  font-size: 1.6rem;
+  font-size: var(--t-xl);
 }
 
 .intro {
@@ -1545,7 +1676,7 @@ h1 {
 
 /* Las pastillas, todas con la misma forma. */
 .pastilla {
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   line-height: 1.45;
 }
 
@@ -1565,11 +1696,12 @@ h1 {
   align-items: center;
   gap: var(--e2);
   padding: .4rem .85rem;
-  border-radius: 999px;
-  background: var(--acento);
-  color: #fff;
-  font-size: .92rem;
-  font-weight: 700;
+  border-radius: 8px;
+  /* Es una accion: mismo color y forma que el boton principal. */
+  background: var(--primario);
+  color: var(--sobre-primario);
+  font-size: var(--t-sm);
+  font-weight: 500;
   letter-spacing: .01em;
   box-shadow: var(--sombra);
 }
@@ -1622,7 +1754,7 @@ h1 {
 }
 
 .documento-texto strong {
-  font-weight: 600;
+  font-weight: 500;
   overflow-wrap: anywhere;
 }
 
@@ -1640,7 +1772,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: var(--t-xl);
 }
 
 .acciones-fila {
@@ -1700,7 +1832,7 @@ h1 {
 }
 
 .resumen-cuenta { margin: 0 0 var(--e2); color: var(--texto); }
-.resumen-cuenta strong { font-size: 1.15rem; }
+.resumen-cuenta strong { font-size: var(--t-lg); }
 
 .resumen-lista {
   list-style: none;
@@ -1730,15 +1862,15 @@ h1 {
   border-left-color: var(--acento);
 }
 
-.aviso-texto { display: block; font-weight: 600; }
+.aviso-texto { display: block; font-weight: 500; }
 
 .aviso-detalle {
   display: block;
-  font-size: .85rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
 }
 
-.resumen-resto { margin: var(--e2) 0 0; font-size: .9rem; }
+.resumen-resto { margin: var(--e2) 0 0; font-size: var(--t-sm); }
 
 /* Al saltar a un apartado, que no se quede pegado al borde de arriba. */
 .bloque[id] { scroll-margin-top: var(--e4); }
@@ -1789,7 +1921,7 @@ h1 {
 .lista-requisitos.compacta .requisito {
   padding: var(--e2);
   margin-bottom: var(--e1);
-  font-size: .92rem;
+  font-size: var(--t-sm);
 }
 
 /* --- La lista de lo que hay que hacer, en la portada -------------------- *
@@ -1821,22 +1953,44 @@ h1 {
 
 .tarea-texto a {
   display: block;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--texto);
   text-decoration: none;
 }
 
 .tarea-texto a:hover { color: var(--acento); }
-.tarea-texto .tenue { display: block; font-size: .87rem; }
+.tarea-texto .tenue { display: block; font-size: var(--t-sm); }
 
+/* Dos huecos fijos, iguales en todas las filas: a la izquierda lo que se
+   marca cuando esta hecho (azul); a la derecha, llamar (con borde). Cada
+   boton ocupa su hueco entero, asi que todos miden lo mismo y forman dos
+   columnas. Si una fila no tiene telefono, su hueco queda vacio y nada se
+   mueve. Antes cada boton media lo que su texto y no cuadraban. */
 .tarea-accion {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  /* 12,5rem: cabe "Marcar como preparado", el texto mas largo (con 10,5
+     se salia del boton). */
+  grid-template-columns: 12.5rem 12.5rem;
   gap: var(--e2);
+  align-items: start;
 }
+.tarea-accion > * { min-width: 0; margin: 0; }
+.tarea-accion .boton,
+.tarea-accion .llamada-revisar {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+/* "Ya tiene fecha" o "Cerrarla" abiertos: su formulario usa los dos huecos. */
+.tarea-accion > details[open] { grid-column: 1 / -1; }
 
 .tarea-accion .llamada-revisar { text-decoration: none; }
+
+/* Movil: las acciones bajan debajo del texto y los dos huecos se reparten
+   el ancho, mismos sitios que en el ordenador. */
+@media (max-width: 720px) {
+  .tarea-accion { flex: 1 1 100%; grid-template-columns: 1fr 1fr; }
+}
 
 /* --- Estado de la cita, arriba del todo -------------------------------- */
 
@@ -1854,7 +2008,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: var(--e1);
-  font-size: .85rem;
+  font-size: var(--t-sm);
   color: var(--texto-tenue);
 }
 
@@ -1875,8 +2029,8 @@ h1 {
 
 .previa.sin-cita { border-left-color: var(--ambar); }
 .previa-icono { color: var(--texto-tenue); }
-.previa a { font-weight: 600; }
-.previa .tenue { display: block; font-size: .87rem; }
+.previa a { font-weight: 500; }
+.previa .tenue { display: block; font-size: var(--t-sm); }
 
 /* Los tres desplegables de enlazar, uno debajo de otro. */
 .enlaces-hilo { display: flex; flex-direction: column; gap: var(--e4); }
@@ -1904,8 +2058,8 @@ h1 {
 .pendiente-cita.sin-cita { border-left-color: var(--ambar); }
 .pendiente-cuerpo { flex: 1; min-width: 0; }
 .pendiente-cuerpo a,
-.pendiente-cuerpo > .pendiente-titulo > strong { font-weight: 600; }
-.pendiente-cuerpo .tenue { display: block; font-size: .87rem; }
+.pendiente-cuerpo > .pendiente-titulo > strong { font-weight: 500; }
+.pendiente-cuerpo .tenue { display: block; font-size: var(--t-sm); }
 .pendiente-cita .marca { color: var(--texto-tenue); }
 
 .etiqueta-clase {
@@ -1913,8 +2067,8 @@ h1 {
   align-self: center;
   padding: .1rem .5rem;
   border: 1px solid var(--borde);
-  border-radius: 999px;
-  font-size: .75rem;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
+  font-size: var(--t-xs);
   color: var(--texto-tenue);
   white-space: nowrap;
 }
@@ -1945,7 +2099,7 @@ h1 {
 .previa-form select,
 .previa-form input {
   width: 100%;
-  font-size: .9rem;
+  font-size: var(--t-sm);
   padding: .3rem .4rem;
 }
 
@@ -1955,19 +2109,306 @@ h1 {
    mira: es el dato que falta, no una nota al pie. */
 .aviso-sin-fecha {
   padding: .1rem .5rem;
-  border-radius: 999px;
+  border-radius: 6px;  /* como los botones (8px), algo menos por ser mas pequenas: nada de pildoras */
   background: var(--ambar-suave);
   color: var(--ambar);
-  font-size: .78rem;
-  font-weight: 700;
+  font-size: var(--t-xs);
+  font-weight: 500;
   white-space: nowrap;
 }
 
 /* Un tramo cercano sin nada: se dice, no se esconde. */
-.tramo-vacio { margin: 0 0 var(--e4); font-size: .92rem; }
+.tramo-vacio { margin: 0 0 var(--e4); font-size: var(--t-sm); }
 
 /* Los telefonos de un centro, dentro de su ficha. */
 .telefonos-centro { list-style: none; margin: 0; padding: 0; }
 .telefonos-centro li { padding: var(--e1) 0; }
-.telefonos-centro a { font-weight: 600; }
-.telefonos-centro .tenue { font-size: .87rem; }
+.telefonos-centro a { font-weight: 500; }
+.telefonos-centro .tenue { font-size: var(--t-sm); }
+
+/* --- Bordes limpios (rediseno, 2026-10) -------------------------------- *
+ * Antes cada tarjeta llevaba una raya gruesa de color a la izquierda
+ * (area, urgencia, estado...) y las confirmadas un marco verde: cinco
+ * colores de raya en una misma pantalla, repitiendo lo que ya dicen las
+ * etiquetas ("Digestivo", "Confirmada"). Ahora todo lleva un borde fino
+ * gris y el color queda solo para lo que avisa:
+ *   - cita de hoy o de prioridad alta: borde fino rojo;
+ *   - pendiente urgente o preparativo vencido: el texto en rojo/ambar.
+ * Se mantienen las lineas que no son decoracion: la linea de tiempo de los
+ * pasos y del hilo, el aviso de arriba y la zona de peligro.
+ * Las reglas llevan ":root" delante para ganar a las anteriores sin tener
+ * que tocarlas una a una.
+ * --------------------------------------------------------------------- */
+:root .cita,
+:root .cita.prioridad-alta,
+:root .cita.cita-cerrada,
+:root .requisito,
+:root .requisito.urgencia-vencido,
+:root .requisito.urgencia-hoy,
+:root .requisito.urgencia-proximo,
+:root .requisito.hecho,
+:root .tarjeta.prioridad-alta,
+:root .tarjeta-area,
+:root .tarjeta-centro,
+:root .hilo,
+:root .bloque.destacado,
+:root .lista-documentos li.con-propuesta,
+:root .resumen-acciones {
+  border-left: 1px solid var(--borde-tarjeta);
+}
+
+/* Filas dentro de un bloque: sin raya ni sangria, el bloque ya las agrupa. */
+:root .tarea,
+:root .titulo-area,
+:root .previa,
+:root .pendiente-cita,
+:root .resumen-lista a { border-left: 0; padding-left: 0; }
+
+/* Sin marco de color por estado ni por "manana"; el fondo, neutro. */
+:root .cita.estado-confirmada,
+:root .cita-manana { border-color: var(--borde-tarjeta); }
+:root .requisito.urgencia-vencido,
+:root .requisito.urgencia-hoy,
+:root .requisito.hecho { background: var(--superficie); }
+
+/* Lo que avisa, en fino: hoy y prioridad alta. */
+:root .cita-hoy,
+:root .cita.prioridad-alta { border-color: var(--rojo); box-shadow: none; }
+
+/* Urgencia dicha con el texto, no con una barra. */
+:root .tarea.urgente .tarea-texto .tenue { color: var(--rojo); }
+:root .requisito.urgencia-vencido .limite { color: var(--rojo); font-weight: 500; }
+:root .requisito.urgencia-hoy .limite { color: var(--ambar); font-weight: 500; }
+
+/* Formulario de cita: el alta de un centro nuevo ocupa toda la fila bajo
+   el selector y solo se ve al elegir "+ Nuevo centro..." (app.js). */
+.centro-fila { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem 1rem; }
+.alta-centro { margin: 0; }
+
+/* Iconos SVG (app/iconos.py): del tamano y el color del texto que
+   acompanan; alineados con la linea de base. Sustituyen a los emojis. */
+.ico {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  flex: none;
+}
+
+/* Tarjeta de cita, primera linea: etiquetas (que bajan de linea si no
+   caben) y "Editar" a la derecha. Abierto, el formulario de editar baja a
+   ocupar todo el ancho debajo de las etiquetas. */
+.cita-primera-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2) var(--e3);
+  margin: 0 0 .5rem;
+}
+.cita-primera-linea > .cita-etiquetas { flex: 1 1 auto; min-width: 0; margin: 0; }
+.cita-primera-linea > .editar-cita { margin: 0 0 0 auto; padding: 0; border: 0; }
+.cita-primera-linea > .editar-cita[open] {
+  flex: 1 1 100%;
+  order: 9;
+  margin-top: var(--e2);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+}
+
+/* El telefono de la primera linea: etiqueta con aspecto de enlace (se
+   pulsa para llamar). */
+.pastilla.telefono {
+  color: var(--acento);
+  background: var(--acento-suave);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Informacion de la cita: siempre a la vista y compacta, dato y valor en
+   dos columnas (en el movil, uno debajo de otro). */
+.info-cita {
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+.info-cita .ficha-mini {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--e1) var(--e3);
+  margin: 0;
+}
+.info-cita .ficha-mini dd { margin: 0; }
+@media (max-width: 720px) {
+  .info-cita .ficha-mini { grid-template-columns: minmax(0, 1fr); }
+  .info-cita .ficha-mini dd { margin-bottom: var(--e2); }
+}
+
+/* Documentos de la cita, al final de la tarjeta, separados como la
+   informacion. */
+.documentos-cita {
+  border-top: 1px solid var(--borde);
+  padding: var(--e2) var(--e4) var(--e3);
+}
+.documentos-cita-titulo {
+  margin: 0 0 var(--e2);
+  color: var(--texto-tenue);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+.documentos-cita .lista-documentos { margin: 0; }
+
+/* La etiqueta del hospital es un enlace al mapa: se ve como etiqueta,
+   pero al pasar por encima se subraya (se puede pulsar). */
+a.pastilla.centro { color: inherit; text-decoration: none; }
+a.pastilla.centro:hover { text-decoration: underline; }
+
+/* Pie de la tarjeta: "+ Anadir algo para esta cita" a la derecha, en la
+   misma linea que "N cosas que preparar". Se hace con una rejilla de dos
+   columnas: todo ocupa el ancho entero (1 / -1) y el boton se coloca
+   encima, en la primera fila y la segunda columna. Abierto, su formulario
+   baja a ocupar todo el ancho. En el movil se queda debajo: en una
+   pantalla estrecha los dos textos se pisarian. */
+@media (min-width: 721px) {
+  .cita > .cita-pie {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--e3);
+    align-items: start;
+  }
+  .cita > .cita-pie > * { grid-column: 1 / -1; }
+  .cita > .cita-pie > :first-child { grid-row: 1; }
+  .cita > .cita-pie > .anadir {
+    grid-row: 1;
+    grid-column: 2;
+    width: auto;
+    margin: 0;
+    justify-self: end;
+    position: relative;   /* por encima de la lista si se solaparan */
+    z-index: 1;
+  }
+  .cita > .cita-pie > .anadir[open] {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    margin-top: var(--e2);
+  }
+}
+
+/* Motivo de la cita: al final del cuerpo de la tarjeta, encima de "N cosas
+   que preparar". */
+.cita-motivo { margin: var(--e2) 0 0; }
+
+/* "Sin cerrar": la cita ya paso y falta anotar que dijeron. */
+.pastilla.estado-sin-cerrar { background: var(--ambar-suave); color: var(--ambar); }
+
+/* Editar, a la derecha de la primera linea; si no cabe al lado de las
+   etiquetas, baja alineado a la derecha. Abierto, ocupa todo el ancho. */
+.cita-primera-linea > .cita-derecha {
+  display: flex;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.cita-derecha > .editar-cita { margin: 0; padding: 0; border: 0; }
+.cita-primera-linea > .cita-derecha:has(details[open]) {
+  flex: 1 1 100%;
+  order: 9;
+  margin-left: 0;
+}
+.cita-derecha > .editar-cita[open] {
+  flex: 1 1 100%;
+  margin-top: var(--e2);
+  padding-top: var(--e2);
+  border-top: 1px solid var(--borde);
+}
+
+/* Acciones de la situacion (Cerrar la cita, Apuntar fecha...) en el pie, a
+   la izquierda, en la misma linea que "+ Anadir algo" (a la derecha, ver
+   la rejilla de .cita-pie). */
+.cita-acciones-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e2);
+}
+.cita-acciones-pie > form { margin: 0; }
+.cita-acciones-pie .apunte { align-self: center; }
+.cita-acciones-pie > details[open] { flex: 1 1 100%; }
+
+/* Si la cita tiene acciones de su situacion (Cerrar la cita, Apuntar
+   fecha...), van a la DERECHA y "+ Anadir algo" a la IZQUIERDA, en la
+   misma linea. Sin acciones, se queda como estaba: "N cosas que preparar"
+   a la izquierda y "+ Anadir algo" a la derecha. Lo que se abre (un
+   formulario) baja a ocupar todo el ancho. */
+@media (min-width: 721px) {
+  .cita > .cita-pie > .cita-acciones-pie {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+  }
+  .cita > .cita-pie:has(> .cita-acciones-pie) > .anadir {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: start;
+  }
+  .cita > .cita-pie:has(> .cita-acciones-pie) > .anadir[open],
+  .cita > .cita-pie > .cita-acciones-pie:has(details[open]) {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+}
+/* Movil: el mismo orden, uno debajo de otro: primero "+ Anadir algo". */
+@media (max-width: 720px) {
+  .cita-pie:has(> .cita-acciones-pie) > .anadir { order: -1; }
+}
+
+/* Cerrar una cita: "Como termino". Si se elige "se cancelo", las
+   preguntas de pruebas nuevas no aplican y se ocultan (sin JavaScript). */
+.como-termino { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--e2) var(--e4); }
+.como-termino legend { font-weight: 500; margin-bottom: var(--e1); padding: 0; }
+/* El circulo y su texto en la misma linea: los formularios estiran los
+   campos al 100%, y eso no vale para un boton de opcion. */
+.formulario .como-termino label { display: inline-flex; flex-direction: row; align-items: center; gap: var(--e1); width: auto; font-weight: 400; }
+.formulario .como-termino input[type="radio"] { width: auto; margin: 0; }
+.form-cerrar:has(input[name="como"][value="cancelada"]:checked) .solo-si-fue { display: none; }
+
+/* "Apuntar fecha" en la fila de la cita sin fecha, alineado a la DERECHA
+   (en la columna de Editar y Cerrar: las acciones, siempre a la derecha).
+   Abierto, su formulario baja a ocupar toda la fila. */
+.paso-dato:has(> .apuntar-fecha) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e1) var(--e2);
+}
+.apuntar-fecha { margin-left: auto; }
+.apuntar-fecha > summary { list-style: none; }
+.apuntar-fecha > summary::-webkit-details-marker { display: none; }
+.apuntar-fecha[open] { flex: 1 1 100%; margin: var(--e2) 0 0; }
+
+/* Formularios de una sola linea (estado de la cita, ambulancia, apuntar
+   fecha): el boton de guardar/confirmar a la DERECHA, como el resto de
+   acciones. Si no cabe, baja de linea y sigue a la derecha. */
+.formulario-estado > button[type="submit"],
+.form-linea > button[type="submit"],
+.form-fecha > button[type="submit"] { margin-left: auto; }
+/* Las filas de "Guardar cambios · Cancelar" de los editores, tambien a
+   la derecha. */
+.editar-acciones { justify-content: flex-end; }
+/* Dentro de un formulario abierto en los pendientes (apuntar fecha), el
+   boton no ocupa todo el ancho de la columna: de su tamano y a la
+   derecha, como en el resto de formularios. */
+.tarea-accion .form-fecha .boton { display: inline-block; width: auto; }
+
+/* Pendientes de Hoy: la accion (azul, primera en el HTML) en la columna
+   de la DERECHA y el telefono a su izquierda; sin telefono, el hueco de la
+   izquierda queda vacio y la accion sigue a la derecha. Asi la columna de
+   la derecha es siempre la de la accion, como en las tarjetas. Abierto
+   (apuntar fecha, cerrar), el formulario baja a todo el ancho. */
+.tarea-accion > * { grid-row: 1; }
+.tarea-accion > :first-child { grid-column: 2; }
+.tarea-accion > :not(:first-child) { grid-column: 1; }
+.tarea-accion > details[open] { grid-column: 1 / -1; grid-row: 2; }
+/* Movil: si el texto de una accion no cabe en su media pantalla ("Marcar
+   como preparado"), se parte en dos lineas en vez de salirse del boton. */
+@media (max-width: 720px) {
+  .tarea-accion .boton { white-space: normal; }
+}

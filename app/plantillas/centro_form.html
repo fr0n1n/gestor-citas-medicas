@@ -1,18 +1,17 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import cabecera_pagina with context %}
 
 {% block contenido %}
 
-<div class="titulo-con-accion">
-  <h1>Nuevo centro</h1>
-  <a class="boton secundario pequeno" href="/centros">← Todos los centros</a>
-  <a class="boton secundario pequeno atras" href="/" data-atras>← Atrás</a>
-</div>
+{# Cabecera comun (ver cabecera_pagina): titulo con "Atras" a la derecha
+   y, debajo, la barra de acciones. Misma posicion en todas las paginas. #}
+{{ cabecera_pagina('Nuevo centro', atras='/centros') }}
 
 {% if puede_buscar %}
 <section class="bloque">
   <h2>Buscar los datos</h2>
   <p class="tenue">
-    Escribe el nombre y Claude busca la dirección y el teléfono en internet.
+    Escribe el nombre y {{ ia.nombre }} busca la dirección y el teléfono en internet.
     <strong>No se guarda nada</strong>: verás lo que ha encontrado y decides tú.
   </p>
   <form method="post" action="/centros/buscar" class="formulario">
