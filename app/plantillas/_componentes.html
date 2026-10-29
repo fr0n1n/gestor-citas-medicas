@@ -762,9 +762,11 @@
   Cerrar una cita que ya paso: que dijeron y que mandaron, de una vez.
   Separarlo en dos pantallas hacia que lo segundo no se apuntara nunca.
 #}
-{% macro formulario_cerrar(evento, destino='/') %}
+{# clase: en una solicitud lo esperado es apuntar la fecha (azul) y
+   cerrarla es la excepcion: ahi se pasa 'boton secundario pequeno'. #}
+{% macro formulario_cerrar(evento, destino='/', clase='boton pequeno') %}
 <details class="cerrar-cita">
-  <summary class="boton pequeno">Cerrar la cita</summary>
+  <summary class="{{ clase }}">Cerrar la cita</summary>
   <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario form-cerrar">
     <input type="hidden" name="destino" value="{{ destino }}">
     {# Una cita se termina de dos formas: fue, o se cancelo / ya no hace

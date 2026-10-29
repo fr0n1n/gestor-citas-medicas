@@ -2370,9 +2370,16 @@ a.pastilla.centro:hover { text-decoration: underline; }
 .formulario .como-termino input[type="radio"] { width: auto; margin: 0; }
 .form-cerrar:has(input[name="como"][value="cancelada"]:checked) .solo-si-fue { display: none; }
 
-/* "Apuntar fecha" dentro de la linea de tiempo, al lado de "Pendiente de
-   confirmar"; abierto, su formulario va debajo. */
-.apuntar-fecha { display: inline-block; margin-left: var(--e2); vertical-align: middle; }
+/* "Apuntar fecha" en la fila de la cita sin fecha, alineado a la DERECHA
+   (en la columna de Editar y Cerrar: las acciones, siempre a la derecha).
+   Abierto, su formulario baja a ocupar toda la fila. */
+.paso-dato:has(> .apuntar-fecha) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e1) var(--e2);
+}
+.apuntar-fecha { margin-left: auto; }
 .apuntar-fecha > summary { list-style: none; }
 .apuntar-fecha > summary::-webkit-details-marker { display: none; }
-.apuntar-fecha[open] { display: block; margin: var(--e2) 0 0; }
+.apuntar-fecha[open] { flex: 1 1 100%; margin: var(--e2) 0 0; }
