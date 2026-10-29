@@ -2383,3 +2383,32 @@ a.pastilla.centro:hover { text-decoration: underline; }
 .apuntar-fecha > summary { list-style: none; }
 .apuntar-fecha > summary::-webkit-details-marker { display: none; }
 .apuntar-fecha[open] { flex: 1 1 100%; margin: var(--e2) 0 0; }
+
+/* Formularios de una sola linea (estado de la cita, ambulancia, apuntar
+   fecha): el boton de guardar/confirmar a la DERECHA, como el resto de
+   acciones. Si no cabe, baja de linea y sigue a la derecha. */
+.formulario-estado > button[type="submit"],
+.form-linea > button[type="submit"],
+.form-fecha > button[type="submit"] { margin-left: auto; }
+/* Las filas de "Guardar cambios · Cancelar" de los editores, tambien a
+   la derecha. */
+.editar-acciones { justify-content: flex-end; }
+/* Dentro de un formulario abierto en los pendientes (apuntar fecha), el
+   boton no ocupa todo el ancho de la columna: de su tamano y a la
+   derecha, como en el resto de formularios. */
+.tarea-accion .form-fecha .boton { display: inline-block; width: auto; }
+
+/* Pendientes de Hoy: la accion (azul, primera en el HTML) en la columna
+   de la DERECHA y el telefono a su izquierda; sin telefono, el hueco de la
+   izquierda queda vacio y la accion sigue a la derecha. Asi la columna de
+   la derecha es siempre la de la accion, como en las tarjetas. Abierto
+   (apuntar fecha, cerrar), el formulario baja a todo el ancho. */
+.tarea-accion > * { grid-row: 1; }
+.tarea-accion > :first-child { grid-column: 2; }
+.tarea-accion > :not(:first-child) { grid-column: 1; }
+.tarea-accion > details[open] { grid-column: 1 / -1; grid-row: 2; }
+/* Movil: si el texto de una accion no cabe en su media pantalla ("Marcar
+   como preparado"), se parte en dos lineas en vez de salirse del boton. */
+@media (max-width: 720px) {
+  .tarea-accion .boton { white-space: normal; }
+}
