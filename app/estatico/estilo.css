@@ -2329,3 +2329,31 @@ a.pastilla.centro:hover { text-decoration: underline; }
 .cita-acciones-pie > form { margin: 0; }
 .cita-acciones-pie .apunte { align-self: center; }
 .cita-acciones-pie > details[open] { flex: 1 1 100%; }
+
+/* Si la cita tiene acciones de su situacion (Cerrar la cita, Apuntar
+   fecha...), van a la DERECHA y "+ Anadir algo" a la IZQUIERDA, en la
+   misma linea. Sin acciones, se queda como estaba: "N cosas que preparar"
+   a la izquierda y "+ Anadir algo" a la derecha. Lo que se abre (un
+   formulario) baja a ocupar todo el ancho. */
+@media (min-width: 721px) {
+  .cita > .cita-pie > .cita-acciones-pie {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+  }
+  .cita > .cita-pie:has(> .cita-acciones-pie) > .anadir {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: start;
+  }
+  .cita > .cita-pie:has(> .cita-acciones-pie) > .anadir[open],
+  .cita > .cita-pie > .cita-acciones-pie:has(details[open]) {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+}
+/* Movil: el mismo orden, uno debajo de otro: primero "+ Anadir algo". */
+@media (max-width: 720px) {
+  .cita-pie:has(> .cita-acciones-pie) > .anadir { order: -1; }
+}
