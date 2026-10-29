@@ -125,9 +125,6 @@ class TestPiezas(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class TestNombreCorto(unittest.TestCase):
     """Los nombres largos, abreviados para caber en una pastilla."""
@@ -209,10 +206,18 @@ class TestAliasLocales(unittest.TestCase):
         self.assertFalse(es_el_mismo(self.OFICIAL, "Hospital Clínico Vistamar"))
 
 
-if __name__ == "__main__":
-    unittest.main()
+
+# Estas pruebas importan las rutas, que necesitan FastAPI. En el CI no se
+# instala nada (ver .github/workflows/pruebas.yml), asi que se saltan solas
+# si no esta, igual que las de IA con pydantic.
+try:
+    import fastapi  # noqa: F401
+    HAY_FASTAPI = True
+except ImportError:  # pragma: no cover - depende del entorno
+    HAY_FASTAPI = False
 
 
+@unittest.skipUnless(HAY_FASTAPI, "hace falta fastapi")
 class TestNuevoCentroDesdeElDesplegable(unittest.TestCase):
     """La opcion "+ Nuevo centro..." sin nombre no borra el centro que habia."""
 
@@ -227,3 +232,7 @@ class TestNuevoCentroDesdeElDesplegable(unittest.TestCase):
 
         self.assertEqual(_centro_del_formulario(None, "3", "", "", "", "", actual=7), 3)
         self.assertIsNone(_centro_del_formulario(None, "", "", "", "", "", actual=7))
+
+
+if __name__ == "__main__":
+    unittest.main()
