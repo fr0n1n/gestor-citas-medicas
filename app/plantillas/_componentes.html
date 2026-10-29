@@ -365,6 +365,27 @@
           </span>
         </li>
 
+        {# 3. Solicitada y sin fecha: lo que falta es la fecha, y ahi mismo
+           se apunta (al llamar). Antes "Apuntar fecha" iba en el pie. #}
+        {% if evento.estado == EstadoEvento.SOLICITADA and not evento.fecha %}
+        <li class="paso paso-falta">
+          <span class="paso-nombre">Fecha</span>
+          <span class="paso-dato">
+            <span class="sin-fecha">Pendiente de confirmar</span>
+            <details class="apuntar-fecha">
+              <summary class="boton pequeno">Apuntar fecha</summary>
+              <form method="post" action="/eventos/{{ evento.id }}/estado" class="form-fecha">
+                <input type="hidden" name="destino" value="{{ destino }}">
+                <input type="hidden" name="estado" value="confirmada">
+                <label>Fecha <input type="date" name="fecha" required></label>
+                <label>Hora <input type="time" name="hora"></label>
+                <button type="submit" class="boton pequeno">Confirmar</button>
+              </form>
+            </details>
+          </span>
+        </li>
+        {% endif %}
+
       </ol>
 
     {% endif %}
@@ -749,18 +770,26 @@
 {% macro formulario_cerrar(evento, destino='/') %}
 <details class="cerrar-cita">
   <summary class="boton pequeno">Cerrar la cita</summary>
-  <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario">
+  <form method="post" action="/eventos/{{ evento.id }}/cerrar" class="formulario form-cerrar">
     <input type="hidden" name="destino" value="{{ destino }}">
+    {# Una cita se termina de dos formas: fue, o se cancelo / ya no hace
+       falta. Con "se cancelo" se ocultan (solo CSS, :has) las preguntas de
+       pruebas nuevas, que no aplican. #}
+    <fieldset class="ancho como-termino">
+      <legend>¿Cómo terminó?</legend>
+      <label><input type="radio" name="como" value="realizada" checked> Ya fue</label>
+      <label><input type="radio" name="como" value="cancelada"> Se canceló o ya no hace falta</label>
+    </fieldset>
     <label class="ancho">
-      Qué dijo el médico
+      Qué dijo el médico, o el motivo si se canceló
       <textarea name="resultado" rows="3"
-                placeholder="Lo que te contaron y lo que hay que hacer">{{ evento.resultado or '' }}</textarea>
+                placeholder="Lo que te contaron y lo que hay que hacer · o: la anularon por teléfono">{{ evento.resultado or '' }}</textarea>
     </label>
     {# La pregunta cambia segun lo que se acabe de cerrar: de una consulta
        salen pruebas; de una prueba, la vuelta al especialista que la pidio
        para que la vea. #}
     {% set era_prueba = evento.tipo == TipoEvento.PRUEBA %}
-    <label class="ancho">
+    <label class="ancho solo-si-fue">
       {% if era_prueba %}
         ¿Hay que volver al especialista con el resultado?
       {% else %}
@@ -769,7 +798,7 @@
       <input type="text" name="derivada_titulo"
              placeholder="{% if era_prueba %}Revisión con {{ (evento.origen.especialidad if evento.origen else evento.especialidad) or 'el especialista' }}{% else %}RMN de columna{% endif %} — déjalo vacío si no">
     </label>
-    <label>
+    <label class="solo-si-fue">
       Qué es
       <select name="derivada_tipo">
         {% set sugerido = TipoEvento.REVISION if era_prueba else TipoEvento.PRUEBA %}
@@ -786,7 +815,7 @@
       </p>
     {% endif %}
     <div class="ancho">
-      <button type="submit" class="boton">Marcar como realizada</button>
+      <button type="submit" class="boton">Cerrar la cita</button>
     </div>
   </form>
 </details>

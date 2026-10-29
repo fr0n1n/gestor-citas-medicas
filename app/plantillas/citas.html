@@ -106,20 +106,14 @@
                 <input type="hidden" name="estado" value="solicitada">
                 <button type="submit" class="boton pequeno">Marcar como pedida</button>
               </form>
+              {{ formulario_cerrar(e, '/citas?etapa=' ~ etapa ~ '&orden=' ~ orden) }}
             {% else %}
               {% if e.toca_reclamar(config.dias_alerta_espera) %}
                 <span class="apunte aviso-reclamar">{{ icono("aviso") }} Toca reclamar</span>
               {% endif %}
-              {# El telefono ya esta en la primera linea de la tarjeta. #}
-              <details>
-                <summary class="boton pequeno">Apuntar fecha</summary>
-                <form method="post" action="/eventos/{{ e.id }}/estado" class="form-fecha">
-                  <input type="hidden" name="estado" value="confirmada">
-                  <label>Fecha <input type="date" name="fecha" required></label>
-                  <label>Hora <input type="time" name="hora"></label>
-                  <button type="submit" class="boton pequeno">Confirmar</button>
-                </form>
-              </details>
+              {# "Apuntar fecha" esta ahora en la linea de tiempo de la tarjeta;
+                 aqui, como en las demas, cerrarla (fue o se cancelo). #}
+              {{ formulario_cerrar(e, '/citas?etapa=' ~ etapa ~ '&orden=' ~ orden) }}
             {% endif %}
           {% endcall %}
         {% else %}

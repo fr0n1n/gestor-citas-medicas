@@ -2359,3 +2359,20 @@ a.pastilla.centro:hover { text-decoration: underline; }
 @media (max-width: 720px) {
   .cita-pie:has(> .cita-acciones-pie) > .anadir { order: -1; }
 }
+
+/* Cerrar una cita: "Como termino". Si se elige "se cancelo", las
+   preguntas de pruebas nuevas no aplican y se ocultan (sin JavaScript). */
+.como-termino { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--e2) var(--e4); }
+.como-termino legend { font-weight: 500; margin-bottom: var(--e1); padding: 0; }
+/* El circulo y su texto en la misma linea: los formularios estiran los
+   campos al 100%, y eso no vale para un boton de opcion. */
+.formulario .como-termino label { display: inline-flex; flex-direction: row; align-items: center; gap: var(--e1); width: auto; font-weight: 400; }
+.formulario .como-termino input[type="radio"] { width: auto; margin: 0; }
+.form-cerrar:has(input[name="como"][value="cancelada"]:checked) .solo-si-fue { display: none; }
+
+/* "Apuntar fecha" dentro de la linea de tiempo, al lado de "Pendiente de
+   confirmar"; abierto, su formulario va debajo. */
+.apuntar-fecha { display: inline-block; margin-left: var(--e2); vertical-align: middle; }
+.apuntar-fecha > summary { list-style: none; }
+.apuntar-fecha > summary::-webkit-details-marker { display: none; }
+.apuntar-fecha[open] { display: block; margin: var(--e2) 0 0; }
