@@ -359,32 +359,27 @@
               <span class="tenue">cuando se pida</span>
             {% else %}
               <strong class="sin-fecha">Pendiente de que llamen</strong>
+              {# Lo que falta es la fecha: se apunta aqui mismo, al llamar.
+                 (Una fila "Fecha: pendiente de confirmar" aparte decia lo
+                 mismo que esta.) #}
+              {% if evento.estado == EstadoEvento.SOLICITADA %}
+              <details class="apuntar-fecha">
+                <summary class="boton pequeno">Apuntar fecha</summary>
+                <form method="post" action="/eventos/{{ evento.id }}/estado" class="form-fecha">
+                  <input type="hidden" name="destino" value="{{ destino }}">
+                  <input type="hidden" name="estado" value="confirmada">
+                  <label>Fecha <input type="date" name="fecha" required></label>
+                  <label>Hora <input type="time" name="hora"></label>
+                  <button type="submit" class="boton pequeno">Confirmar</button>
+                </form>
+              </details>
+              {% endif %}
             {% endif %}
             {% set lugar = linea_lugar(evento, incluir_centro=not mostrar_centro)|trim %}
             {% if lugar %}<span class="cita-lugar">{{ lugar }}</span>{% endif %}
           </span>
         </li>
 
-        {# 3. Solicitada y sin fecha: lo que falta es la fecha, y ahi mismo
-           se apunta (al llamar). Antes "Apuntar fecha" iba en el pie. #}
-        {% if evento.estado == EstadoEvento.SOLICITADA and not evento.fecha %}
-        <li class="paso paso-falta">
-          <span class="paso-nombre">Fecha</span>
-          <span class="paso-dato">
-            <span class="sin-fecha">Pendiente de confirmar</span>
-            <details class="apuntar-fecha">
-              <summary class="boton pequeno">Apuntar fecha</summary>
-              <form method="post" action="/eventos/{{ evento.id }}/estado" class="form-fecha">
-                <input type="hidden" name="destino" value="{{ destino }}">
-                <input type="hidden" name="estado" value="confirmada">
-                <label>Fecha <input type="date" name="fecha" required></label>
-                <label>Hora <input type="time" name="hora"></label>
-                <button type="submit" class="boton pequeno">Confirmar</button>
-              </form>
-            </details>
-          </span>
-        </li>
-        {% endif %}
 
       </ol>
 
