@@ -71,7 +71,12 @@ RUN pip install --no-cache-dir \
         "python-multipart==0.0.32" \
         "pydantic==2.13.5" \
         "pydantic-settings==2.15.0" \
-        "pillow==11.3.0"
+        "pillow==13.0.0"
+# pillow 13.0.0 (antes 11.3.0): la 11.3.0 tenia 6 vulnerabilidades publicadas
+# (CVE-2026-112892, -112393, -96638, -96640, -96778, GHSA-78g4-xqwv-q3g8) y
+# abre imagenes subidas, que no son de fiar. Comprobado el 2026-10-28 que
+# Image.open + ImageOps.exif_transpose + thumbnail(LANCZOS), lo unico que usa
+# la app (vistas.py, ia/entrada.py), funciona igual en la 13.
 
 COPY app ./app
 COPY scripts ./scripts
