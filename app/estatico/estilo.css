@@ -1968,7 +1968,9 @@ h1 {
    mueve. Antes cada boton media lo que su texto y no cuadraban. */
 .tarea-accion {
   display: grid;
-  grid-template-columns: 10.5rem 10.5rem;
+  /* 12,5rem: cabe "Marcar como preparado", el texto mas largo (con 10,5
+     se salia del boton). */
+  grid-template-columns: 12.5rem 12.5rem;
   gap: var(--e2);
   align-items: start;
 }
