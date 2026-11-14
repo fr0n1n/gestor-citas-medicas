@@ -13,11 +13,9 @@ from typing import Annotated
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from sqlmodel import select
 
-from .. import consultas, logica
-from ..modelos import Evento
-from .comun import PacienteDep, SesionDep, entero_de, render, volver
+from .. import consultas
+from .comun import PacienteDep, SesionDep, render, volver
 
 router = APIRouter()
 

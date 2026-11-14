@@ -13,7 +13,6 @@ from ..modelos import PasoTramite, Tramite
 from .comun import (
     PacienteDep,
     SesionDep,
-    entero_de,
     fecha_de,
     render,
     texto,

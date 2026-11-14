@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date, time, timedelta
+from datetime import date, time
 
 from sqlmodel import Session, select
 
@@ -19,7 +19,6 @@ from .config import ahora_local, config
 from .enums import (
     ESTADOS_CERRADOS,
     TipoContacto,
-    TRANSPORTE_NECESARIO,
     EstadoEvento,
     EstadoTramite,
 )

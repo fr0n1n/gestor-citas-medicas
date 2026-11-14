@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import date, datetime, time
+from datetime import date, time
 
 from sqlmodel import Session, select
 
@@ -35,7 +35,6 @@ from .enums import (
 from .ia.base import ContextoAnalisis
 from .ia.esquema import DocumentoExtraido
 from .modelos import (
-    Centro,
     Contacto,
     transporte_inicial,
     Documento,

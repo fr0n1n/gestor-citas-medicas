@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
 from .. import consultas, logica
-from ..config import config, hoy
+from ..config import hoy
 from ..enums import EstadoEvento, etiqueta
 from ..ics import EventoICS, generar_ics
 from .comun import COOKIE_PACIENTE, PacienteDep, SesionDep, render, volver

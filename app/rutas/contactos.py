@@ -5,12 +5,11 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi.responses import RedirectResponse
-from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi import APIRouter, Form, HTTPException
 
-from .. import consultas
-from ..enums import ICONOS_CONTACTO, TipoContacto
+from ..enums import TipoContacto
 from ..modelos import Contacto
-from .comun import PacienteDep, SesionDep, entero_de, render, texto, volver
+from .comun import SesionDep, entero_de, texto, volver
 
 router = APIRouter()
 
