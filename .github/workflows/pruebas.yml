@@ -45,3 +45,17 @@ jobs:
         run: |
           python -m pip install --quiet pip-audit
           pip-audit -r requisitos-imagen.txt
+
+  # Linter: revisa el código sin ejecutarlo, con las reglas de pyproject.toml.
+  # Añadido el 2026-11-14 (S3). Versión de ruff fijada: se sube a mano, por PR.
+  lint:
+    runs-on: ubuntu-latest            # ordenador nuevo de GitHub, con Ubuntu
+    steps:
+      - uses: actions/checkout@v4     # copia el código (el ordenador nace vacío)
+      - uses: actions/setup-python@v5 # instala Python
+        with:
+          python-version: "3.12"
+      - name: ruff
+        run: |
+          python -m pip install --quiet ruff==0.17.5
+          ruff check .

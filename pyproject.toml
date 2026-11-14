@@ -28,3 +28,15 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+# Linter ruff (añadido el 2026-11-14). Las reglas se fijan aquí para que el
+# ordenador de cada uno y el CI revisen exactamente lo mismo.
+[tool.ruff]
+# Versión de Python del proyecto: la de la imagen Docker.
+target-version = "py312"
+
+[tool.ruff.lint]
+# Reglas "clásicas": errores reales (F = pyflakes: imports sin usar, nombres
+# que no existen...) y errores de sintaxis y sentencias (E4, E7, E9).
+# El orden de imports (I) y el estilo moderno (UP), en PRs aparte más adelante.
+select = ["E4", "E7", "E9", "F"]
