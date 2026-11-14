@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import logging
 import threading
-from datetime import datetime
 
 from sqlalchemy import update
 from sqlmodel import Session, select

@@ -36,7 +36,7 @@ from .base import (
     json_del_texto,
     prompt_usuario,
 )
-from .esquema import DocumentoExtraido
+from .esquema import CentroBuscado, DocumentoExtraido
 
 #: Un documento de varias paginas puede tardar; mas de esto es un cuelgue.
 TIEMPO_LIMITE_S = 300

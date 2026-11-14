@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from sqlmodel import select
 
 from .. import consultas, logica
-from ..config import ahora, config, hoy
+from ..config import ahora, hoy
 from ..enums import EstadoEvento, EstadoTransporte, Prioridad, TipoEvento, TipoRequisito
 from ..modelos import Evento, Requisito, transporte_inicial
 from .comun import (
