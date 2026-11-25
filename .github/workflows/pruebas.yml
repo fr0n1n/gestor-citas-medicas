@@ -68,3 +68,15 @@ jobs:
       - uses: actions/checkout@v4              # 3) sin esto, el ordenador nace vacío
       - name: shellcheck
         run: shellcheck scripts/preparar_claude.sh             # 4) qué fichero revisa
+
+  # Gitleaks: busca secretos (contraseñas, claves, tokens) en el código y en el historial.
+  # Añadido el 2026-11-25 (S4). Si encuentra algo, el check sale en rojo y no se puede fusionar.
+  gitleaks:
+    runs-on: ubuntu-latest              # ordenador nuevo de GitHub, con Ubuntu
+    steps:
+      - uses: actions/checkout@v4       # copia el código del repo
+        with:
+          fetch-depth: 0                # copia TODO el historial, no solo el último commit
+      - uses: gitleaks/gitleaks-action@v2   # la action oficial de gitleaks
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # permiso temporal que da GitHub para leer la PR
