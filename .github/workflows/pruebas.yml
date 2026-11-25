@@ -59,3 +59,12 @@ jobs:
         run: |
           python -m pip install --quiet ruff==0.17.5
           ruff check .
+
+  # Shellcheck: revisa los scripts de Bash sin ejecutarlos (comillas, cd sin || exit...).
+  # Añadido el 2026-11-25 (S4). Viene ya instalado en ubuntu-latest.
+  shellcheck:                                  # 1) nombre del job
+    runs-on: ubuntu-latest                     # 2) qué ordenador de GitHub usa
+    steps:
+      - uses: actions/checkout@v4              # 3) sin esto, el ordenador nace vacío
+      - name: shellcheck
+        run: shellcheck scripts/preparar_claude.sh             # 4) qué fichero revisa
